@@ -1,5 +1,7 @@
 # CoNexo — SPA
 
+**Versão 2, com navegação por seções HTML:** abra [versao-2/index.html](versao-2/index.html). A documentação está em [versao-2/README.md](versao-2/README.md). A primeira versão permanece na raiz.
+
 Implementação do protótipo CoNexo em HTML, CSS, Bootstrap 5.3.3 e JavaScript, sem framework ou etapa de compilação. Bootstrap, fonte e recursos visuais estão incluídos localmente.
 
 ## Executar
