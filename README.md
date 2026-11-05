@@ -34,7 +34,7 @@ Os dois cadastros abrem o pop-up de homologação do Figma. As etapas do parceir
 
 O projeto é uma interface frontend. Login, envio de email, cadastro e homologação não fazem chamadas a um servidor. As mensagens de redefinição e login explicam essa simulação. Os formulários validam email, campos obrigatórios, igualdade e tamanho mínimo de senhas, dimensões positivas e seleção de materiais e bicos. As senhas e demais dados ficam somente na memória da aba; não são persistidos em localStorage.
 
-O Figma fornece somente as seções 1 a 3 dos Termos de Uso e contém uma anotação indicando que o restante está em um documento externo. Foi incluído somente o texto disponível, sem inventar cláusulas. Para completar, substitua `TERMS_HTML` em `app.js` pelo texto oficial integral. O bloqueio por scroll acompanha automaticamente a altura do novo conteúdo.
+Os Termos de Uso foram atualizados com o texto completo fornecido pelo usuário (seções 1 a 14), usando `<br>` nas quebras de linha. O bloqueio por scroll acompanha automaticamente a altura do conteúdo. O campo de email de contato foi mantido em branco, conforme o documento enviado.
 
 O email `xxxxxx@aacd.org.br` no pop-up é um placeholder presente no protótipo. As opções das listas de unidade e disponibilidade são demonstrativas, pois o Figma não especifica os itens dos menus abertos. Substitua pelas opções oficiais na integração.
 

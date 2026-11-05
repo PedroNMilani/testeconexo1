@@ -36,7 +36,7 @@ Bootstrap, fonte, CSS visual e imagens originais são compartilhados com a vers�
 
 ## Pendências do protótipo
 
-Esta é uma implementação frontend. Autenticação, envio de email e gravação de cadastros dependem de backend; nenhuma senha é persistida em armazenamento do navegador. O Figma contém apenas as seções 1 a 3 dos termos e remete o restante a um documento externo. Substitua o texto em `#termos-uso-terms-scroll` pelo documento oficial completo quando disponível; o bloqueio pelo scroll se adapta ao novo conteúdo.
+Esta é uma implementação frontend. Autenticação, envio de email e gravação de cadastros dependem de backend; nenhuma senha é persistida em armazenamento do navegador. Os Termos de Uso contêm o texto completo fornecido pelo usuário (seções 1 a 14), com quebras de linha em `<br>`, dentro de `#termos-uso-terms-scroll`. O bloqueio pelo scroll acompanha a altura do conteúdo. O email de contato permanece em branco, conforme o documento enviado.
 
 O email `xxxxxx@aacd.org.br` é o placeholder do Figma. As opções dos selects de unidade e disponibilidade são demonstrativas, pois o protótipo não fornece os menus abertos.
 
