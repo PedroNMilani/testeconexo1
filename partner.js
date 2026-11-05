@@ -103,9 +103,9 @@ printerForm.addEventListener('submit', event => {
   let card = printerGrid.querySelector(`[data-printer-id="${id}"]`);
   if (!card) {
     card = printerTemplate.cloneNode(true);
-    card.querySelector('.edit-printer')?.remove();
     card.dataset.printerId = id;
-    card.querySelector('[data-edit-printer]').dataset.editPrinter = id;
+    card.querySelectorAll('[data-edit-printer]').forEach(button => { button.dataset.editPrinter = id; });
+    card.querySelector('.edit-printer').setAttribute('aria-label', `Editar ${record.name}`);
     card.querySelector('[data-printer-name]').textContent = record.name;
     card.querySelector('.printer-id').textContent = `ID: IMP-${id.padStart(2, '0')} • ${record.kind}`;
     printerGrid.append(card);

@@ -17,7 +17,16 @@ const titles = {
   'parceiro-inicio': 'Início do Parceiro',
   'parceiro-pedidos': 'Pedidos do Parceiro',
   'parceiro-impressora': 'Sua impressora',
-  'parceiro-perfil': 'Editar a Conta'
+  'parceiro-perfil': 'Editar a Conta',
+  'aacd-inicio': 'Minhas Conexões',
+  'aacd-pedidos': 'Histórico e Atividades da Rede',
+  'aacd-parceiros': 'Rede de Parceiros Ativos',
+  'aacd-homologacao': 'Homologação de Parceiros',
+  'aacd-pedido-1': 'Novo Pedido — Informações Gerais',
+  'aacd-pedido-2': 'Novo Pedido — Especificações Técnicas',
+  'aacd-pedido-3': 'Novo Pedido — Upload do Link',
+  'aacd-conectar': 'Conectar Pedido aos Parceiros',
+  'aacd-perfil': 'Editar a Conta AACD'
 };
 const partnerSteps = ['parceiro-dados', 'parceiro-equipamentos', 'parceiro-logistica'];
 const resetDialog = bootstrap.Modal.getOrCreateInstance(document.getElementById('reset-dialog'));
@@ -161,8 +170,10 @@ app.addEventListener('submit', event => {
         navigate('parceiro-inicio');
         break;
       }
-      document.getElementById('login-feedback').textContent =
-        'Demonstração: os campos foram validados. O acesso ao sistema depende da integração com o servidor.';
+      document.dispatchEvent(new CustomEvent('conexo:aacd-login', {
+        detail: { email: form.elements.namedItem('email').value }
+      }));
+      navigate('aacd-inicio');
       break;
     case 'parceiro-dados':
       navigate('parceiro-equipamentos');
