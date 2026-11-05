@@ -1,61 +1,197 @@
 'use strict';
-// Rotas por hash: funcionam em hospedagem estática e ao abrir index.html.
+
+// Todas as telas já existem no HTML. Navegar apenas alterna hidden/inert;
+// nenhum formulário é recriado e os valores permanecem nos próprios campos.
 const app = document.getElementById('app');
-const modal = new bootstrap.Modal(document.getElementById('dialog'));
-const drafts = { parceiro: {}, aacd: {}, login: {} };
-let acceptedTerms = false;
+const pages = new Map(
+  [...app.querySelectorAll('[data-page]')].map(section => [section.id, section])
+);
+const titles = {
+  'sobre-nos': 'Sobre Nós',
+  login: 'Login',
+  'termos-uso': 'Termos de Uso',
+  'parceiro-dados': 'Dados do Parceiro',
+  'parceiro-equipamentos': 'Capacidade Técnica e Equipamentos',
+  'parceiro-logistica': 'Disponibilidade e Logística',
+  'cadastro-aacd': 'Cadastro AACD',
+  'parceiro-inicio': 'Início do Parceiro',
+  'parceiro-pedidos': 'Pedidos do Parceiro',
+  'parceiro-impressora': 'Sua impressora',
+  'parceiro-perfil': 'Editar a Conta'
+};
+const partnerSteps = ['parceiro-dados', 'parceiro-equipamentos', 'parceiro-logistica'];
+const resetDialog = bootstrap.Modal.getOrCreateInstance(document.getElementById('reset-dialog'));
+const evaluationDialog = bootstrap.Modal.getOrCreateInstance(document.getElementById('evaluation-dialog'));
+let activeSection = 'sobre-nos';
+let loginMode = 'aacd';
 let termsReachedEnd = false;
-let activeRoute = '';
-const routes = ['sobre','login/aacd','login/parceiro','parceiro/termos','parceiro/1','parceiro/2','parceiro/3','aacd/cadastro'];
-const titles = {sobre:'Sobre Nós','login/aacd':'Login AACD','login/parceiro':'Login Parceiro','parceiro/termos':'Termos de Uso','parceiro/1':'Dados do Parceiro','parceiro/2':'Capacidade Técnica e Equipamentos','parceiro/3':'Disponibilidade e Logística','aacd/cadastro':'Cadastro AACD'};
-const icon = (name, extra='') => `<img src="assets/${name}.png" alt="" class="icon ${extra}">`;
-const logo = () => '<img src="assets/logo.png" alt="CoNexo" class="logo">';
-const footer = () => `<footer aria-label="Instituições parceiras"><p>Parceiros:</p><div class="partners"><img class="maua" src="assets/maua.png" alt="Instituto Mauá de Tecnologia"><span class="partner-divider" aria-hidden="true"></span><img class="aacd" src="assets/aacd.png" alt="AACD"></div></footer>`;
-const compliance = () => `<p class="compliance">${icon('shield')}<span>Os cadastros são avaliados pela comissão de Tecnologia Assistiva da AACD antes do primeiro despacho técnico.</span></p>`;
-const heading = (title, back) => `<div class="page-title">${back?`<a class="back" href="#/${back}" aria-label="Voltar">←</a>`:''}<h1 id="main" class="screen-heading" tabindex="-1">${title}</h1></div>`;
-const progress = (value, step) => `<div class="progress" role="progressbar" aria-label="Progresso do cadastro: etapa ${step} de 3" aria-valuenow="${value}" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar" style="width:${value}%"></div></div>`;
-const sectionHeading = (step,title,subtitle) => `<div class="section-heading"><span class="step" aria-hidden="true">${step}</span><div><h2>${title}</h2><p>${subtitle}</p></div></div>`;
-function input(name,label,placeholder='',type='text',required=true){
-  return `<div class="field"><label class="form-label" for="${name}">${label}${required?'<span class="visually-hidden"> (obrigatório)</span>':''}</label>${type==='password'?'<div class="password-wrapper">':''}<input class="form-control" id="${name}" name="${name}" type="${type}" placeholder="${placeholder}" ${required?'required':''} ${type==='password'?'minlength="8" autocomplete="new-password"':type==='email'?'autocomplete="email"':''}>${type==='password'?`<button class="reveal" type="button" data-reveal="${name}" aria-label="Mostrar senha">Mostrar</button></div>`:''}</div>`;
+let termsAccepted = false;
+
+function setLoginMode(mode) {
+  loginMode = mode === 'parceiro' ? 'parceiro' : 'aacd';
+  document.querySelectorAll('#login [data-login-mode]').forEach(button => {
+    const selected = button.dataset.loginMode === loginMode;
+    button.classList.toggle('active', selected);
+    button.setAttribute('aria-pressed', String(selected));
+  });
+  const signup = document.getElementById('login-cadastro');
+  const destination = loginMode === 'parceiro' ? 'termos-uso' : 'cadastro-aacd';
+  signup.dataset.section = destination;
+  signup.setAttribute('href', `#${destination}`);
+  document.getElementById('login-feedback').textContent = '';
 }
-function select(name,label,placeholder,options){return `<div class="field"><label class="form-label" for="${name}">${label}</label><select class="form-select" id="${name}" name="${name}" required><option value="">${placeholder}</option>${options.map(x=>`<option>${x}</option>`).join('')}</select></div>`;}
-function actions(back,terms=false){return `<div class="form-actions"><a class="btn-back" href="#/${back}">${terms?'Cancelar':'Voltar'}</a>${compliance()}<button type="submit" class="btn btn-conexo" ${terms?'id="confirm-terms" disabled aria-describedby="terms-status"':''}>${terms?'Confirmar':'Avançar'}</button></div>`;}
-function about(){
- const features=[['care','VALIDAÇÃO ESPECIALIZADA','Projetos revisados por fisiatras e terapeutas ocupacionais.'],['cube','ENGENHARIA SOB MEDIDA','Impressão 3D biocompatível ajustada à anatomia do usuário.'],['network','REDE DESCENTRALIZADA','Produção em polos locais para reduzir custos logísticos e tempo de espera.']];
- const pillars=[['mission','Nossa Missão','Democratizar o acesso a soluções biomecânicas personalizadas, conectando profissionais de reabilitação e especialistas em modelagem e impressão 3D para criar dispositivos acessíveis e funcionais.','Inclusão através da técnica'],['vision','Nossa Visão','Consolidar-se como a principal infraestrutura descentralizada e confiável de manufatura biomédica e acolhimento clínico do Brasil, estabelecendo padrões abertos de modelagem assistiva.','Referência em bioengenharia social'],['values','Nossos Valores','Empatia no acolhimento, rigor biomecânico, segurança e ética no manuseio de dados de saúde, cooperação científica aberta e compromisso irrestrito com o bem-estar do usuário final.','Segurança & Validação Clínica']];
- return `<header><a href="#/sobre" aria-label="CoNexo — Sobre Nós">${logo()}</a><a class="header-login" href="#/login/aacd">Entrar</a></header><main class="page">${heading('Sobre Nós')}<section class="intro" aria-label="Apresentação Geral"><div><span class="eyebrow">PROPÓSITO & CONEXÃO</span><h2>Cuidado clínico conectado<br>à manufatura aditiva.</h2><p>O CoNexo conecta profissionais de reabilitação e parceiros de impressão 3D para ampliar o acesso a órteses, próteses e dispositivos de adaptação funcional.</p><p>AACD e Instituto Mauá de Tecnologia integram uma rede distribuída que aproxima o cuidado clínico da produção sob medida.</p></div><div class="feature-list">${features.map(([i,t,p])=>`<article class="feature"><span class="icon-badge">${icon(i)}</span><div><h3>${t}</h3><p>${p}</p></div></article>`).join('')}</div></section><section class="pillars" aria-label="Pilares institucionais">${pillars.map(([i,t,p,s])=>`<article class="pillar"><div><div class="pillar-title"><span class="icon-badge">${icon(i)}</span><h3>${t}</h3></div><p>${p}</p></div><small>${icon('check')}${s}</small></article>`).join('')}</section><div class="cta"><a class="btn btn-conexo" href="#/parceiro/termos">${icon('collaborate')}Colabore conosco!</a></div></main>${footer()}`;
+
+function navigate(sectionId, { replace = false, fromHistory = false, mode } = {}) {
+  let destination = pages.has(sectionId) ? sectionId : 'sobre-nos';
+  if (partnerSteps.includes(destination) && !termsAccepted) destination = 'termos-uso';
+
+  if (mode) setLoginMode(mode);
+  const state = { section: destination, loginMode };
+  const hash = `#${destination}`;
+  if (replace || fromHistory) {
+    history.replaceState(state, '', hash);
+  } else if (!fromHistory && (location.hash !== hash || history.state?.loginMode !== loginMode)) {
+    history.pushState(state, '', hash);
+  }
+
+  for (const [id, section] of pages) {
+    const visible = id === destination;
+    section.hidden = !visible;
+    section.inert = !visible;
+  }
+  activeSection = destination;
+  const header = document.getElementById('site-header');
+  header.hidden = destination !== 'sobre-nos' && destination !== 'login';
+  header.classList.toggle('center', destination === 'login');
+  document.getElementById('header-login').hidden = destination !== 'sobre-nos';
+  document.title = `CoNexo — ${titles[destination]}`;
+  const heading = document.getElementById(`${destination}-titulo`);
+  document.getElementById('skip-link').setAttribute('href', `#${heading.id}`);
+  window.scrollTo(0, 0);
+  heading.focus({ preventScroll: true });
+  document.dispatchEvent(new CustomEvent('conexo:navigate', { detail: { section: destination } }));
 }
-function login(partner){return `<header class="center"><a href="#/sobre" aria-label="CoNexo — Sobre Nós">${logo()}</a></header><main class="login-page">${heading('Faça seu Login!','sobre')}<div class="login-panel"><img src="assets/login.jpg" class="login-photo" alt="Atendimento especializado em reabilitação"><div class="login-form"><div class="login-tabs" role="group" aria-label="Tipo de acesso"><button type="button" class="${!partner?'active':''}" data-route="login/aacd" aria-pressed="${!partner}">Equipe AACD</button><button type="button" class="${partner?'active':''}" data-route="login/parceiro" aria-pressed="${partner}">Parceiro</button></div><form data-form="login"><div class="field"><label class="form-label" for="login-email">E-mail Institucional</label><input class="form-control" id="login-email" name="email" type="email" placeholder="exemplo@aacd.org.br ou lab@empresa.com" autocomplete="username" required></div><div class="field"><div class="form-label"><label for="login-password">Senha</label><button class="forgot" type="button" data-dialog="reset">Esqueci minha senha</button></div><div class="password-wrapper"><input class="form-control" type="password" id="login-password" name="password" placeholder="••••••••••••" autocomplete="current-password" required><button class="reveal" type="button" data-reveal="login-password" aria-label="Mostrar senha">Mostrar</button></div></div><label class="remember"><input type="checkbox" name="remember">Lembrar este dispositivo institucional</label><button class="btn btn-conexo" type="submit">Entrar no Sistema</button><a class="signup" href="#/${partner?'parceiro/termos':'aacd/cadastro'}">Não tem uma conta? Faça parte do time Conexo AACD!</a></form></div></div></main>${footer()}`;}
-function registration(route){
- const isAacd=route==='aacd/cadastro', terms=route==='parceiro/termos', step=Number(route.split('/')[1]);
- const back=isAacd?'login/aacd':terms?'sobre':step===1?'parceiro/termos':`parceiro/${step-1}`;
- let body='', extra='', cls='';
- if(terms){body=`<h2 class="terms-title">Termos de Uso</h2><p class="terms-intro">Ao responder este formulário, você declara estar de acordo com os nossos Termos de Uso e com a nossa Política de Privacidade.</p><div class="terms-scroll" id="terms-scroll" tabindex="0" role="region" aria-label="Texto dos Termos de Uso">${TERMS_HTML}</div><div class="progress" aria-hidden="true"><div class="progress-bar" id="terms-progress" style="width:0%"></div></div><p class="terms-status" id="terms-status" role="status">Role os termos até o final para liberar a confirmação.</p>`;}
- else if(isAacd){body=sectionHeading(1,'Dados da Unidade','Identificação da unidade, email e contato.')+`<div class="row row-fields"><div class="col-md-6">${select('unit','Unidade AACD:','Selecione sua unidade',['Ibirapuera','Mooca','Osasco','Mogi das Cruzes','Recife','Porto Alegre','Uberlândia'])}</div><div class="col-md-6">${input('holder','Nome do titular da conta:','Ex: Pedro - AACD')}</div></div>`+input('email','E-mail:','contato@lab3d.usp.br','email')+input('password','Crie uma senha:','Mínimo de 8 caracteres','password')+input('confirmation','Confirme a senha:','Repita sua senha','password')+input('phone','Contato: <span class="required" aria-hidden="true">*</span>','(XX) 12345-6789','tel');}
- else if(step===1){body=sectionHeading(1,'Dados do Parceiro','Identificação da instituição, laboratório ou especialista técnico.')+input('institution','Nome da Instituição ou Laboratório <span class="required" aria-hidden="true">*</span>','Ex: FabLab Poli-USP ou Laboratório BioEng')+`<div class="row row-fields"><div class="col-md-3">${input('state','Estado','Ex: São Paulo')}</div><div class="col-md-3">${input('city','Cidade','Ex: São Caetano do Sul')}</div><div class="col-md-6">${input('district','Bairro','Ex: Santa Paula')}</div><div class="col-md-4">${input('street','Rua / Avenida','Ex: Avenida Guido Aliberti')}</div><div class="col-md-2">${input('number','Número','Ex: 4445')}</div><div class="col-md-6">${input('responsible','Responsável Técnico','Ex: Dra. Mariana Costa ou Eng. Paulo Silva')}</div></div>`+input('email','E-mail Institucional ou de Contato','contato@lab3d.usp.br','email')+input('password','Crie uma senha:','Mínimo de 8 caracteres','password')+input('confirmation','Confirme a senha:','Repita sua senha','password')+progress(34.5,1);}
- else if(step===2){cls='technical';const choices=(name,items)=>`<div class="choices">${items.map(([v,l])=>`<label class="choice"><input type="checkbox" name="${name}" value="${v}">${l}</label>`).join('')}</div>`;body=sectionHeading(2,'Capacidade Técnica & Equipamentos','Especificações do parque fabril e compatibilidade de matérias-primas.')+`<div class="volume-row">${input('printer','Modelos de Impressora 3D Disponíveis','Ex: Creality CR-M4, Voron 2.4, Bambu Lab X1C')}${input('volumeX','Volume X','','number')}${input('volumeY','Volume Y','','number')}${input('volumeZ','Volume Z','','number')}</div><div class="choice-head"><label>Materiais Aptos e Homologados</label><span>Selecione todos os disponíveis</span></div>${choices('materials',[['PLA','PLA (Ácido Polilático)'],['PETG','PETG (Polietileno Tereftalato Glicol)'],['ABS','ABS (Acrilonitrila Butadieno Estireno)'],['TPU','TPU / Filamentos Flexíveis (Poliuretano Termoplástico)']])}<div class="choice-head"><label>Bicos Disponíveis para a Impressora</label><span>Selecione todos os disponíveis</span></div>${choices('nozzles',[['0.2','Bico 0,2 mm'],['0.4','Bico 0,4 mm'],['0.6','Bico 0,6 mm'],['0.8','Bico 0,8 mm']])}${progress(68,2)}`;}
- else {cls='logistics';body=sectionHeading(3,'Disponibilidade e Logística','Previsão de atendimento voluntário ou convênio e formato de envio.')+select('hours','Horas disponíveis por semana','Selecione a estimativa',['Até 5 horas','6 a 10 horas','11 a 20 horas','Mais de 20 horas'])+select('needsMaterial','Precisa de material?','Sim ou Não',['Sim','Não'])+`<div class="field"><label class="form-label" for="notes">Observações ou Certificações Específicas <span>Opcional</span></label><textarea id="notes" name="notes" class="form-control" placeholder="Ex: Contamos com estufa desumidificadora de filamento e bicos de aço endurecido..."></textarea></div>`+progress(98,3);extra=`<section class="conditions" aria-label="Condições de higiene e segurança"><p>${icon('shield')} Antes de avançar, confirme se o local atende às condições de higiene e segurança exigidas para o processo:</p><ul><li>Estufa Desumidificadora Contínua: o laboratório deve manter umidade relativa inferior a 15% para filamentos técnicos (Nylon, PETG, TPU).</li><li>Protocolo de Limpeza Hospitalar ADEQUADO: peças aprovadas para sanitização com Quaternário de Amônio e Álcool 70%, sem degradação mecânica.</li><li>Rastreabilidade de Lotes: registrar gravimetria e lote da matéria-prima nas etiquetas de identificação CoNexo.</li></ul></section>`;}
- return `<main class="page registration">${heading(isAacd?'Cadastro AACD':'Cadastro de Parceiro Técnico',back)}<form data-form="${terms?'terms':isAacd?'aacd':'parceiro'}"><div class="form-card ${cls}">${body}<p class="form-error" id="form-error" role="alert"></p></div>${extra}${actions(back,terms)}</form><a href="#/sobre" aria-label="CoNexo — Sobre Nós"><img src="assets/brand.png" class="brand-footer" alt="CoNexo"></a></main>${footer()}`;
+
+// Cada link mantém seu href real. O JavaScript intercepta somente a navegação
+// interna normal, preservando cliques modificados e o histórico do navegador.
+document.addEventListener('click', event => {
+  const target = event.target.closest('[data-section]');
+  if (!target || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+  event.preventDefault();
+  navigate(target.dataset.section, { mode: target.dataset.loginMode });
+});
+
+function readLocation() {
+  const id = location.hash.slice(1) || 'sobre-nos';
+  // O link de pular conteúdo deve focar o título, sem trocar de seção.
+  if (id === `${activeSection}-titulo`) return;
+  navigate(id, { fromHistory: true, mode: history.state?.loginMode });
 }
-function navigate(route){location.hash='/'+route;}
-function saveDraft(){const form=app.querySelector('form');if(!form)return;const key=form.dataset.form;if(!drafts[key])return;for(const el of form.elements){if(!el.name)continue;if(el.type==='checkbox'){drafts[key][el.name]=Array.from(form.querySelectorAll(`input[name="${el.name}"]:checked`)).map(x=>x.value);}else drafts[key][el.name]=el.value;}}
-function restoreDraft(){const form=app.querySelector('form');if(!form)return;const draft=drafts[form.dataset.form];if(!draft)return;for(const el of form.elements){if(!el.name||draft[el.name]===undefined)continue;if(el.type==='checkbox')el.checked=draft[el.name].includes(el.value);else el.value=draft[el.name];}}
-function render(){saveDraft();let route=location.hash.replace(/^#\/?/,'')||'sobre';if(!routes.includes(route))route='sobre';if(/^parceiro\/[123]$/.test(route)&&!acceptedTerms){navigate('parceiro/termos');return;}activeRoute=route;document.title=`CoNexo — ${titles[route]}`;app.innerHTML=route==='sobre'?about():route.startsWith('login/')?login(route.endsWith('parceiro')):registration(route);restoreDraft();window.scrollTo(0,0);document.getElementById('main').focus({preventScroll:true});
- if(route==='parceiro/termos'){termsReachedEnd=false;const box=document.getElementById('terms-scroll');box.addEventListener('scroll',()=>{const max=box.scrollHeight-box.clientHeight;const progressValue=max>0?Math.min(100,box.scrollTop/max*100):0;document.getElementById('terms-progress').style.width=progressValue+'%';if(max>0&&box.scrollTop>=max-2){termsReachedEnd=true;document.getElementById('confirm-terms').disabled=false;document.getElementById('terms-status').textContent='Leitura concluída. Você já pode confirmar os termos e avançar.';}},{passive:true});}
- app.querySelectorAll('input[type="number"]').forEach(el=>{el.min='1';el.max='10000';el.step='0.1';});
-}
-function dialogHead(){return `<div class="dialog-head"><button class="back" type="button" data-bs-dismiss="modal" aria-label="Fechar pop-up">←</button>${logo()}</div>`;}
-function showDialog(kind){const content=document.getElementById('dialog-content');if(kind==='reset'){content.innerHTML=dialogHead()+`<h2 class="reset-copy" id="dialog-title">Insira seu e-mail abaixo e enviaremos uma mensagem para redefinir sua senha</h2><form class="reset-form" id="reset-form">${input('reset-email','Email*','exemplo@aacd.org.br','email')}<button type="submit" class="btn btn-conexo">Enviar email para redefinição de senha</button><p class="feedback" role="status" id="reset-feedback"></p></form>`;document.getElementById('reset-form').addEventListener('submit',e=>{e.preventDefault();if(!e.target.reportValidity())return;document.getElementById('reset-feedback').textContent='Demonstração: solicitação de redefinição validada. O envio do e-mail depende da integração com o servidor.';});}
- else if(kind==='evaluation'){content.innerHTML=dialogHead()+`<div class="dialog-body"><h2 id="dialog-title">Seu cadastro está em avaliação!</h2><p>O processo de homologação está em andamento.</p><p>Em caso de dúvidas, entre em contato conosco através do nosso e-mail:</p><p>xxxxxx@aacd.org.br</p></div>`;}
- else{content.innerHTML=dialogHead()+`<div class="dialog-body"><h2 id="dialog-title">Acesso validado nesta demonstração</h2><p>A autenticação será conectada ao servidor.</p></div>`;}
- modal.show();}
-app.addEventListener('click',e=>{const route=e.target.closest('[data-route]');if(route)navigate(route.dataset.route);const dialog=e.target.closest('[data-dialog]');if(dialog)showDialog(dialog.dataset.dialog);const reveal=e.target.closest('[data-reveal]');if(reveal){const field=document.getElementById(reveal.dataset.reveal);const visible=field.type==='password';field.type=visible?'text':'password';reveal.textContent=visible?'Ocultar':'Mostrar';reveal.setAttribute('aria-label',visible?'Ocultar senha':'Mostrar senha');}});
-app.addEventListener('input',e=>{if(e.target.name==='confirmation'||e.target.name==='password'){const form=e.target.form;form.elements.confirmation?.setCustomValidity('');}const error=document.getElementById('form-error');if(error)error.textContent='';});
-app.addEventListener('submit',e=>{e.preventDefault();const form=e.target;if(!form.reportValidity())return;const kind=form.dataset.form;if(kind==='terms'){if(!termsReachedEnd)return;acceptedTerms=true;navigate('parceiro/1');return;}
- if(form.elements.confirmation){const match=form.elements.password.value===form.elements.confirmation.value;form.elements.confirmation.setCustomValidity(match?'':'As senhas precisam ser iguais.');if(!match){form.elements.confirmation.reportValidity();return;}}
- saveDraft();if(kind==='login'){showDialog('login');return;}if(kind==='aacd'){showDialog('evaluation');return;}const step=Number(activeRoute.split('/')[1]);if(step===2){if(!form.querySelector('[name="materials"]:checked')||!form.querySelector('[name="nozzles"]:checked')){document.getElementById('form-error').textContent='Selecione pelo menos um material e um bico disponível.';return;}}
- if(step<3)navigate(`parceiro/${step+1}`);else showDialog('evaluation');});
-window.addEventListener('hashchange',render);
-// Os dados ficam apenas na memória da aba. Senhas nunca são gravadas em localStorage.
-const TERMS_HTML = "1. Sobre a plataforma<br>\nNossa plataforma foi desenvolvida para oferecer aos usuários acesso a funcionalidades e serviços digitais, mediante a criação de uma conta e o fornecimento de algumas informações necessárias para seu funcionamento.<br>\nEstes Termos de Uso estabelecem as regras para utilização da plataforma, bem como as responsabilidades dos usuários e da equipe responsável pelo serviço.<br>\n2. Criação da conta<br>\nPara utilizar determinadas funcionalidades, o usuário deverá criar uma conta, fornecendo informações verdadeiras, completas e atualizadas.<br>\nDurante o cadastro, poderão ser solicitados dados como:<br>\n•\tNome;<br>\n•\tEndereço de e-mail;<br>\n•\tNúmero de telefone;<br>\n•\tSenha;<br>\n•\tLocalização;<br>\n•\tOutras informações necessárias para o funcionamento dos serviços.<br>\nO usuário é responsável por manter seus dados atualizados e por garantir que as informações fornecidas sejam verdadeiras.<br>\n3. Senha e segurança da conta<br>\nA senha cadastrada é de responsabilidade do usuário e deve ser mantida em sigilo.<br>\nO usuário não deve compartilhar sua senha ou permitir que terceiros utilizem sua conta.<br>\nNossa plataforma adotará medidas técnicas e organizacionais razoáveis para proteger as informações dos usuários contra acessos não autorizados, perda, alteração ou divulgação indevida.<br>\nEm caso de suspeita de acesso indevido à conta, o usuário deverá comunicar a plataforma e, quando disponível, realizar a alteração da senha.<br>\n4. Coleta e utilização de dados pessoais<br>\nAs informações fornecidas pelo usuário poderão ser utilizadas para:<br>\n•\tCriar e administrar a conta;<br>\n•\tPermitir o acesso às funcionalidades da plataforma;<br>\n•\tIdentificar e autenticar o usuário;<br>\n•\tEntrar em contato com o usuário quando necessário;<br>\n•\tPersonalizar a experiência dentro da plataforma;<br>\n•\tUtilizar a localização para oferecer funcionalidades relacionadas à região do usuário;<br>\n•\tMelhorar a segurança e o funcionamento do serviço;<br>\n•\tRealizar análises e melhorias na plataforma;<br>\n•\tCumprir obrigações legais ou regulatórias.<br>\nA coleta de cada informação deverá estar relacionada a uma finalidade específica e adequada ao funcionamento da plataforma.<br>\n5. Localização<br>\nCaso a plataforma utilize informações de localização, o usuário será informado sobre essa utilização.<br>\nA localização poderá ser utilizada, por exemplo, para apresentar conteúdos, serviços ou funcionalidades relacionados à região do usuário.<br>\nSempre que possível, a plataforma solicitará autorização para acessar a localização do dispositivo quando esse acesso for necessário.<br>\n6. Proteção dos dados<br>\nA plataforma se compromete a adotar medidas de segurança adequadas para proteger os dados pessoais armazenados.<br>\nAs informações não deverão ser utilizadas para finalidades incompatíveis com aquelas informadas ao usuário.<br>\nQuando necessário, os dados poderão ser compartilhados com prestadores de serviços e empresas que auxiliem no funcionamento da plataforma, sempre observando as obrigações legais aplicáveis e os princípios de segurança e proteção de dados.<br>\n7. Direitos do usuário<br>\nNos termos da legislação aplicável, especialmente da Lei Geral de Proteção de Dados Pessoais (LGPD), o usuário poderá exercer direitos relacionados aos seus dados pessoais, incluindo, quando aplicável:<br>\n•\tConfirmar a existência de tratamento de seus dados;<br>\n•\tSolicitar acesso aos seus dados;<br>\n•\tSolicitar a correção de informações incorretas ou desatualizadas;<br>\n•\tSolicitar informações sobre o tratamento de seus dados;<br>\n•\tSolicitar a eliminação de dados pessoais quando cabível;<br>\n•\tRevogar consentimentos quando o tratamento estiver baseado em consentimento;<br>\n•\tSolicitar informações sobre compartilhamento de seus dados;<br>\n•\tExercer outros direitos previstos na legislação aplicável.<br>\nAs solicitações poderão ser realizadas por meio do canal de atendimento disponibilizado pela plataforma.<br>\n8. Uso adequado da plataforma<br>\nO usuário concorda em utilizar a plataforma de maneira adequada e de acordo com a legislação vigente.<br>\nNão é permitido:<br>\n•\tUtilizar a plataforma para atividades ilegais;<br>\n•\tFornecer informações falsas ou de terceiros sem autorização;<br>\n•\tTentar acessar contas ou informações de outros usuários;<br>\n•\tTentar comprometer a segurança da plataforma;<br>\n•\tDistribuir códigos maliciosos ou realizar ataques contra a plataforma;<br>\n•\tUtilizar os serviços de maneira que prejudique outros usuários ou o funcionamento do sistema.<br>\n9. Disponibilidade do serviço<br>\nEmbora sejam adotadas medidas para manter a plataforma disponível e funcionando corretamente, poderão ocorrer interrupções temporárias decorrentes de manutenção, atualizações, problemas técnicos, falhas de terceiros ou situações fora do controle da equipe responsável.<br>\nSempre que possível, serão adotadas medidas para restabelecer o serviço no menor prazo possível.<br>\n10. Alterações nos Termos de Uso<br>\nEstes Termos de Uso poderão ser atualizados para refletir mudanças na plataforma, na legislação ou nos serviços oferecidos.<br>\nQuando houver alterações relevantes, o usuário poderá ser informado por meio da própria plataforma ou de outros canais de comunicação disponíveis.<br>\nA versão mais recente estará disponível na plataforma.<br>\n11. Encerramento da conta<br>\nO usuário poderá solicitar o encerramento de sua conta, observadas as condições e procedimentos disponibilizados pela plataforma.<br>\nDeterminadas informações poderão ser mantidas pelo período necessário para cumprimento de obrigações legais, exercício regular de direitos ou outras hipóteses permitidas pela legislação.<br>\n12. Responsabilidades do usuário<br>\nO usuário é responsável pelas informações fornecidas durante o cadastro e pela utilização de sua conta.<br>\nA plataforma não se responsabiliza por problemas decorrentes do compartilhamento voluntário de credenciais pelo próprio usuário ou pela utilização inadequada da conta.<br>\n13. Legislação aplicável<br>\nEstes Termos de Uso serão interpretados de acordo com as leis da República Federativa do Brasil, especialmente a legislação aplicável à proteção de dados pessoais e à utilização de serviços digitais.<br>\n14. Contato<br>\nEm caso de dúvidas, solicitações relacionadas à conta ou questões sobre privacidade e proteção de dados, o usuário poderá entrar em contato por meio do canal oficial disponibilizado pela plataforma.<br>\nE-mail de contato:";
-render();
+window.addEventListener('popstate', readLocation);
+window.addEventListener('hashchange', readLocation);
+
+// Confirmar continua desativado até o scroll interno alcançar o final.
+const termsScroll = document.getElementById('termos-uso-terms-scroll');
+const confirmTerms = document.getElementById('termos-uso-confirm-terms');
+const termsStatus = document.getElementById('termos-uso-terms-status');
+termsScroll.addEventListener('scroll', () => {
+  const max = termsScroll.scrollHeight - termsScroll.clientHeight;
+  const percentage = max > 0 ? Math.min(100, termsScroll.scrollTop / max * 100) : 0;
+  document.getElementById('termos-uso-terms-progress').style.width = `${percentage}%`;
+  if (max > 0 && termsScroll.scrollTop >= max - 2) {
+    termsReachedEnd = true;
+    confirmTerms.disabled = false;
+    termsStatus.textContent = 'Leitura concluída. Você já pode confirmar os termos e avançar.';
+  }
+}, { passive: true });
+
+app.addEventListener('click', event => {
+  const reset = event.target.closest('[data-dialog="reset"]');
+  if (reset) resetDialog.show();
+
+  const button = event.target.closest('[data-reveal]');
+  if (!button) return;
+  const input = document.getElementById(button.dataset.reveal);
+  const visible = input.type === 'password';
+  input.type = visible ? 'text' : 'password';
+  button.textContent = visible ? 'Ocultar' : 'Mostrar';
+  button.setAttribute('aria-label', visible ? 'Ocultar senha' : 'Mostrar senha');
+});
+
+app.addEventListener('input', event => {
+  const form = event.target.form;
+  if (!form) return;
+  if (event.target.name === 'confirmation' || event.target.name === 'password') {
+    form.elements.namedItem('confirmation')?.setCustomValidity('');
+  }
+  const error = form.querySelector('.form-error');
+  if (error) error.textContent = '';
+});
+
+app.addEventListener('submit', event => {
+  event.preventDefault();
+  const form = event.target;
+  // Um envio disparado por script de uma seção inativa não avança o fluxo.
+  if (form.closest('[data-page]')?.id !== activeSection) return;
+  if (!form.reportValidity()) return;
+
+  if (form.dataset.form === 'terms') {
+    if (!termsReachedEnd) return;
+    termsAccepted = true;
+    navigate('parceiro-dados');
+    return;
+  }
+
+  const confirmation = form.elements.namedItem('confirmation');
+  if (confirmation) {
+    const matches = form.elements.namedItem('password').value === confirmation.value;
+    confirmation.setCustomValidity(matches ? '' : 'As senhas precisam ser iguais.');
+    if (!matches) {
+      confirmation.reportValidity();
+      return;
+    }
+  }
+
+  switch (activeSection) {
+    case 'login':
+      if (loginMode === 'parceiro') {
+        document.dispatchEvent(new CustomEvent('conexo:partner-login', {
+          detail: { email: form.elements.namedItem('email').value }
+        }));
+        navigate('parceiro-inicio');
+        break;
+      }
+      document.getElementById('login-feedback').textContent =
+        'Demonstração: os campos foram validados. O acesso ao sistema depende da integração com o servidor.';
+      break;
+    case 'parceiro-dados':
+      navigate('parceiro-equipamentos');
+      break;
+    case 'parceiro-equipamentos': {
+      const hasMaterials = form.querySelector('[name="materials"]:checked');
+      const hasNozzles = form.querySelector('[name="nozzles"]:checked');
+      if (!hasMaterials || !hasNozzles) {
+        form.querySelector('.form-error').textContent = 'Selecione pelo menos um material e um bico disponível.';
+        return;
+      }
+      navigate('parceiro-logistica');
+      break;
+    }
+    case 'parceiro-logistica':
+    case 'cadastro-aacd':
+      evaluationDialog.show();
+      break;
+  }
+});
+
+document.getElementById('reset-form').addEventListener('submit', event => {
+  event.preventDefault();
+  if (!event.target.reportValidity()) return;
+  document.getElementById('reset-feedback').textContent =
+    'Demonstração: solicitação de redefinição validada. O envio do e-mail depende da integração com o servidor.';
+});
+
+// Senhas e dados permanecem apenas nos campos desta aba. Não há persistência
+// em cookies, localStorage ou sessionStorage, nem envio a um backend.
+setLoginMode('aacd');
+navigate(location.hash.slice(1) || 'sobre-nos', { replace: true });
