@@ -1,4 +1,5 @@
 import * as data from './data.js';
+import { ORDER_STATUS, ORDER_STATUS_UI } from './data.js';
 import { activeSection, navigate } from './router.js';
 import { instance, text, tail, bindAreaHeader, bindProfile, bindLogout } from './shared-ui.js';
 
@@ -30,7 +31,7 @@ function aacdFilteredOrders() {
   const search = aacdNormalize(aacdOrderSearch.value.trim());
   const material = aacdNormalize(aacdMaterialFilter.value);
   return orders.filter(order => (aacdStatusFilter === 'all' || order.status === aacdStatusFilter)
-    && aacdNormalize([order.code, order.device, order.lab, order.material, order.statusLabel, order.priority].join(' ')).includes(search)
+    && aacdNormalize([order.code, order.device, order.lab, order.material, ORDER_STATUS_UI[order.status].label, order.priority].join(' ')).includes(search)
     && aacdNormalize(order.material).includes(material)
     && (!aacdPriorityFilter.value || order.priority === aacdPriorityFilter.value));
 }
@@ -51,12 +52,12 @@ function renderAacdOrder(order, visible) {
   tail(row.querySelector('.aacd-order-info p'), order.lab);
   text(row, '.aacd-order-info>small:last-child', 'Material: ' + order.material);
   const status = row.querySelector('.aacd-status');
-  status.className = 'aacd-status ' + ({ production: 'production', active: 'production', delivered: 'delivered', transit: 'transit' }[order.status] || '');
-  status.replaceChildren(order.statusLabel || 'Aguardando aceite');
-  text(row, '.aacd-order-state>small', order.statusNote || 'Enviado nesta demonstração');
+  status.className = 'aacd-status ' + ORDER_STATUS_UI[order.status].className;
+  status.replaceChildren(ORDER_STATUS_UI[order.status].label || 'Aguardando aceite');
+  text(row, '.aacd-order-state>small', order.statusNote || '');
   const detail = row.querySelector('.aacd-order-detail');
   detail.id = `aacd-order-detail-${order.id}`;
-  const fields = [['Pedido', order.code], ['Dispositivo', order.device], ['Polo', order.lab], ['Material', order.material], ['Situação', order.statusLabel || 'Aguardando aceite']];
+  const fields = [['Pedido', order.code], ['Dispositivo', order.device], ['Polo', order.lab], ['Material', order.material], ['Situação', ORDER_STATUS_UI[order.status].label || 'Aguardando aceite']];
   if (order.volumes) fields.push(['Volume', Object.values(order.volumes).join('×') + ' mm'], ['Bicos', order.nozzles.join(', ') + ' mm'], ['Prioridade', order.priority], ['Observações', order.notes || 'Não informadas']);
   detail.replaceChildren(...fields.map(([label, value]) => {
     const paragraph = document.createElement('p'), title = document.createElement('strong');
@@ -96,6 +97,11 @@ function renderAacdOrders({ resetPage = false } = {}) {
   });
 }
 for (const control of [aacdOrderSearch, aacdMaterialFilter, aacdPriorityFilter]) control.addEventListener('input', () => renderAacdOrders({ resetPage: true }));
+const statusTabs = document.querySelector('#aacd-pedidos .history-tabs');
+statusTabs.replaceChildren(...[['all', 'Todos'], ...Object.values(ORDER_STATUS).map(status => [status, ORDER_STATUS_UI[status].filterLabel])].map(([value, label]) => {
+  const button = document.createElement('button'); button.type = 'button'; button.dataset.aacdTab = value;
+  button.textContent = label; button.setAttribute('aria-pressed', String(value === 'all')); return button;
+}));
 document.querySelectorAll('[data-aacd-tab]').forEach(button => button.addEventListener('click', () => {
   aacdStatusFilter = button.dataset.aacdTab;
   document.querySelectorAll('[data-aacd-tab]').forEach(tab => tab.setAttribute('aria-pressed', String(tab === button)));
@@ -124,7 +130,7 @@ document.getElementById('aacd-export').addEventListener('click', () => {
     if (/^[=+@-]/.test(valueText)) valueText = "'" + valueText;
     return '"' + valueText.replace(/"/g, '""') + '"';
   };
-  const rows = [['Pedido', 'Dispositivo', 'Polo', 'Material', 'Situação', 'Prioridade'], ...aacdFilteredOrders().map(order => [order.code, order.device, order.lab, order.material, order.statusLabel || 'Aguardando aceite', order.priority])];
+  const rows = [['Pedido', 'Dispositivo', 'Polo', 'Material', 'Situação', 'Prioridade'], ...aacdFilteredOrders().map(order => [order.code, order.device, order.lab, order.material, ORDER_STATUS_UI[order.status].label || 'Aguardando aceite', order.priority])];
   const url = URL.createObjectURL(new Blob(['\ufeff' + rows.map(row => row.map(cell).join(';')).join('\r\n')], { type: 'text/csv;charset=utf-8;' }));
   const anchor = document.createElement('a'); anchor.href = url; anchor.download = 'pedidos-aacd.csv';
   document.body.append(anchor); anchor.click(); anchor.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
@@ -208,11 +214,11 @@ async function renderHomePartners() {
   }
 }
 function renderAacdMetrics() {
-  document.getElementById('aacd-metric-open').textContent = String(orders.filter(order => order.status === 'pending').length).padStart(2, '0');
-  document.getElementById('aacd-metric-production').textContent = String(orders.filter(order => ['active', 'production'].includes(order.status)).length).padStart(2, '0');
-  document.getElementById('aacd-metric-delivered').textContent = String(orders.filter(order => order.status === 'delivered').length).padStart(2, '0');
-  document.querySelector('#aacd-inicio .metric-bottom small.blue').textContent = `${orders.filter(order => order.priority === 'Urgente').length} prioritários`;
-  document.querySelector('#aacd-inicio .metric-bottom small.cyan').textContent = `${new Set(orders.filter(order => ['active', 'production'].includes(order.status)).map(order => order.lab)).size} Laboratórios`;
+  document.getElementById('aacd-metric-open').textContent = String(orders.filter(order => order.status === ORDER_STATUS.NOT_ACCEPTED).length).padStart(2, '0');
+  document.getElementById('aacd-metric-production').textContent = String(orders.filter(order => order.status === ORDER_STATUS.IN_PRODUCTION).length).padStart(2, '0');
+  document.getElementById('aacd-metric-finished').textContent = String(orders.filter(order => order.status === ORDER_STATUS.FINISHED).length).padStart(2, '0');
+  document.querySelector('#aacd-inicio .metric-bottom small.blue').textContent = `${orders.filter(order => order.status === ORDER_STATUS.NOT_ACCEPTED && order.priority === 'Urgente').length} prioritários`;
+  document.querySelector('#aacd-inicio .metric-bottom small.cyan').textContent = `${new Set(orders.filter(order => order.status === ORDER_STATUS.IN_PRODUCTION).map(order => order.lab)).size} Laboratórios`;
 }
 async function renderAacd() {
   [orders, partners, matches] = await Promise.all([data.listOrders({ scope: 'aacd' }), data.listPartners(), data.listMatches()]);
@@ -302,7 +308,7 @@ document.getElementById('aacd-match-list').addEventListener('click', async event
   try {
     await data.createOrder({ ...draft, volumes: Object.fromEntries(['X', 'Y', 'Z'].map((axis, i) => [axis, draft.volumes[i]])),
       scope: 'aacd', device: draft.code, lab: match.name, material: draft.materials.join(', '),
-      partnerId: match.id === '0' ? 'current-partner' : match.id, status: 'pending', statusLabel: 'Aguardando aceite',
+      partnerId: match.id === '0' ? 'current-partner' : match.id, status: ORDER_STATUS.NOT_ACCEPTED,
       statusNote: 'Enviado nesta demonstração', deadline: '', requester: 'AACD'
     });
   } catch (error) {

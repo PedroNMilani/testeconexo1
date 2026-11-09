@@ -1,6 +1,9 @@
+import { ORDER_STATUS, assertOrderStatus } from './order-status.js';
+
 // Adaptador privado em memória. Somente data.js é consumido pelas telas.
 export function createMemorySource(seed) {
   const state = structuredClone(seed);
+  state.orders.forEach(order => assertOrderStatus(order.status));
   const collection = name => state[name];
   const find = (name, id) => collection(name).find(item => item.id === id) ?? null;
   const nextId = name => String(Math.max(0, ...collection(name).map(item => Number(item.id) || 0)) + 1);
@@ -18,7 +21,15 @@ export function createMemorySource(seed) {
   return {
     async listPrinters() { return state.printers; },
     async getPrinter(id) { return find('printers', id); },
-    async savePrinter(record) { return save('printers', record); },
+    async savePrinter(record) {
+      const merged = { ...(find('printers', record.id) || {}), ...record };
+      if (!merged.name?.trim() || !merged.materials?.length || !merged.nozzles?.length
+          || !['Sim', 'Não'].includes(merged.needsMaterial)
+          || !['X', 'Y', 'Z'].every(axis => Number(merged.volumes?.[axis]) > 0)) {
+        throw new TypeError('Informe os dados obrigatórios da impressora.');
+      }
+      return save('printers', merged);
+    },
     async removePrinter(id) { return remove('printers', id); },
     async listOrders(filters = {}) {
       return state.orders.filter(order => Object.entries(filters).every(([key, value]) => order[key] === value));
@@ -26,11 +37,30 @@ export function createMemorySource(seed) {
     async getOrder(id) { return find('orders', id); },
     async createOrder(record) {
       if (state.orders.some(order => order.code === record.code)) throw new Error('Este código de pedido já foi conectado nesta demonstração.');
-      return save('orders', { ...record, id: nextId('orders') });
+      const status = record.status ?? ORDER_STATUS.NOT_ACCEPTED;
+      assertOrderStatus(status);
+      return save('orders', { ...record, status, id: nextId('orders') });
     },
-    async saveOrder(record) { return save('orders', record); },
-    async listHistory() { return state.history; },
-    async addHistory(record) { state.history.unshift(record); return record; },
+    async acceptOrder(id) {
+      const order = find('orders', id);
+      if (!order || !order.partnerId || order.status !== ORDER_STATUS.NOT_ACCEPTED) throw new Error('Pedido indisponível para aceite.');
+      return save('orders', { ...order, status: ORDER_STATUS.IN_PRODUCTION });
+    },
+    async finishOrder(id) {
+      const order = find('orders', id);
+      if (!order || order.status !== ORDER_STATUS.IN_PRODUCTION) throw new Error('Apenas pedidos em produção podem ser finalizados.');
+      return save('orders', { ...order, status: ORDER_STATUS.FINISHED,
+        completedDate: new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', timeZone: 'America/Sao_Paulo' }).format(new Date()) });
+    },
+    async refuseOrder(id) {
+      const order = find('orders', id);
+      if (!order || !order.partnerId || order.status !== ORDER_STATUS.NOT_ACCEPTED) throw new Error('Pedido indisponível para recusa.');
+      // Recusa não é status nem evento: apenas devolve o pedido sem associação.
+      return save('orders', { ...order, status: ORDER_STATUS.NOT_ACCEPTED, partnerId: null, lab: '' });
+    },
+    async listHistory(partnerId = 'current-partner') {
+      return state.orders.filter(order => order.partnerId === partnerId && order.status === ORDER_STATUS.FINISHED);
+    },
     async listPartners() { return state.partners; },
     async listReviews() { return state.reviews; },
     async reviewPartner(id, approved) {

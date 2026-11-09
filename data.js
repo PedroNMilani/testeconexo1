@@ -5,7 +5,7 @@ import { createMemorySource } from './memory-source.js';
 // implementar estes mesmos métodos; as telas continuam usando esta interface.
 const methods = [
   'listPrinters', 'getPrinter', 'savePrinter', 'removePrinter',
-  'listOrders', 'getOrder', 'createOrder', 'saveOrder', 'listHistory', 'addHistory',
+  'listOrders', 'getOrder', 'createOrder', 'acceptOrder', 'finishOrder', 'refuseOrder', 'listHistory',
   'listPartners', 'listReviews', 'reviewPartner', 'listMatches', 'listHomePartners',
   'getProfile', 'saveProfile', 'getCurrentUser'
 ];
@@ -18,7 +18,9 @@ export function createDataService(source) {
 const service = createDataService(createMemorySource(createMockData()));
 export const {
   listPrinters, getPrinter, savePrinter, removePrinter,
-  listOrders, getOrder, createOrder, saveOrder, listHistory, addHistory,
+  listOrders, getOrder, createOrder, acceptOrder, finishOrder, refuseOrder, listHistory,
   listPartners, listReviews, reviewPartner, listMatches, listHomePartners,
   getProfile, saveProfile, getCurrentUser
 } = service;
+
+export { ORDER_STATUS, ORDER_STATUS_UI } from './order-status.js';

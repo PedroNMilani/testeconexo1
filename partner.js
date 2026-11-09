@@ -1,4 +1,5 @@
 import * as data from './data.js';
+import { ORDER_STATUS, ORDER_STATUS_UI } from './data.js';
 import { activeSection, navigate } from './router.js';
 import { instance, text, tail, bindAreaHeader, bindProfile, bindLogout } from './shared-ui.js';
 
@@ -32,11 +33,14 @@ async function renderPrinters() {
   document.getElementById('next-printer').hidden = printers.length < 2;
 }
 function renderPartnerOrder(order) {
-  const active = order.status === 'active';
+  const active = order.status === ORDER_STATUS.IN_PRODUCTION;
   const card = instance(active ? 'active-order-template' : 'pending-order-template');
   card.dataset.orderId = order.id;
   card.dataset.state = order.status;
   text(card, 'h3', `Pedido ${order.code}`);
+  const stateBadge = card.querySelector('.order-status');
+  stateBadge.className = 'order-status ' + ORDER_STATUS_UI[order.status].partnerClass;
+  stateBadge.textContent = ORDER_STATUS_UI[order.status].partnerLabel;
   text(card, '.order-heading p', `Solicitado por: ${order.requester || 'AACD'}`);
   const values = card.querySelectorAll('.order-data strong');
   [order.device, order.material, active ? order.started : order.deadline, order.deadline].forEach((value, i) => {
@@ -58,7 +62,7 @@ function renderPartnerOrder(order) {
 }
 async function renderPartnerOrders() {
   const orders = await data.listOrders({ partnerId: 'current-partner' });
-  for (const [type, state] of [['active', 'active'], ['pending', 'pending']]) {
+  for (const [type, state] of [['active', ORDER_STATUS.IN_PRODUCTION], ['pending', ORDER_STATUS.NOT_ACCEPTED]]) {
     const records = orders.filter(order => order.status === state);
     const list = document.getElementById(`${type}-orders`);
     list.querySelectorAll('.order-card').forEach(card => card.remove());
@@ -72,14 +76,14 @@ async function renderHistory() {
   const history = await data.listHistory();
   document.getElementById('production-history').replaceChildren(...history.map(record => {
     const row = instance('history-template');
-    text(row, '.history-id', '#' + record.id);
+    text(row, '.history-id', record.code);
     text(row, 'strong', record.device);
     text(row, '.history-material', record.material);
     const status = row.querySelector('.history-status');
-    status.className = 'history-status ' + record.status;
-    status.querySelector('img').src = `assets/partner-${record.status === 'done' ? 'done' : record.status === 'cancelled' ? 'cancelled' : 'pending'}.svg`;
-    tail(status, { done: 'Concluído', cancelled: 'Cancelado', pending: 'Em andamento' }[record.status]);
-    text(row, '.history-date', record.date);
+    status.className = 'history-status ' + ORDER_STATUS_UI[record.status].partnerClass;
+    status.querySelector('img').src = 'assets/partner-done.svg';
+    tail(status, ORDER_STATUS_UI[record.status].label);
+    text(row, '.history-date', record.completedDate || '');
     return row;
   }));
 }
@@ -169,11 +173,10 @@ document.getElementById('parceiro-pedidos').addEventListener('click', async even
   }
   const order = await data.getOrder(button.closest('[data-order-id]').dataset.orderId);
   if (!order) return;
-  if (action === 'accept') await data.saveOrder({ ...order, status: 'active' });
-  else {
-    await data.saveOrder({ ...order, status: action === 'complete' ? 'done' : 'cancelled' });
-    await data.addHistory({ id: order.id, device: order.device, material: order.material, status: action === 'complete' ? 'done' : 'cancelled', date: new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', timeZone: 'America/Sao_Paulo' }).format(new Date()) });
-  }
+  if (action === 'accept') await data.acceptOrder(order.id);
+  else if (action === 'complete') await data.finishOrder(order.id);
+  else if (action === 'refuse') await data.refuseOrder(order.id);
+  else return;
   await Promise.all([renderPartnerOrders(), renderHistory()]);
   document.dispatchEvent(new CustomEvent('conexo:data-changed'));
   document.getElementById('orders-feedback').textContent = `Pedido #${order.id} ${action === 'accept' ? 'aceito' : action === 'complete' ? 'concluído' : 'recusado'} nesta demonstração.`;

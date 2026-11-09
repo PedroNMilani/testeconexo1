@@ -97,8 +97,7 @@ const examples = {
       "lab": "IMT - FabLab Mauá",
       "material": "PETG Médico Biocompatível",
       "priority": "Urgente",
-      "status": "production",
-      "statusLabel": "Em Impressão (74%)",
+      "status": "em produção",
       "statusNote": "Conclusão: Hoje, 15:40",
       "icon": "assets/aacd-f6ed4.svg"
     },
@@ -110,9 +109,8 @@ const examples = {
       "lab": "Lab Poli-USP Engenharia",
       "material": "TPU 95A Flexível",
       "priority": "Padrão",
-      "status": "transit",
-      "statusLabel": "Em Trânsito p/ AACD",
-      "statusNote": "Previsão: Amanhã cedo",
+      "status": "finalizado",
+      "statusNote": "",
       "icon": "assets/aacd-a12d8.svg"
     },
     {
@@ -123,8 +121,7 @@ const examples = {
       "lab": "IMT - Mauá Núcleo Aditivo",
       "material": "PLA",
       "priority": "Padrão",
-      "status": "delivered",
-      "statusLabel": "Homologado & Entregue",
+      "status": "finalizado",
       "statusNote": "Concluído em 18/10/24",
       "icon": "assets/aacd-4649e.svg"
     },
@@ -136,8 +133,7 @@ const examples = {
       "lab": "Maker Space Mackenzie",
       "material": "PLA Virgem Atóxico",
       "priority": "Padrão",
-      "status": "delivered",
-      "statusLabel": "Homologado & Entregue",
+      "status": "finalizado",
       "statusNote": "Concluído em 14/10/24",
       "icon": "assets/aacd-c2b1b.svg"
     },
@@ -152,7 +148,7 @@ const examples = {
       "started": "12/10/2024 • 09:30",
       "deadline": "14/10/2024 • 16:00",
       "priority": "Padrão",
-      "status": "active"
+      "status": "em produção"
     },
     {
       "id": "MAU-2024-089",
@@ -165,7 +161,7 @@ const examples = {
       "started": "",
       "deadline": "12/10/2024",
       "priority": "Urgente",
-      "status": "pending"
+      "status": "não aceito"
     },
     {
       "id": "MAU-2024-091",
@@ -178,30 +174,17 @@ const examples = {
       "started": "",
       "deadline": "15/10/2024",
       "priority": "Padrão",
-      "status": "pending"
-    }
-  ],
-  "history": [
-    {
-      "id": "PED-2026-084",
-      "device": "Órtese Dinâmica AFO",
-      "material": "PETG Médico",
-      "status": "pending",
-      "date": "14/20"
+      "status": "não aceito"
     },
     {
       "id": "PED-2026-079",
+      "scope": "partner",
+      "partnerId": "current-partner",
+      "code": "#PED-2026-079",
       "device": "Adaptador de Talher Pediátrico",
       "material": "TPU Flexível",
-      "status": "done",
-      "date": "10/04"
-    },
-    {
-      "id": "PED-2026-071",
-      "device": "Fixador de Punho Bilateral",
-      "material": "PLA Biodegradável",
-      "status": "cancelled",
-      "date": "05/04"
+      "status": "finalizado",
+      "completedDate": "10/04"
     }
   ],
   "partners": [
@@ -588,7 +571,7 @@ const examples = {
       "id": "2",
       "name": "Maker Hub Saúde 3D & Soluções",
       "location": "Campinas, SP",
-      "description": "Laboratório Técnico Certificado • 15 Órteses Homologadas entregues à AACD",
+      "description": "Laboratório Técnico Certificado • 15 Órteses Homologadas",
       "icon": "assets/aacd-92f18.svg",
       "score": "87%",
       "scoreIcon": "assets/aacd-13ea3.svg",
