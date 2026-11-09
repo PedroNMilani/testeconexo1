@@ -157,5 +157,27 @@ with sync_playwright() as p:
  touch=b.new_context(viewport={'width':390,'height':844},has_touch=True,is_mobile=True)
  mobile=touch.new_page();mobile.goto(URL+'#parceiro-inicio')
  expect(mobile.locator('[data-printer-id="1"] .edit-printer')).to_have_css('opacity','1')
+ # Regressão: uma impressora inicial deve aceitar salvamento sem alterações.
+ # Uma página nova evita que as ações anteriores preencham o registro em memória.
+ regression_page=b.new_page(viewport={'width':1440,'height':1000})
+ regression_page.on('pageerror',lambda e:errors.append(str(e)))
+ regression_page.goto(URL)
+ regression_page.evaluate("location.hash='parceiro-inicio'")
+ expect(regression_page.locator('#parceiro-inicio')).to_be_visible()
+ initial_card=regression_page.locator('#printer-grid [data-printer-id]').first
+ initial_printer_id=initial_card.get_attribute('data-printer-id')
+ initial_card_data=initial_card.inner_text()
+ initial_card.get_by_role('button',name='Gerenciar',exact=True).click()
+ expect(regression_page.locator('#parceiro-impressora')).to_be_visible()
+ # Não preencher, selecionar ou alterar nenhum controle antes de salvar.
+ regression_page.get_by_role('button',name='Atualizar',exact=True).click()
+ expect(regression_page.locator('#parceiro-inicio'),
+        'Salvar uma impressora inicial sem alterações deve ser aceito e voltar ao início.').to_be_visible()
+ expect(regression_page.locator('#printer-feedback')).to_contain_text('atualizada')
+ saved_card=regression_page.locator(f'#printer-grid [data-printer-id="{initial_printer_id}"]')
+ assert saved_card.inner_text()==initial_card_data, 'Salvar sem alterações deve preservar os dados exibidos no card.'
+ assert not errors,errors
+ regression_page.close()
+ print('PASS: salvar uma impressora inicial sem alterações preserva os dados do card.')
  print('PASS: AACD login, 9 seções, histórico, busca, filtros, CSV, rede, homologação, 3 etapas, URL, conexão sem duplicação, perfil, conta, hover/foco/toque e lápis em novas impressoras, imagens e responsividade.')
  b.close()
