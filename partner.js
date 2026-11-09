@@ -1,16 +1,12 @@
-(async () => {
-const data = await dataReady;
+import * as data from './data.js';
+import { activeSection, navigate } from './router.js';
+import { instance, text, tail, bindAreaHeader, bindProfile, bindLogout } from './shared-ui.js';
+
+export async function initPartner() {
 const partnerSections = new Set(['parceiro-inicio', 'parceiro-pedidos', 'parceiro-impressora', 'parceiro-perfil']);
 const printerForm = document.getElementById('printer-form');
-const profileForm = document.getElementById('partner-profile-form');
 const printerGrid = document.getElementById('printer-grid');
 let selectedPrinter = null;
-const instance = id => document.getElementById(id).content.firstElementChild.cloneNode(true);
-const text = (root, selector, value) => { root.querySelector(selector).textContent = value ?? ''; };
-function tail(node, value) {
-  [...node.childNodes].filter(child => child.nodeType === Node.TEXT_NODE).forEach(child => child.remove());
-  node.append(value);
-}
 function renderPrinter(record) {
   const card = instance('printer-template');
   card.dataset.printerId = record.id;
@@ -88,28 +84,16 @@ async function renderHistory() {
   }));
 }
 async function renderPartner() { await Promise.all([renderPrinters(), renderPartnerOrders(), renderHistory()]); }
-function syncPartnerHeader() {
-  document.getElementById('partner-header').hidden = !partnerSections.has(activeSection);
-  document.querySelectorAll('.partner-nav [data-section]').forEach(link => {
-    if (link.dataset.section === activeSection) link.setAttribute('aria-current', 'page');
-    else link.removeAttribute('aria-current');
-  });
-  bootstrap.Dropdown.getInstance(document.getElementById('account-button'))?.hide();
-}
-document.addEventListener('conexo:navigate', syncPartnerHeader);
+bindAreaHeader({ sections: partnerSections, headerId: 'partner-header', nav: '.partner-nav', accountButtonId: 'account-button' });
+bindLogout('[data-logout]', 'parceiro');
+const renderPartnerProfile = bindProfile({
+  area: 'partner', formId: 'partner-profile-form', nameField: 'profile-institution', emailField: 'profile-email',
+  titles: ['[data-account-name]', '#parceiro-perfil-titulo', '#parceiro-inicio-titulo'],
+  feedbackId: 'profile-feedback', cancelId: 'cancel-profile', home: 'parceiro-inicio',
+  loginEvent: 'conexo:partner-login', nameError: 'Informe o nome da instituição.', success: 'Perfil atualizado nesta demonstração.'
+});
 document.addEventListener('conexo:data-changed', renderPartner);
-syncPartnerHeader();
-document.addEventListener('conexo:partner-login', async event => {
-  const profile = await data.getProfile('partner');
-  if (!profile['profile-email']) {
-    await data.saveProfile('partner', { ...profile, 'profile-email': event.detail.email });
-    profileForm.elements.namedItem('profile-email').value = event.detail.email;
-  }
-});
-document.querySelector('[data-logout]').addEventListener('click', () => {
-  document.querySelector('#login [name="password"]').value = '';
-  navigate('login', { mode: 'parceiro' });
-});
+
 async function openPrinter(id) {
   selectedPrinter = id;
   const record = id ? await data.getPrinter(id) : null;
@@ -172,30 +156,6 @@ document.getElementById('next-printer').addEventListener('click', () => {
     printerGrid.scrollTo({ left: atEnd ? 0 : printerGrid.scrollLeft + printerGrid.clientWidth + 16, behavior: 'smooth' });
   } else if (printerGrid.firstElementChild) printerGrid.append(printerGrid.firstElementChild);
 });
-profileForm.addEventListener('submit', async event => {
-  event.preventDefault();
-  if (!profileForm.reportValidity()) return;
-  const institution = profileForm.elements.namedItem('profile-institution');
-  if (!institution.value.trim()) { institution.setCustomValidity('Informe o nome da instituição.'); institution.reportValidity(); return; }
-  const profile = await data.saveProfile('partner', Object.fromEntries(new FormData(profileForm)));
-  document.querySelector('[data-account-name]').textContent = profile['profile-institution'];
-  document.getElementById('parceiro-perfil-titulo').textContent = profile['profile-institution'];
-  document.getElementById('parceiro-inicio-titulo').textContent = profile['profile-institution'];
-  document.getElementById('profile-feedback').textContent = 'Perfil atualizado nesta demonstração.';
-});
-profileForm.addEventListener('input', () => profileForm.elements.namedItem('profile-institution').setCustomValidity(''));
-async function renderPartnerProfile() {
-  const profile = await data.getProfile('partner');
-  for (const [name, value] of Object.entries(profile)) {
-    const control = profileForm.elements.namedItem(name);
-    if (control) control.value = value;
-  }
-}
-document.getElementById('cancel-profile').addEventListener('click', async () => {
-  await renderPartnerProfile();
-  document.getElementById('profile-feedback').textContent = '';
-  navigate('parceiro-inicio');
-});
 document.getElementById('parceiro-pedidos').addEventListener('click', async event => {
   const button = event.target.closest('[data-order-action]');
   if (!button) return;
@@ -219,4 +179,4 @@ document.getElementById('parceiro-pedidos').addEventListener('click', async even
   document.getElementById('orders-feedback').textContent = `Pedido #${order.id} ${action === 'accept' ? 'aceito' : action === 'complete' ? 'concluído' : 'recusado'} nesta demonstração.`;
 });
 await Promise.all([renderPartner(), renderPartnerProfile()]);
-})();
+}

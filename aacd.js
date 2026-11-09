@@ -1,10 +1,12 @@
-(async () => {
-const data = await dataReady;
+import * as data from './data.js';
+import { activeSection, navigate } from './router.js';
+import { instance, text, tail, bindAreaHeader, bindProfile, bindLogout } from './shared-ui.js';
+
+export async function initAacd() {
 const aacdSections = new Set(['aacd-inicio', 'aacd-pedidos', 'aacd-parceiros', 'aacd-homologacao', 'aacd-pedido-1', 'aacd-pedido-2', 'aacd-pedido-3', 'aacd-conectar', 'aacd-perfil']);
 const aacdOrderForms = [1, 2, 3].map(n => document.getElementById(`aacd-order-step-${n}`));
 const aacdOrderList = document.getElementById('aacd-order-list');
 const aacdNetwork = document.getElementById('aacd-network-grid');
-const aacdProfileForm = document.getElementById('aacd-profile-form');
 const aacdOrderSearch = document.getElementById('aacd-order-search');
 const aacdMaterialFilter = document.getElementById('aacd-filter-material');
 const aacdPriorityFilter = document.getElementById('aacd-filter-priority');
@@ -12,34 +14,16 @@ let aacdStatusFilter = 'all';
 let aacdCurrentPage = 1;
 let orders = [], partners = [], matches = [];
 const expandedOrders = new Set();
-const instance = id => document.getElementById(id).content.firstElementChild.cloneNode(true);
-const text = (root, selector, value) => { root.querySelector(selector).textContent = value ?? ''; };
-function tail(node, value) {
-  [...node.childNodes].filter(child => child.nodeType === Node.TEXT_NODE).forEach(child => child.remove());
-  node.append(value ?? '');
-}
-function syncAacdHeader() {
-  document.getElementById('aacd-header').hidden = !aacdSections.has(activeSection);
-  const group = activeSection === 'aacd-homologacao' ? 'aacd-parceiros'
-    : ['aacd-pedido-1', 'aacd-pedido-2', 'aacd-pedido-3', 'aacd-conectar'].includes(activeSection) ? 'aacd-pedidos' : activeSection;
-  document.querySelectorAll('.aacd-nav [data-section]').forEach(link => {
-    if (link.dataset.section === group) link.setAttribute('aria-current', 'page');
-    else link.removeAttribute('aria-current');
-  });
-  bootstrap.Dropdown.getInstance(document.getElementById('aacd-account-button'))?.hide();
-}
-document.addEventListener('conexo:navigate', syncAacdHeader);
-syncAacdHeader();
-document.addEventListener('conexo:aacd-login', async event => {
-  const profile = await data.getProfile('aacd');
-  if (!profile['aacd-profile-email']) {
-    await data.saveProfile('aacd', { ...profile, 'aacd-profile-email': event.detail.email });
-    document.getElementById('aacd-profile-email').value = event.detail.email;
-  }
+bindAreaHeader({ sections: aacdSections, headerId: 'aacd-header', nav: '.aacd-nav', accountButtonId: 'aacd-account-button',
+  group: section => section === 'aacd-homologacao' ? 'aacd-parceiros'
+    : ['aacd-pedido-1', 'aacd-pedido-2', 'aacd-pedido-3', 'aacd-conectar'].includes(section) ? 'aacd-pedidos' : section
 });
-document.getElementById('aacd-logout').addEventListener('click', () => {
-  document.querySelector('#login [name="password"]').value = '';
-  navigate('login', { mode: 'aacd' });
+bindLogout('#aacd-logout', 'aacd');
+const renderAacdProfile = bindProfile({
+  area: 'aacd', formId: 'aacd-profile-form', nameField: 'aacd-profile-name', emailField: 'aacd-profile-email',
+  titles: ['[data-aacd-account]', '#aacd-perfil-titulo'], feedbackId: 'aacd-profile-feedback',
+  cancelId: 'aacd-profile-cancel', home: 'aacd-inicio', loginEvent: 'conexo:aacd-login',
+  nameError: 'Informe o nome do responsável.', success: 'Perfil AACD atualizado nesta demonstração.'
 });
 function aacdNormalize(value) { return String(value).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR'); }
 function aacdFilteredOrders() {
@@ -232,7 +216,6 @@ function renderAacdMetrics() {
 }
 async function renderAacd() {
   [orders, partners, matches] = await Promise.all([data.listOrders({ scope: 'aacd' }), data.listPartners(), data.listMatches()]);
-  orders.reverse();
   // Os exemplos mantêm a ordem original; novos registros aparecem primeiro.
   orders.sort((a, b) => Number(b.id) - Number(a.id));
   renderAacdOrders(); renderNetwork(); renderMatches(); renderAacdMetrics();
@@ -332,22 +315,5 @@ document.getElementById('aacd-match-list').addEventListener('click', async event
   document.getElementById('aacd-orders-feedback').textContent = `${draft.code} conectado a ${match.name} nesta demonstração. Nenhum envio real foi realizado.`;
   navigate('aacd-pedidos');
 });
-async function renderAacdProfile() {
-  const profile = await data.getProfile('aacd');
-  for (const [name, value] of Object.entries(profile)) { const control = aacdProfileForm.elements.namedItem(name); if (control) control.value = value; }
-}
-aacdProfileForm.addEventListener('submit', async event => {
-  event.preventDefault(); if (!aacdProfileForm.reportValidity()) return;
-  const name = document.getElementById('aacd-profile-name');
-  if (!name.value.trim()) { name.setCustomValidity('Informe o nome do responsável.'); name.reportValidity(); return; }
-  const profile = await data.saveProfile('aacd', Object.fromEntries(new FormData(aacdProfileForm)));
-  document.querySelector('[data-aacd-account]').textContent = profile['aacd-profile-name'];
-  document.getElementById('aacd-perfil-titulo').textContent = profile['aacd-profile-name'];
-  document.getElementById('aacd-profile-feedback').textContent = 'Perfil AACD atualizado nesta demonstração.';
-});
-aacdProfileForm.addEventListener('input', () => document.getElementById('aacd-profile-name').setCustomValidity(''));
-document.getElementById('aacd-profile-cancel').addEventListener('click', async () => {
-  await renderAacdProfile(); document.getElementById('aacd-profile-feedback').textContent = ''; navigate('aacd-inicio');
-});
 await Promise.all([renderAacd(), renderAacdProfile()]);
-})();
+}

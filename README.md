@@ -4,13 +4,13 @@ Implementação em HTML, CSS, Bootstrap 5.3.3 e JavaScript do protótipo CoNexo.
 
 ## Executar
 
-Baixe o repositório completo e abra `index.html`, ou execute nesta pasta:
+Baixe o repositório completo e execute nesta pasta:
 
 ```sh
 python3 -m http.server 8000
 ```
 
-Acesse `http://localhost:8000`. Bootstrap, fonte Plus Jakarta Sans e recursos visuais estão incluídos localmente.
+Acesse **http://localhost:8000/**. Os módulos ES exigem um servidor HTTP: abrir `index.html` por `file://` não funciona. Bootstrap, fonte Plus Jakarta Sans e recursos visuais estão incluídos localmente.
 
 ## Navegação e telas
 
@@ -60,8 +60,13 @@ A barra do cadastro mantém a linha verde sobre a cinza nos comprimentos do Figm
 ## Arquivos
 
 - `index.html`: todas as seções, cabeçalhos, rodapé e modais estáticos.
-- `app.js`: navegação por seções, Login e cadastros.
-- `partner.js`: interações da área do parceiro e dados demonstrativos em memória.
+- `app.js`: entrada ES module, inicialização das áreas, Login e cadastros.
+- `router.js`: navegação por seções e History API.
+- `shared-ui.js`: cabeçalhos, perfis, logout e utilitários de templates compartilhados.
+- `data.js`: única interface assíncrona de leitura/escrita; recebe e devolve cópias.
+- `memory-source.js`: adaptador privado em memória, substituível por outra fonte com o mesmo contrato.
+- `mock-data.js`: exemplos fictícios, incluindo registros completos das três impressoras.
+- `partner.js`: renderização e interações da área do parceiro, consumindo `data.js`.
 - `aacd.js`: histórico, filtros, CSV, rede, homologação, criação de pedidos e perfil AACD.
 - `tests/browser_smoke.py`: teste de navegador reproduzível dos fluxos AACD e do lápis das impressoras.
 - `styles.css`: tokens visuais, estilos das telas e adaptação para celular.
@@ -89,4 +94,6 @@ Para repetir o teste, instale o pacote Python `playwright`, disponibilize o Chro
 python3 tests/browser_smoke.py
 ```
 
-Use `CONEXO_TEST_URL` para mudar a URL de teste e `CHROMIUM_PATH` para indicar o executável do navegador. A abertura por `file://` não foi verificada porque a política do navegador deste ambiente bloqueia esse protocolo.
+Use `CONEXO_TEST_URL` para mudar a URL de teste e `CHROMIUM_PATH` para indicar o executável do navegador. Use HTTP para executar a SPA: os módulos ES não funcionam por `file://`.
+
+Para validar o contrato assíncrono e o isolamento das cópias, execute `node tests/data_contract.mjs`. As telas importam apenas `data.js`; para mudar a origem dos dados, forneça outro adaptador com os métodos do contrato e altere a composição em `data.js`, sem modificar as telas. Nenhuma fonte vazia foi criada.

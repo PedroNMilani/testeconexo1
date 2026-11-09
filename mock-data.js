@@ -4,19 +4,19 @@
 // PENDÊNCIA: validar a lista de materiais com a AACD.
 const examples = {
   "homePartners": [
-  {
-    "name": "FabLab Mauá - Bloco W",
-    "description": "Prusa XL 5T • PETG & TPU",
-    "icon": "assets/aacd-c6315.svg",
-    "approve": false
-  },
-  {
-    "name": "Núcleo BioEngenharia Poli",
-    "description": "Impressora FDM",
-    "icon": "assets/aacd-409f4.svg",
-    "approve": true
-  }
-],
+    {
+      "name": "FabLab Mauá - Bloco W",
+      "description": "Prusa XL 5T • PETG & TPU",
+      "icon": "assets/aacd-c6315.svg",
+      "approve": false
+    },
+    {
+      "name": "Núcleo BioEngenharia Poli",
+      "description": "Impressora FDM",
+      "icon": "assets/aacd-409f4.svg",
+      "approve": true
+    }
+  ],
   "printers": [
     {
       "id": "1",
@@ -613,13 +613,22 @@ const examples = {
       "profile-district": "",
       "profile-street": "",
       "profile-number": "",
-      "profile-responsible": ""
+      "profile-responsible": "",
+      "displayNames": [
+        "Laboratório Mauá",
+        "Laboratorio Maua",
+        "Laboratório Mauá 3D FabLab"
+      ]
     },
     "aacd": {
       "unit": "",
       "aacd-profile-name": "",
       "aacd-profile-email": "",
-      "aacd-profile-phone": ""
+      "aacd-profile-phone": "",
+      "displayNames": [
+        "Pedro - AACD",
+        "Pedro - AACD"
+      ]
     }
   },
   "currentUser": {
