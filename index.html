@@ -663,114 +663,31 @@ E-mail de contato:
 <div class="metrics">
 <span>
 <i class="dot">
-</i>Impressoras Ativas <b id="printer-count">3</b>
+</i>Impressoras Ativas <b id="printer-count">0</b>
 </span>
 <span>
 <i class="dot cyan">
-</i>Em Atendimento <b id="service-count">2</b>
+</i>Em Atendimento <b id="service-count">0</b>
 </span>
 <span>
 <i class="dot orange">
-</i>Pedidos para Aceitar <b id="pending-count">4</b>
+</i>Pedidos para Aceitar <b id="pending-count">0</b>
 </span>
 </div>
 </div>
  <div>
 <div class="partner-section-heading">
-<h2>Suas impressoras <small id="connected-count">3 conectadas</small>
+<h2>Suas impressoras <small id="connected-count">0 conectadas</small>
 </h2>
 <button class="small-primary" type="button" id="add-printer">
 <img src="assets/partner-plus.svg" alt="">Adicionar impressora</button>
 </div>
 <div class="printer-carousel">
 <div class="printer-grid" id="printer-grid">
-<article class="printer-card" data-printer-id="1">
- <div class="printer-art ">
-<img src="assets/partner-bambu.svg" alt="">
-<span data-art-label>BAMBU LAB COREXY</span>
-</div>
- <button class="edit-printer" type="button" data-edit-printer="1" aria-label="Editar Bambu Lab X1-Carbon">
-<img src="assets/partner-edit.svg" alt="">
-</button>
- <div class="printer-heading">
-<h3 data-printer-name>Bambu Lab X1-Carbon</h3>
-<span class="availability ">
-<span class="dot">
-</span>Indisponível</span>
-</div>
- <p class="printer-id">ID: IMP-01 • FDM Industrial</p>
-<dl class="printer-spec">
-<div>
-<dt>Material:</dt>
-<dd data-printer-material>PETG Hospitalar</dd>
-</div>
-<div>
-<dt>Bico:</dt>
-<dd data-printer-nozzle>0.4mm • Pronto</dd>
-</div>
-</dl>
- <button type="button" class="manage-printer" data-edit-printer="1">
-<img src="assets/partner-manage.svg" alt="">Gerenciar</button>
-</article>
-<article class="printer-card" data-printer-id="2">
-<button class="edit-printer" type="button" data-edit-printer="2" aria-label="Editar Creality Ender 3 S1 Pro">
-<img src="assets/partner-edit.svg" alt="">
-</button>
- <div class="printer-art blue">
-<img src="assets/partner-creality.svg" alt="">
-<span data-art-label>CREALITY FDM STANDBY</span>
-</div>
 
- <div class="printer-heading">
-<h3 data-printer-name>Creality Ender 3 S1 Pro</h3>
-<span class="availability available">
-<span class="dot">
-</span>Disponível</span>
-</div>
- <p class="printer-id">ID: IMP-02 • FDM Standby</p>
-<dl class="printer-spec">
-<div>
-<dt>Material:</dt>
-<dd data-printer-material>PLA Antibacteriano</dd>
-</div>
-<div>
-<dt>Bico:</dt>
-<dd data-printer-nozzle>0.4mm • Pronto</dd>
-</div>
-</dl>
- <button type="button" class="manage-printer" data-edit-printer="2">
-<img src="assets/partner-manage.svg" alt="">Gerenciar</button>
-</article>
+
 <!-- Placeholder FDM fictício: modelo, bico e volume no registro de exemplo. -->
-<article class="printer-card" data-printer-id="3">
-<button class="edit-printer" type="button" data-edit-printer="3" aria-label="Editar Impressora FDM 03">
-<img src="assets/partner-edit.svg" alt="">
-</button>
- <div class="printer-art ">
-<img src="assets/partner-bambu.svg" alt="">
-<span data-art-label>IMPRESSORA FDM 03</span>
-</div>
 
- <div class="printer-heading">
-<h3 data-printer-name>Impressora FDM 03</h3>
-<span class="availability ">
-<span class="dot">
-</span>Indisponível</span>
-</div>
- <p class="printer-id">ID: IMP-03 • FDM</p>
-<dl class="printer-spec">
-<div>
-<dt>Material:</dt>
-<dd data-printer-material>PLA</dd>
-</div>
-<div>
-<dt>Bico:</dt>
-<dd data-printer-nozzle>0.4mm • Pronto</dd>
-</div>
-</dl>
- <button type="button" class="manage-printer" data-edit-printer="3">
-<img src="assets/partner-manage.svg" alt="">Gerenciar</button>
-</article>
 </div>
 <button class="carousel-next" type="button" id="next-printer" aria-label="Ver mais impressoras">
 <img src="assets/partner-next.svg" alt="">
@@ -785,30 +702,9 @@ E-mail de contato:
 <span>Últimos pedidos processados</span>
 </div>
 <ul id="production-history" class="history-list">
-<li class="history-row">
-<span class="history-id">#PED-2026-084</span>
-<strong>Órtese Dinâmica AFO</strong>
-<span class="history-material">PETG Médico</span>
-<span class="history-status pending">
-<img src="assets/partner-pending.svg" alt="">Em andamento</span>
-<span class="history-date">14/20</span>
-</li>
-<li class="history-row">
-<span class="history-id">#PED-2026-079</span>
-<strong>Adaptador de Talher Pediátrico</strong>
-<span class="history-material">TPU Flexível</span>
-<span class="history-status done">
-<img src="assets/partner-done.svg" alt="">Concluído</span>
-<span class="history-date">10/04</span>
-</li>
-<li class="history-row">
-<span class="history-id">#PED-2026-071</span>
-<strong>Fixador de Punho Bilateral</strong>
-<span class="history-material">PLA Biodegradável</span>
-<span class="history-status cancelled">
-<img src="assets/partner-cancelled.svg" alt="">Cancelado</span>
-<span class="history-date">05/04</span>
-</li>
+
+
+
 </ul>
 <div class="history-action">
 <a href="#parceiro-pedidos" data-section="parceiro-pedidos" class="history-button">
@@ -825,50 +721,12 @@ E-mail de contato:
 <h2>
 <span class="dot">
 </span>Pedidos Ativos</h2>
-<span class="group-count">Em produção <b id="active-orders-count">1</b>
+<span class="group-count">Em produção <b id="active-orders-count">0</b>
 </span>
 <img src="assets/partner-accordion.svg" alt="">
 </button>
 <div id="active-orders" class="collapse show order-list">
-<article class="order-card active-order" data-order-id="MAU-2024-0892" data-state="active">
-<div class="order-heading">
-<div>
-<h3>Pedido #MAU-2024-0892</h3>
-<p>Solicitado por: Centro de Reabilitação Mauá</p>
-</div>
-<span class="order-status">EM PRODUÇÃO</span>
-</div>
-<div class="order-data">
-<div>
-<small>DISPOSITIVO</small>
-<strong>Órtese de Antebraço Personalizada</strong>
-<small>MATERIAL</small>
-<strong>PLA Biodegradável</strong>
-</div>
-<div>
-<small>INÍCIO DA PRODUÇÃO</small>
-<strong>12/10/2024 • 09:30</strong>
-<small>PREVISÃO DE ENTREGA</small>
-<strong>14/10/2024 • 16:00</strong>
-</div>
-</div>
-<div class="order-actions">
-<button type="button" class="order-secondary" data-order-action="details" aria-expanded="false" aria-controls="order-details-MAU-2024-0892">Visualizar Detalhes</button>
-<button type="button" class="order-primary" data-order-action="complete">Concluir Pedido</button>
-</div>
-<div class="order-extra" id="order-details-MAU-2024-0892" hidden>
-<p>
-<strong>Pedido:</strong> #MAU-2024-0892</p>
-<p>
-<strong>Solicitante:</strong> Centro de Reabilitação Mauá</p>
-<p>
-<strong>Dispositivo:</strong> Órtese de Antebraço Personalizada</p>
-<p>
-<strong>Material:</strong> PLA Biodegradável</p>
-<p>
-<strong>Prazo:</strong> 14/10/2024 • 16:00</p>
-</div>
-</article>
+
 <p class="order-empty" hidden>Nenhum pedido ativo.</p>
 </div>
 </section>
@@ -877,101 +735,13 @@ E-mail de contato:
 <h2>
 <span class="dot orange">
 </span>Pedidos Pendentes</h2>
-<span class="group-count waiting">Aguardando aceite <b id="pending-orders-count">2</b>
+<span class="group-count waiting">Aguardando aceite <b id="pending-orders-count">0</b>
 </span>
 <img src="assets/partner-accordion.svg" alt="">
 </button>
 <div id="pending-orders" class="collapse show order-list">
-<article class="order-card " data-order-id="MAU-2024-089" data-state="pending">
-<div class="order-heading">
-<div>
-<h3>Pedido #MAU-2024-089</h3>
-<p>Solicitado por: Centro de Reabilitação de Mauá</p>
-</div>
-<div class="order-badges">
-<span class="order-status waiting">Pendente</span>
-<span class="order-status urgent">Urgente</span>
-</div>
-</div>
-<div class="order-data">
-<div>
-<small>Dispositivo</small>
-<strong>Mão Ortótica 3D - Modelo 2.0</strong>
-</div>
-<div>
-<small>Material</small>
-<strong>PLA Biodegradável - Cor: Verde</strong>
-</div>
-<div>
-<small>Prazo</small>
-<strong>12/10/2024</strong>
-</div>
-</div>
-<div class="order-actions">
-<button type="button" class="order-secondary" data-order-action="details" aria-expanded="false" aria-controls="order-details-MAU-2024-089">Visualizar Detalhes</button>
-<span class="order-decision">
-<button type="button" class="order-refuse" data-order-action="refuse">Recusar</button>
-<button type="button" class="order-primary" data-order-action="accept">Aceitar</button>
-</span>
-</div>
-<div class="order-extra" id="order-details-MAU-2024-089" hidden>
-<p>
-<strong>Pedido:</strong> #MAU-2024-089</p>
-<p>
-<strong>Solicitante:</strong> Centro de Reabilitação de Mauá</p>
-<p>
-<strong>Dispositivo:</strong> Mão Ortótica 3D - Modelo 2.0</p>
-<p>
-<strong>Material:</strong> PLA Biodegradável - Cor: Verde</p>
-<p>
-<strong>Prazo:</strong> 12/10/2024</p>
-</div>
-</article>
-<article class="order-card " data-order-id="MAU-2024-091" data-state="pending">
-<div class="order-heading">
-<div>
-<h3>Pedido #MAU-2024-091</h3>
-<p>Solicitado por: APAE - Mauá</p>
-</div>
-<div class="order-badges">
-<span class="order-status waiting">Pendente</span>
-<span class="order-status standard">Padrão</span>
-</div>
-</div>
-<div class="order-data">
-<div>
-<small>Dispositivo</small>
-<strong>Suporte de Cabeça para Cadeira</strong>
-</div>
-<div>
-<small>Material</small>
-<strong>PETG - Cor: Azul</strong>
-</div>
-<div>
-<small>Prazo</small>
-<strong>15/10/2024</strong>
-</div>
-</div>
-<div class="order-actions">
-<button type="button" class="order-secondary" data-order-action="details" aria-expanded="false" aria-controls="order-details-MAU-2024-091">Visualizar Detalhes</button>
-<span class="order-decision">
-<button type="button" class="order-refuse" data-order-action="refuse">Recusar</button>
-<button type="button" class="order-primary" data-order-action="accept">Aceitar</button>
-</span>
-</div>
-<div class="order-extra" id="order-details-MAU-2024-091" hidden>
-<p>
-<strong>Pedido:</strong> #MAU-2024-091</p>
-<p>
-<strong>Solicitante:</strong> APAE - Mauá</p>
-<p>
-<strong>Dispositivo:</strong> Suporte de Cabeça para Cadeira</p>
-<p>
-<strong>Material:</strong> PETG - Cor: Azul</p>
-<p>
-<strong>Prazo:</strong> 15/10/2024</p>
-</div>
-</article>
+
+
 <p class="order-empty" hidden>Nenhum pedido pendente.</p>
 </div>
 </section>
@@ -1070,7 +840,7 @@ E-mail de contato:
 </div>
  <div class="field">
 <label class="form-label" for="profile-institution">Nome da Instituição</label>
-<input class="form-control" id="profile-institution" name="profile-institution" type="text" value="Laboratorio Maua" required>
+<input class="form-control" id="profile-institution" name="profile-institution" type="text" value="" required>
 </div>
 <div class="field">
 <label class="form-label" for="profile-email">E-mail Institucional</label>
@@ -1141,7 +911,7 @@ E-mail de contato:
 </span>
 </div>
 <div class="metric-bottom">
-<strong id="aacd-metric-open">08</strong>
+<strong id="aacd-metric-open">0</strong>
 <span>aguardando parceiro</span>
 <small class="blue">3 prioritários</small>
 </div>
@@ -1154,7 +924,7 @@ E-mail de contato:
 </span>
 </div>
 <div class="metric-bottom">
-<strong id="aacd-metric-production">14</strong>
+<strong id="aacd-metric-production">0</strong>
 <span>em Impressão</span>
 <small class="cyan">6 Laboratórios</small>
 </div>
@@ -1167,7 +937,7 @@ E-mail de contato:
 </span>
 </div>
 <div class="metric-bottom">
-<strong id="aacd-metric-delivered">42</strong>
+<strong id="aacd-metric-delivered">0</strong>
 <span>órteses entregues</span>
 <small class="green">99.2% sucesso</small>
 </div>
@@ -1182,26 +952,8 @@ E-mail de contato:
 </article>
 <article class="aacd-action-card">
 <h2>Homologar Parceiro</h2>
-<div class="home-partner-line">
-<span class="round-icon">
-<img src="assets/aacd-c6315.svg" alt="">
-</span>
-<div>
-<strong>FabLab Mauá - Bloco W</strong>
-<small>Prusa XL 5T • PETG &amp; TPU</small>
-</div>
-<img src="assets/aacd-cb673.svg" alt="">
-</div>
-<div class="home-partner-line">
-<span class="round-icon">
-<img src="assets/aacd-409f4.svg" alt="">
-</span>
-<div>
-<strong>Núcleo BioEngenharia Poli</strong>
-<small>Impressora FDM</small>
-</div>
-<a href="#aacd-homologacao" data-section="aacd-homologacao" class="home-approve">Aprovar</a>
-</div>
+
+
 <a href="#aacd-homologacao" data-section="aacd-homologacao" class="aacd-action-link">
 <img src="assets/aacd-b47e8.svg" alt="">Ver Pedidos de Homologação</a>
 </article>
@@ -1252,139 +1004,14 @@ E-mail de contato:
 </div>
 </div>
 <div id="aacd-order-list">
-<article class="aacd-order-row" data-aacd-order="1092" data-status="production" data-material="PETG Médico Biocompatível" data-lab="IMT - FabLab Mauá" data-priority="Urgente">
-<span class="aacd-device-icon">
-<img src="assets/aacd-f6ed4.svg" alt="">
-</span>
-<div class="aacd-order-info">
-<small>#PED-1092 •</small>
-<h2>Órtese Dinâmica Supinadora de Punho</h2>
-<span class="urgent-tag">Urgente</span>
-<p>
-<img src="assets/aacd-5e5d9.svg" alt="">IMT - FabLab Mauá</p>
-<small>Material: PETG Médico Biocompatível</small>
-</div>
-<div class="aacd-order-state">
-<span class="aacd-status production">
-<span class="dot"></span>Em Impressão (74%)</span>
-<small>Conclusão: Hoje, 15:40</small>
-</div>
-<button class="aacd-detail-button" type="button" data-aacd-detail aria-expanded="false" aria-controls="aacd-order-detail-1092" aria-label="Detalhes do pedido #PED-1092">
-<img src="assets/aacd-fa3e1.svg" alt="">
-</button>
-<div id="aacd-order-detail-1092" class="aacd-order-detail" hidden>
-<p>
-<strong>Pedido:</strong> #PED-1092</p>
-<p>
-<strong>Dispositivo:</strong> Órtese Dinâmica Supinadora de Punho</p>
-<p>
-<strong>Polo:</strong> IMT - FabLab Mauá</p>
-<p>
-<strong>Material:</strong> PETG Médico Biocompatível</p>
-<p>
-<strong>Situação:</strong> Em Impressão (74%)</p>
-</div>
-</article>
-<article class="aacd-order-row" data-aacd-order="1090" data-status="transit" data-material="TPU 95A Flexível" data-lab="Lab Poli-USP Engenharia" data-priority="Padrão">
-<span class="aacd-device-icon">
-<img src="assets/aacd-a12d8.svg" alt="">
-</span>
-<div class="aacd-order-info">
-<small>#PED-1090 •</small>
-<h2>Adaptador de Talheres Universal Articulado</h2>
-<p>
-<img src="assets/aacd-00cf5.svg" alt="">Lab Poli-USP Engenharia</p>
-<small>Material: TPU 95A Flexível</small>
-</div>
-<div class="aacd-order-state">
-<span class="aacd-status transit">
-<img src="assets/aacd-9827f.svg" alt="">Em Trânsito p/ AACD</span>
-<small>Previsão: Amanhã cedo</small>
-</div>
-<button class="aacd-detail-button" type="button" data-aacd-detail aria-expanded="false" aria-controls="aacd-order-detail-1090" aria-label="Detalhes do pedido #PED-1090">
-<img src="assets/aacd-fa3e1.svg" alt="">
-</button>
-<div id="aacd-order-detail-1090" class="aacd-order-detail" hidden>
-<p>
-<strong>Pedido:</strong> #PED-1090</p>
-<p>
-<strong>Dispositivo:</strong> Adaptador de Talheres Universal Articulado</p>
-<p>
-<strong>Polo:</strong> Lab Poli-USP Engenharia</p>
-<p>
-<strong>Material:</strong> TPU 95A Flexível</p>
-<p>
-<strong>Situação:</strong> Em Trânsito p/ AACD</p>
-</div>
-</article>
-<article class="aacd-order-row" data-aacd-order="1087" data-status="delivered" data-material="PLA" data-lab="IMT - Mauá Núcleo Aditivo" data-priority="Padrão">
-<span class="aacd-device-icon">
-<img src="assets/aacd-4649e.svg" alt="">
-</span>
-<div class="aacd-order-info">
-<small>#PED-1087 •</small>
-<h2>Manípulo Anatômico de Joystick Cadeira Motorizada</h2>
-<p>
-<img src="assets/aacd-5e5d9.svg" alt="">IMT - Mauá Núcleo Aditivo</p>
-<small>Material: PLA</small>
-</div>
-<div class="aacd-order-state">
-<span class="aacd-status delivered">
-<img src="assets/aacd-b4a37.svg" alt="">Homologado & Entregue</span>
-<small>Concluído em 18/10/24</small>
-</div>
-<button class="aacd-detail-button" type="button" data-aacd-detail aria-expanded="false" aria-controls="aacd-order-detail-1087" aria-label="Detalhes do pedido #PED-1087">
-<img src="assets/aacd-fa3e1.svg" alt="">
-</button>
-<div id="aacd-order-detail-1087" class="aacd-order-detail" hidden>
-<p>
-<strong>Pedido:</strong> #PED-1087</p>
-<p>
-<strong>Dispositivo:</strong> Manípulo Anatômico de Joystick Cadeira Motorizada</p>
-<p>
-<strong>Polo:</strong> IMT - Mauá Núcleo Aditivo</p>
-<p>
-<strong>Material:</strong> PLA</p>
-<p>
-<strong>Situação:</strong> Homologado & Entregue</p>
-</div>
-</article>
-<article class="aacd-order-row" data-aacd-order="1082" data-status="delivered" data-material="PLA Virgem Atóxico" data-lab="Maker Space Mackenzie" data-priority="Padrão">
-<span class="aacd-device-icon">
-<img src="assets/aacd-c2b1b.svg" alt="">
-</span>
-<div class="aacd-order-info">
-<small>#PED-1082 •</small>
-<h2>Extensor de Dedos com Retorno Elástico</h2>
-<p>
-<img src="assets/aacd-5e5d9.svg" alt="">Maker Space Mackenzie</p>
-<small>Material: PLA Virgem Atóxico</small>
-</div>
-<div class="aacd-order-state">
-<span class="aacd-status delivered">
-<img src="assets/aacd-b4a37.svg" alt="">Homologado & Entregue</span>
-<small>Concluído em 14/10/24</small>
-</div>
-<button class="aacd-detail-button" type="button" data-aacd-detail aria-expanded="false" aria-controls="aacd-order-detail-1082" aria-label="Detalhes do pedido #PED-1082">
-<img src="assets/aacd-fa3e1.svg" alt="">
-</button>
-<div id="aacd-order-detail-1082" class="aacd-order-detail" hidden>
-<p>
-<strong>Pedido:</strong> #PED-1082</p>
-<p>
-<strong>Dispositivo:</strong> Extensor de Dedos com Retorno Elástico</p>
-<p>
-<strong>Polo:</strong> Maker Space Mackenzie</p>
-<p>
-<strong>Material:</strong> PLA Virgem Atóxico</p>
-<p>
-<strong>Situação:</strong> Homologado & Entregue</p>
-</div>
-</article>
+
+
+
+
 </div>
 <p id="aacd-order-empty" class="feedback" hidden>Nenhum pedido encontrado.</p>
 <div class="aacd-pagination">
-<p id="aacd-order-count">Exibindo 4 de 42 ordens homologadas na rede CoNexo</p>
+<p id="aacd-order-count"></p>
 <nav aria-label="Páginas de pedidos">
 <button type="button" data-aacd-page="previous" disabled>Anterior</button>
 <button type="button" data-aacd-page="1" aria-current="page">1</button>
@@ -1404,136 +1031,17 @@ E-mail de contato:
 </div>
 <p class="network-total">
 <img src="assets/aacd-b098e.svg" alt="">
-<span data-homologated-count>14</span> Parceiros Homologados</p>
+<span data-homologated-count>0</span> Parceiros Homologados</p>
 <label class="aacd-network-search">
 <img src="assets/aacd-e8d26.svg" alt="">
 <span class="visually-hidden">Buscar parceiros</span>
 <input type="search" id="aacd-partner-search" placeholder="Buscar por laboratório, campus, cidade...">
 </label>
 <div class="aacd-network-grid" id="aacd-network-grid">
-<article class="aacd-network-card">
-<div class="network-card-header">
-<span class="round-icon green">
-<img src="assets/aacd-c1b09.svg" alt="">
-</span>
-<div>
-<h2>Centro Tecnológico Mauá</h2>
-<p>
-<img src="assets/aacd-334c9.svg" alt="">São Caetano do Sul, SP • Polo Central</p>
-</div>
-<span class="aacd-status delivered">● Disponível (88%)</span>
-</div>
-<div class="network-info">
-<div>
-<small>PARQUE FABRIL</small>
-<strong>12 Impressoras FDM</strong>
-</div>
-<div>
-<small>CAPACIDADE TÉCNICA</small>
-<strong>Alta Precisão</strong>
-</div>
-<div class="network-materials">
-<small>MATERIAIS HOMOLOGADOS AACD</small>
-<p>
-<span>PETG Biocompatível</span>
-<span>PLA Antimicrobiano</span>
-<span>Nylon PA12</span>
-</p>
-</div>
-</div>
-</article>
-<article class="aacd-network-card">
-<div class="network-card-header">
-<span class="round-icon green">
-<img src="assets/aacd-4f59e.svg" alt="">
-</span>
-<div>
-<h2>FabLab Poli BioEngenharia</h2>
-<p>
-<img src="assets/aacd-334c9.svg" alt="">São Paulo, SP • Campus Butantã</p>
-</div>
-<span class="aacd-status transit">● Operacional (65%)</span>
-</div>
-<div class="network-info">
-<div>
-<small>PARQUE FABRIL</small>
-<strong>8 FDM Grande Volume</strong>
-</div>
-<div>
-<small>ÁREA ÚTIL MÁXIMA</small>
-<strong>500 x 500 x 600 mm</strong>
-</div>
-<div class="network-materials">
-<small>MATERIAIS HOMOLOGADOS AACD</small>
-<p>
-<span>ABS Médico</span>
-<span>PETG Cinza</span>
-<span>TPU 95A</span>
-</p>
-</div>
-</div>
-</article>
-<article class="aacd-network-card">
-<div class="network-card-header">
-<span class="round-icon green">
-<img src="assets/aacd-425c9.svg" alt="">
-</span>
-<div>
-<h2>Hub Saúde 3D Campinas</h2>
-<p>
-<img src="assets/aacd-334c9.svg" alt="">Campinas, SP • Polo Tecnológico</p>
-</div>
-<span class="aacd-status delivered">● Disponível (92%)</span>
-</div>
-<div class="network-info">
-<div>
-<small>PARQUE FABRIL</small>
-<strong>6 Impressoras FDM</strong>
-</div>
-<div>
-<small>PROCESSO DE IMPRESSÃO</small>
-<strong>FDM</strong>
-</div>
-<div class="network-materials">
-<small>MATERIAIS HOMOLOGADOS AACD</small>
-<p>
-<span>PLA</span>
-<span>PETG</span>
-</p>
-</div>
-</div>
-</article>
-<article class="aacd-network-card">
-<div class="network-card-header">
-<span class="round-icon green">
-<img src="assets/aacd-a705b.svg" alt="">
-</span>
-<div>
-<h2>Laboratório BioFab Regional</h2>
-<p>
-<img src="assets/aacd-334c9.svg" alt="">Santos, SP • Polo Baixada Santista</p>
-</div>
-<span class="aacd-status delivered">● Disponível (74%)</span>
-</div>
-<div class="network-info">
-<div>
-<small>PARQUE FABRIL</small>
-<strong>10 FDM Extrusão Dupla</strong>
-</div>
-<div>
-<small>DUREZA SHORE</small>
-<strong>Variável 60A a 95A</strong>
-</div>
-<div class="network-materials">
-<small>MATERIAIS HOMOLOGADOS AACD</small>
-<p>
-<span>TPU Elastômero</span>
-<span>Filamento Copolímero</span>
-<span>Poliuretano Flexível</span>
-</p>
-</div>
-</div>
-</article>
+
+
+
+
 </div>
 <p class="feedback" id="aacd-partner-empty" hidden>Nenhum parceiro encontrado.</p>
 <div class="aacd-new-partners">
@@ -1556,431 +1064,19 @@ E-mail de contato:
 <div>
 <img src="assets/aacd-b098e.svg" alt="">
 <span>
-<b data-homologated-count>14</b> Homologados</span>
+<b data-homologated-count>0</b> Homologados</span>
 <i>
 </i>
 <img src="assets/aacd-5665e.svg" alt="">
 <span>
-<b id="aacd-review-count">3</b> Na fila</span>
+<b id="aacd-review-count">0</b> Na fila</span>
 </div>
 </div>
 <div id="aacd-review-list">
-<details class="aacd-review" data-candidate="1">
-<summary>
-<span class="round-icon green">
-<img src="assets/aacd-2eb28.svg" alt="">
-</span>
-<div>
-<h2>Laboratório BioMaker</h2>
-<p>Escola Politécnica da USP • Departamento de Mecatrônica e Sistemas<br>Biomédicos</p>
-</div>
-<span class="review-chevron">
-<img src="assets/aacd-adcfd.svg" alt="">
-</span>
-</summary>
-<div class="aacd-review-content">
-<h3>
-<span class="step">1</span>Informações Gerais do Candidato</h3>
-<div class="review-info-grid">
-<div>
-<small>RESPONSÁVEL TÉCNICO / CRT</small>
-<strong>
-<img src="assets/aacd-1ff05.svg" alt="">Prof. Dr. Ricardo Albuquerque (CREA 506198)</strong>
-<p>Especialista em Engenharia Biomédica e Biomecânica</p>
-</div>
-<div>
-<small>CONTATO INSTITUCIONAL</small>
-<strong>
-<img src="assets/aacd-b8992.svg" alt="">contato.biomaker@usp.br</strong>
-<p>+55 (11) 3091-5000 | Ramal 420</p>
-</div>
-<div>
-<small>LOCALIZAÇÃO OPERACIONAL</small>
-<strong>
-<img src="assets/aacd-ebe27.svg" alt="">São Paulo, SP • Butantã</strong>
-<p>Distância calculada até AACD Central: 7.4 km</p>
-</div>
-<div>
-<small>CAPACIDADE OPERACIONAL DECLARADA</small>
-<strong>
-<img src="assets/aacd-da6d7.svg" alt="">15 a 20 órteses / mês</strong>
-<p>Disponibilidade prioritária para ensaios clínicos</p>
-</div>
-</div>
-<h3>
-<span class="step">2</span>Parque Fabril e Impressoras 3D Cadastradas <small>4 Máquinas Habilitadas</small>
-</h3>
-<div class="review-machine-grid">
-<article>
-<h4>Bambu Lab X1-Carbon</h4>
-<p>FDM Fechada de Alta Temperatura</p>
-<span class="machine-approved">
-<img src="assets/aacd-05c0e.svg" alt="">
-</span>
-<div>
-<span>Vol: 256×256×256 mm</span>
-<span>Bico: Aço Temperado 0.4mm</span>
-<span>Câmara Fechada Ativa</span>
-</div>
-</article>
-<article>
-<h4>Creality K1 Max</h4>
-<p>FDM Grande Formato</p>
-<span class="machine-approved">
-<img src="assets/aacd-05c0e.svg" alt="">
-</span>
-<div>
-<span>Vol: 300×300×300 mm</span>
-<span>Bico: Bimetal 0.6mm</span>
-<span>Nivelamento Automático LiDAR</span>
-</div>
-</article>
-<article>
-<h4>Prusa MK4 Enclosed</h4>
-<p>FDM Precisão com Enclosure Oficial</p>
-<span class="machine-approved">
-<img src="assets/aacd-05c0e.svg" alt="">
-</span>
-<div>
-<span>Vol: 250×210×220 mm</span>
-<span>Nextruder 0.4mm</span>
-<span>Filtro HEPA Integrado</span>
-</div>
-</article>
-<article>
-<!-- Placeholder FDM fictício: modelo, volume, bico e materiais de exemplo. -->
-<h4>Impressora FDM 04 (fictícia)</h4>
-<p>FDM</p>
-<span class="machine-approved">
-<img src="assets/aacd-05c0e.svg" alt="">
-</span>
-<div>
-<span>Vol: 218×122×260 mm</span>
-<span>Bico: 0.4mm</span>
-<span>Materiais: PLA / PETG</span>
-</div>
-</article>
-</div>
-<div class="editor-actions">
-<button type="button" class="btn-back" data-review-action="reject">
-<img src="assets/aacd-d8a8f.svg" alt="">Rejeitar Cadastro</button>
-<button type="button" class="btn btn-conexo" data-review-action="approve">
-<img src="assets/aacd-45fec.svg" alt="">Homologar Parceiro Técnico</button>
-</div>
-</div>
-</details>
-<details class="aacd-review" data-candidate="2">
-<summary>
-<span class="round-icon green">
-<img src="assets/aacd-2eb28.svg" alt="">
-</span>
-<div>
-<h2>Laboratório BioMaker</h2>
-<p>Escola Politécnica da USP • Departamento de Mecatrônica e Sistemas<br>Biomédicos</p>
-</div>
-<span class="review-chevron">
-<img src="assets/aacd-adcfd.svg" alt="">
-</span>
-</summary>
-<div class="aacd-review-content">
-<h3>
-<span class="step">1</span>Informações Gerais do Candidato</h3>
-<div class="review-info-grid">
-<div>
-<small>RESPONSÁVEL TÉCNICO / CRT</small>
-<strong>
-<img src="assets/aacd-1ff05.svg" alt="">Prof. Dr. Ricardo Albuquerque (CREA 506198)</strong>
-<p>Especialista em Engenharia Biomédica e Biomecânica</p>
-</div>
-<div>
-<small>CONTATO INSTITUCIONAL</small>
-<strong>
-<img src="assets/aacd-b8992.svg" alt="">contato.biomaker@usp.br</strong>
-<p>+55 (11) 3091-5000 | Ramal 420</p>
-</div>
-<div>
-<small>LOCALIZAÇÃO OPERACIONAL</small>
-<strong>
-<img src="assets/aacd-ebe27.svg" alt="">São Paulo, SP • Butantã</strong>
-<p>Distância calculada até AACD Central: 7.4 km</p>
-</div>
-<div>
-<small>CAPACIDADE OPERACIONAL DECLARADA</small>
-<strong>
-<img src="assets/aacd-da6d7.svg" alt="">15 a 20 órteses / mês</strong>
-<p>Disponibilidade prioritária para ensaios clínicos</p>
-</div>
-</div>
-<h3>
-<span class="step">2</span>Parque Fabril e Impressoras 3D Cadastradas <small>4 Máquinas Habilitadas</small>
-</h3>
-<div class="review-machine-grid">
-<article>
-<h4>Bambu Lab X1-Carbon</h4>
-<p>FDM Fechada de Alta Temperatura</p>
-<span class="machine-approved">
-<img src="assets/aacd-05c0e.svg" alt="">
-</span>
-<div>
-<span>Vol: 256×256×256 mm</span>
-<span>Bico: Aço Temperado 0.4mm</span>
-<span>Câmara Fechada Ativa</span>
-</div>
-</article>
-<article>
-<h4>Creality K1 Max</h4>
-<p>FDM Grande Formato</p>
-<span class="machine-approved">
-<img src="assets/aacd-05c0e.svg" alt="">
-</span>
-<div>
-<span>Vol: 300×300×300 mm</span>
-<span>Bico: Bimetal 0.6mm</span>
-<span>Nivelamento Automático LiDAR</span>
-</div>
-</article>
-<article>
-<h4>Prusa MK4 Enclosed</h4>
-<p>FDM Precisão com Enclosure Oficial</p>
-<span class="machine-approved">
-<img src="assets/aacd-05c0e.svg" alt="">
-</span>
-<div>
-<span>Vol: 250×210×220 mm</span>
-<span>Nextruder 0.4mm</span>
-<span>Filtro HEPA Integrado</span>
-</div>
-</article>
-<article>
-<!-- Placeholder FDM fictício: modelo, volume, bico e materiais de exemplo. -->
-<h4>Impressora FDM 04 (fictícia)</h4>
-<p>FDM</p>
-<span class="machine-approved">
-<img src="assets/aacd-05c0e.svg" alt="">
-</span>
-<div>
-<span>Vol: 218×122×260 mm</span>
-<span>Bico: 0.4mm</span>
-<span>Materiais: PLA / PETG</span>
-</div>
-</article>
-</div>
-<div class="editor-actions">
-<button type="button" class="btn-back" data-review-action="reject">
-<img src="assets/aacd-d8a8f.svg" alt="">Rejeitar Cadastro</button>
-<button type="button" class="btn btn-conexo" data-review-action="approve">
-<img src="assets/aacd-45fec.svg" alt="">Homologar Parceiro Técnico</button>
-</div>
-</div>
-</details>
-<details class="aacd-review" data-candidate="3">
-<summary>
-<span class="round-icon green">
-<img src="assets/aacd-2eb28.svg" alt="">
-</span>
-<div>
-<h2>Laboratório BioMaker</h2>
-<p>Escola Politécnica da USP • Departamento de Mecatrônica e Sistemas<br>Biomédicos</p>
-</div>
-<span class="review-chevron">
-<img src="assets/aacd-adcfd.svg" alt="">
-</span>
-</summary>
-<div class="aacd-review-content">
-<h3>
-<span class="step">1</span>Informações Gerais do Candidato</h3>
-<div class="review-info-grid">
-<div>
-<small>RESPONSÁVEL TÉCNICO / CRT</small>
-<strong>
-<img src="assets/aacd-1ff05.svg" alt="">Prof. Dr. Ricardo Albuquerque (CREA 506198)</strong>
-<p>Especialista em Engenharia Biomédica e Biomecânica</p>
-</div>
-<div>
-<small>CONTATO INSTITUCIONAL</small>
-<strong>
-<img src="assets/aacd-b8992.svg" alt="">contato.biomaker@usp.br</strong>
-<p>+55 (11) 3091-5000 | Ramal 420</p>
-</div>
-<div>
-<small>LOCALIZAÇÃO OPERACIONAL</small>
-<strong>
-<img src="assets/aacd-ebe27.svg" alt="">São Paulo, SP • Butantã</strong>
-<p>Distância calculada até AACD Central: 7.4 km</p>
-</div>
-<div>
-<small>CAPACIDADE OPERACIONAL DECLARADA</small>
-<strong>
-<img src="assets/aacd-da6d7.svg" alt="">15 a 20 órteses / mês</strong>
-<p>Disponibilidade prioritária para ensaios clínicos</p>
-</div>
-</div>
-<h3>
-<span class="step">2</span>Parque Fabril e Impressoras 3D Cadastradas <small>4 Máquinas Habilitadas</small>
-</h3>
-<div class="review-machine-grid">
-<article>
-<h4>Bambu Lab X1-Carbon</h4>
-<p>FDM Fechada de Alta Temperatura</p>
-<span class="machine-approved">
-<img src="assets/aacd-05c0e.svg" alt="">
-</span>
-<div>
-<span>Vol: 256×256×256 mm</span>
-<span>Bico: Aço Temperado 0.4mm</span>
-<span>Câmara Fechada Ativa</span>
-</div>
-</article>
-<article>
-<h4>Creality K1 Max</h4>
-<p>FDM Grande Formato</p>
-<span class="machine-approved">
-<img src="assets/aacd-05c0e.svg" alt="">
-</span>
-<div>
-<span>Vol: 300×300×300 mm</span>
-<span>Bico: Bimetal 0.6mm</span>
-<span>Nivelamento Automático LiDAR</span>
-</div>
-</article>
-<article>
-<h4>Prusa MK4 Enclosed</h4>
-<p>FDM Precisão com Enclosure Oficial</p>
-<span class="machine-approved">
-<img src="assets/aacd-05c0e.svg" alt="">
-</span>
-<div>
-<span>Vol: 250×210×220 mm</span>
-<span>Nextruder 0.4mm</span>
-<span>Filtro HEPA Integrado</span>
-</div>
-</article>
-<article>
-<!-- Placeholder FDM fictício: modelo, volume, bico e materiais de exemplo. -->
-<h4>Impressora FDM 04 (fictícia)</h4>
-<p>FDM</p>
-<span class="machine-approved">
-<img src="assets/aacd-05c0e.svg" alt="">
-</span>
-<div>
-<span>Vol: 218×122×260 mm</span>
-<span>Bico: 0.4mm</span>
-<span>Materiais: PLA / PETG</span>
-</div>
-</article>
-</div>
-<div class="editor-actions">
-<button type="button" class="btn-back" data-review-action="reject">
-<img src="assets/aacd-d8a8f.svg" alt="">Rejeitar Cadastro</button>
-<button type="button" class="btn btn-conexo" data-review-action="approve">
-<img src="assets/aacd-45fec.svg" alt="">Homologar Parceiro Técnico</button>
-</div>
-</div>
-</details>
-<details class="aacd-review" data-candidate="4">
-<summary>
-<span class="round-icon green">
-<img src="assets/aacd-2eb28.svg" alt="">
-</span>
-<div>
-<h2>Laboratório BioMaker</h2>
-<p>Escola Politécnica da USP • Departamento de Mecatrônica e Sistemas<br>Biomédicos</p>
-</div>
-<span class="review-chevron">
-<img src="assets/aacd-adcfd.svg" alt="">
-</span>
-</summary>
-<div class="aacd-review-content">
-<h3>
-<span class="step">1</span>Informações Gerais do Candidato</h3>
-<div class="review-info-grid">
-<div>
-<small>RESPONSÁVEL TÉCNICO / CRT</small>
-<strong>
-<img src="assets/aacd-1ff05.svg" alt="">Prof. Dr. Ricardo Albuquerque (CREA 506198)</strong>
-<p>Especialista em Engenharia Biomédica e Biomecânica</p>
-</div>
-<div>
-<small>CONTATO INSTITUCIONAL</small>
-<strong>
-<img src="assets/aacd-b8992.svg" alt="">contato.biomaker@usp.br</strong>
-<p>+55 (11) 3091-5000 | Ramal 420</p>
-</div>
-<div>
-<small>LOCALIZAÇÃO OPERACIONAL</small>
-<strong>
-<img src="assets/aacd-ebe27.svg" alt="">São Paulo, SP • Butantã</strong>
-<p>Distância calculada até AACD Central: 7.4 km</p>
-</div>
-<div>
-<small>CAPACIDADE OPERACIONAL DECLARADA</small>
-<strong>
-<img src="assets/aacd-da6d7.svg" alt="">15 a 20 órteses / mês</strong>
-<p>Disponibilidade prioritária para ensaios clínicos</p>
-</div>
-</div>
-<h3>
-<span class="step">2</span>Parque Fabril e Impressoras 3D Cadastradas <small>4 Máquinas Habilitadas</small>
-</h3>
-<div class="review-machine-grid">
-<article>
-<h4>Bambu Lab X1-Carbon</h4>
-<p>FDM Fechada de Alta Temperatura</p>
-<span class="machine-approved">
-<img src="assets/aacd-05c0e.svg" alt="">
-</span>
-<div>
-<span>Vol: 256×256×256 mm</span>
-<span>Bico: Aço Temperado 0.4mm</span>
-<span>Câmara Fechada Ativa</span>
-</div>
-</article>
-<article>
-<h4>Creality K1 Max</h4>
-<p>FDM Grande Formato</p>
-<span class="machine-approved">
-<img src="assets/aacd-05c0e.svg" alt="">
-</span>
-<div>
-<span>Vol: 300×300×300 mm</span>
-<span>Bico: Bimetal 0.6mm</span>
-<span>Nivelamento Automático LiDAR</span>
-</div>
-</article>
-<article>
-<h4>Prusa MK4 Enclosed</h4>
-<p>FDM Precisão com Enclosure Oficial</p>
-<span class="machine-approved">
-<img src="assets/aacd-05c0e.svg" alt="">
-</span>
-<div>
-<span>Vol: 250×210×220 mm</span>
-<span>Nextruder 0.4mm</span>
-<span>Filtro HEPA Integrado</span>
-</div>
-</article>
-<article>
-<!-- Placeholder FDM fictício: modelo, volume, bico e materiais de exemplo. -->
-<h4>Impressora FDM 04 (fictícia)</h4>
-<p>FDM</p>
-<span class="machine-approved">
-<img src="assets/aacd-05c0e.svg" alt="">
-</span>
-<div>
-<span>Vol: 218×122×260 mm</span>
-<span>Bico: 0.4mm</span>
-<span>Materiais: PLA / PETG</span>
-</div>
-</article>
-</div>
-<div class="editor-actions">
-<button type="button" class="btn-back" data-review-action="reject">
-<img src="assets/aacd-d8a8f.svg" alt="">Rejeitar Cadastro</button>
-<button type="button" class="btn btn-conexo" data-review-action="approve">
-<img src="assets/aacd-45fec.svg" alt="">Homologar Parceiro Técnico</button>
-</div>
-</div>
-</details>
+
+
+
+
 </div>
 <p class="feedback" id="aacd-review-feedback" role="status">
 </p>
@@ -2147,7 +1243,7 @@ E-mail de contato:
 <a href="#aacd-pedido-3" data-section="aacd-pedido-3" class="back">←</a>
 <h1 id="aacd-conectar-titulo" class="screen-heading" tabindex="-1">Conectar Pedido aos Parceiros</h1>
 </div>
-<p class="network-total cyan">● 18 Laboratórios Ativos na Rede</p>
+<p class="network-total cyan"></p>
 <article class="aacd-demand-summary">
 <span class="round-icon green">
 <img src="assets/aacd-6a97c.svg" alt="">
@@ -2177,188 +1273,9 @@ E-mail de contato:
 <img src="assets/aacd-f39fe.svg" alt="">Parceiros Compatíveis Recomendados <img src="assets/aacd-bcd6c.svg" alt="">
 </h3>
 <div id="aacd-match-list">
-<article class="aacd-match-card recommended" data-match="0">
-<span class="recommendation-banner">
-<img src="assets/aacd-5bd15.svg" alt="">RECOMENDAÇÃO PRINCIPAL CONEXO</span>
-<div class="match-header">
-<span class="round-icon green">
-<img src="assets/aacd-4631c.svg" alt="">
-</span>
-<div>
-<h2>Laboratório Mauá de Prototipagem Médica <small>São Caetano do Sul, SP</small>
-</h2>
-<p>Instituto Mauá de Tecnologia • Centro de Fabricação Aditiva Avançada</p>
-</div>
-<div class="match-score">
-<strong><img src="assets/aacd-8da20.svg" alt=""><span>98%</span></strong>
-<div>
-<b>MATCH TÉCNICO EXATO</b>
-<small>Tolerância dimensional &lt; 0.1mm</small>
-</div>
-</div>
-</div>
-<div class="match-specs">
-<div>
-<img src="assets/aacd-195bf.svg" alt="">
-<div>
-<small>Impressora 3D</small>
-<strong>Bambu Lab X1-Carbon</strong>
-</div>
-</div>
-<div>
-<img src="assets/aacd-7206e.svg" alt="">
-<div>
-<small>Matéria-Prima</small>
-<strong>PETG Médico em Estoque</strong>
-</div>
-</div>
-<div>
-<img src="assets/aacd-1b4db.svg" alt="">
-<div>
-<small>Fila Atual</small>
-<strong>Fila de 0 pedidos na frente</strong>
-</div>
-</div>
-</div>
-<div class="match-actions">
-<small>
-<img src="assets/aacd-69e66.svg" alt="">Homologação Clínica AACD nível Grau II (Órteses Dinâmicas)</small>
-<div>
-<button class="btn-back" type="button" data-match-detail aria-expanded="false" aria-controls="match-detail-0">Ver Ficha Técnica</button>
-<button class="btn btn-conexo" type="button" data-connect-order="0">Conectar e Enviar Pedido <img src="assets/aacd-87a82.svg" alt="">
-</button>
-</div>
-</div>
-<div class="aacd-order-detail" id="match-detail-0" hidden>
-<p>
-<strong>Laboratório:</strong> Laboratório Mauá de Prototipagem Médica</p>
-<p>
-<strong>Impressora:</strong> Bambu Lab X1-Carbon</p>
-<p>
-<strong>Matéria-prima:</strong> PETG Médico em Estoque</p>
-<p>Homologação Clínica AACD nível Grau II (Órteses Dinâmicas)</p>
-</div>
-</article>
-<article class="aacd-match-card " data-match="1">
-<div class="match-header">
-<span class="round-icon green">
-<img src="assets/aacd-ecf8a.svg" alt="">
-</span>
-<div>
-<h2>FabLab Poli-USP BioEngenharia <small>São Paulo, SP</small>
-</h2>
-<p>Universidade de São Paulo • Núcleo de Engenharia Biomédica</p>
-</div>
-<div class="match-score">
-<strong><img src="assets/aacd-9e689.svg" alt=""><span>92%</span></strong>
-<div>
-<b>ALTA COMPATIBILIDADE</b>
-<small>Grande volume de impressão</small>
-</div>
-</div>
-</div>
-<div class="match-specs">
-<div>
-<img src="assets/aacd-195bf.svg" alt="">
-<div>
-<small>Impressora 3D</small>
-<strong>Creality CR-M4 (Grande Porte)</strong>
-</div>
-</div>
-<div>
-<img src="assets/aacd-7206e.svg" alt="">
-<div>
-<small>Matéria-Prima</small>
-<strong>PETG Médico Homologado</strong>
-</div>
-</div>
-<div>
-<img src="assets/aacd-1b4db.svg" alt="">
-<div>
-<small>Fila Atual</small>
-<strong>Fila de 2 pedidos na frente</strong>
-</div>
-</div>
-</div>
-<div class="match-actions">
-<small>
-<img src="assets/aacd-69e66.svg" alt="">Validação de biocompatibilidade e esterilização concluída</small>
-<div>
-<button class="btn-back" type="button" data-match-detail aria-expanded="false" aria-controls="match-detail-1">Ver Ficha Técnica</button>
-<button class="btn btn-conexo" type="button" data-connect-order="1">Conectar e Enviar Pedido <img src="assets/aacd-87a82.svg" alt="">
-</button>
-</div>
-</div>
-<div class="aacd-order-detail" id="match-detail-1" hidden>
-<p>
-<strong>Laboratório:</strong> FabLab Poli-USP BioEngenharia</p>
-<p>
-<strong>Impressora:</strong> Creality CR-M4 (Grande Porte)</p>
-<p>
-<strong>Matéria-prima:</strong> PETG Médico Homologado</p>
-<p>Validação de biocompatibilidade e esterilização concluída</p>
-</div>
-</article>
-<article class="aacd-match-card " data-match="2">
-<div class="match-header">
-<span class="round-icon green">
-<img src="assets/aacd-92f18.svg" alt="">
-</span>
-<div>
-<h2>Maker Hub Saúde 3D &amp; Soluções <small>Campinas, SP</small>
-</h2>
-<p>Laboratório Técnico Certificado • 15 Órteses Homologadas entregues à AACD</p>
-</div>
-<div class="match-score">
-<strong><img src="assets/aacd-13ea3.svg" alt=""><span>87%</span></strong>
-<div>
-<b>COMPATIBILIDADE APTA</b>
-<small>Histórico clínico validado</small>
-</div>
-</div>
-</div>
-<div class="match-specs">
-<div>
-<img src="assets/aacd-195bf.svg" alt="">
-<div>
-<small>Impressora 3D</small>
-<strong>Voron 2.4 Custom 350mm</strong>
-</div>
-</div>
-<div>
-<img src="assets/aacd-7206e.svg" alt="">
-<div>
-<small>Matéria-Prima</small>
-<strong>PETG Médico Premium</strong>
-</div>
-</div>
-<div>
-<img src="assets/aacd-1b4db.svg" alt="">
-<div>
-<small>Fila Atual</small>
-<strong>Fila de 3 pedidos na frente</strong>
-</div>
-</div>
-</div>
-<div class="match-actions">
-<small>
-<img src="assets/aacd-69e66.svg" alt="">100% de aprovação técnica nos últimos 6 meses</small>
-<div>
-<button class="btn-back" type="button" data-match-detail aria-expanded="false" aria-controls="match-detail-2">Ver Ficha Técnica</button>
-<button class="btn btn-conexo" type="button" data-connect-order="2">Conectar e Enviar Pedido <img src="assets/aacd-87a82.svg" alt="">
-</button>
-</div>
-</div>
-<div class="aacd-order-detail" id="match-detail-2" hidden>
-<p>
-<strong>Laboratório:</strong> Maker Hub Saúde 3D &amp; Soluções</p>
-<p>
-<strong>Impressora:</strong> Voron 2.4 Custom 350mm</p>
-<p>
-<strong>Matéria-prima:</strong> PETG Médico Premium</p>
-<p>100% de aprovação técnica nos últimos 6 meses</p>
-</div>
-</article>
+
+
+
 </div>
 <p class="feedback" id="aacd-connect-feedback" role="status">
 </p>
@@ -2455,6 +1372,268 @@ E-mail de contato:
     </div>
 </div>
   </div>
+
+<template id="printer-template">
+<article class="printer-card" data-printer-id="">
+ <div class="printer-art ">
+<img src="assets/partner-bambu.svg" alt="">
+<span data-art-label></span>
+</div>
+ <button class="edit-printer" type="button" data-edit-printer="" aria-label="Editar impressora">
+<img src="assets/partner-edit.svg" alt="">
+</button>
+ <div class="printer-heading">
+<h3 data-printer-name></h3>
+<span class="availability "><span class="dot"></span></span>
+</div>
+ <p class="printer-id"></p>
+<dl class="printer-spec">
+<div>
+<dt>Material:</dt>
+<dd data-printer-material></dd>
+</div>
+<div>
+<dt>Bico:</dt>
+<dd data-printer-nozzle></dd>
+</div>
+</dl>
+ <button type="button" class="manage-printer" data-edit-printer="">
+<img src="assets/partner-manage.svg" alt="">Gerenciar</button>
+</article>
+</template>
+<template id="history-template">
+<li class="history-row">
+<span class="history-id"></span>
+<strong></strong>
+<span class="history-material"></span>
+<span class="history-status pending">
+<img src="assets/partner-pending.svg" alt="">Em andamento</span>
+<span class="history-date"></span>
+</li>
+</template>
+<template id="active-order-template">
+<article class="order-card active-order" data-order-id="" data-state="">
+<div class="order-heading">
+<div>
+<h3></h3>
+<p></p>
+</div>
+<span class="order-status">EM PRODUÇÃO</span>
+</div>
+<div class="order-data">
+<div>
+<small>DISPOSITIVO</small>
+<strong></strong>
+<small>MATERIAL</small>
+<strong></strong>
+</div>
+<div>
+<small>INÍCIO DA PRODUÇÃO</small>
+<strong></strong>
+<small>PREVISÃO DE ENTREGA</small>
+<strong></strong>
+</div>
+</div>
+<div class="order-actions">
+<button type="button" class="order-secondary" data-order-action="details" aria-expanded="false" aria-controls="">Visualizar Detalhes</button>
+<button type="button" class="order-primary" data-order-action="complete">Concluir Pedido</button>
+</div>
+<div class="order-extra" hidden><p><strong></strong></p><p><strong></strong></p><p><strong></strong></p><p><strong></strong></p><p><strong></strong></p></div>
+</article>
+</template>
+<template id="pending-order-template">
+<article class="order-card " data-order-id="" data-state="">
+<div class="order-heading">
+<div>
+<h3></h3>
+<p></p>
+</div>
+<div class="order-badges">
+<span class="order-status waiting">Pendente</span>
+<span class="order-status urgent">Urgente</span>
+</div>
+</div>
+<div class="order-data">
+<div>
+<small>Dispositivo</small>
+<strong></strong>
+</div>
+<div>
+<small>Material</small>
+<strong></strong>
+</div>
+<div>
+<small>Prazo</small>
+<strong></strong>
+</div>
+</div>
+<div class="order-actions">
+<button type="button" class="order-secondary" data-order-action="details" aria-expanded="false" aria-controls="">Visualizar Detalhes</button>
+<span class="order-decision">
+<button type="button" class="order-refuse" data-order-action="refuse">Recusar</button>
+<button type="button" class="order-primary" data-order-action="accept">Aceitar</button>
+</span>
+</div>
+<div class="order-extra" hidden><p><strong></strong></p><p><strong></strong></p><p><strong></strong></p><p><strong></strong></p><p><strong></strong></p></div>
+</article>
+</template>
+<template id="aacd-order-template">
+<article class="aacd-order-row" data-aacd-order="" data-status="" data-material="" data-lab="" data-priority="">
+<span class="aacd-device-icon">
+<img src="assets/aacd-f6ed4.svg" alt="">
+</span>
+<div class="aacd-order-info">
+<small></small>
+<h2></h2>
+<span class="urgent-tag">Urgente</span>
+<p><img src="assets/aacd-5e5d9.svg" alt=""></p>
+<small></small>
+</div>
+<div class="aacd-order-state">
+<span class="aacd-status production"><span class="dot"></span></span>
+<small></small>
+</div>
+<button class="aacd-detail-button" type="button" data-aacd-detail aria-expanded="false" aria-controls="" aria-label="Detalhes do pedido">
+<img src="assets/aacd-fa3e1.svg" alt="">
+</button>
+<div class="aacd-order-detail" hidden><p><strong></strong></p><p><strong></strong></p><p><strong></strong></p><p><strong></strong></p><p><strong></strong></p></div>
+</article>
+</template>
+<template id="network-template">
+<article class="aacd-network-card">
+<div class="network-card-header">
+<span class="round-icon green">
+<img src="assets/aacd-c1b09.svg" alt="">
+</span>
+<div>
+<h2></h2>
+<p><img src="assets/aacd-334c9.svg" alt=""></p>
+</div>
+<span class="aacd-status delivered"></span>
+</div>
+<div class="network-info">
+<div>
+<small>PARQUE FABRIL</small>
+<strong></strong>
+</div>
+<div>
+<small>CAPACIDADE TÉCNICA</small>
+<strong></strong>
+</div>
+<div class="network-materials">
+<small>MATERIAIS HOMOLOGADOS AACD</small>
+<p><span></span><span></span><span></span></p>
+</div>
+</div>
+</article>
+</template>
+<template id="machine-template">
+<article>
+<h4></h4>
+<p></p>
+<span class="machine-approved">
+<img src="assets/aacd-05c0e.svg" alt="">
+</span>
+<div><span></span><span></span><span></span></div>
+</article>
+</template>
+<template id="review-template">
+<details class="aacd-review" data-candidate="">
+<summary>
+<span class="round-icon green">
+<img src="assets/aacd-2eb28.svg" alt="">
+</span>
+<div>
+<h2></h2>
+<p><br></p>
+</div>
+<span class="review-chevron">
+<img src="assets/aacd-adcfd.svg" alt="">
+</span>
+</summary>
+<div class="aacd-review-content">
+<h3>
+<span class="step">1</span>Informações Gerais do Candidato</h3>
+<div class="review-info-grid"><div><small></small><strong><img src="assets/aacd-1ff05.svg" alt=""></strong><p></p></div><div><small></small><strong><img src="assets/aacd-b8992.svg" alt=""></strong><p></p></div><div><small></small><strong><img src="assets/aacd-ebe27.svg" alt=""></strong><p></p></div><div><small></small><strong><img src="assets/aacd-da6d7.svg" alt=""></strong><p></p></div></div>
+<h3>
+<span class="step">2</span>Parque Fabril e Impressoras 3D Cadastradas <small>4 Máquinas Habilitadas</small>
+</h3>
+<div class="review-machine-grid"></div>
+<div class="editor-actions">
+<button type="button" class="btn-back" data-review-action="reject">
+<img src="assets/aacd-d8a8f.svg" alt="">Rejeitar Cadastro</button>
+<button type="button" class="btn btn-conexo" data-review-action="approve">
+<img src="assets/aacd-45fec.svg" alt="">Homologar Parceiro Técnico</button>
+</div>
+</div>
+</details>
+</template>
+<template id="match-template">
+<article class="aacd-match-card recommended" data-match="">
+<span class="recommendation-banner">
+<img src="assets/aacd-5bd15.svg" alt="">RECOMENDAÇÃO PRINCIPAL CONEXO</span>
+<div class="match-header">
+<span class="round-icon green">
+<img src="assets/aacd-4631c.svg" alt="">
+</span>
+<div>
+<h2><small></small></h2>
+<p></p>
+</div>
+<div class="match-score">
+<strong><img src="assets/aacd-8da20.svg" alt=""><span>98%</span></strong>
+<div>
+<b></b>
+<small></small>
+</div>
+</div>
+</div>
+<div class="match-specs">
+<div>
+<img src="assets/aacd-195bf.svg" alt="">
+<div>
+<small>Impressora 3D</small>
+<strong></strong>
+</div>
+</div>
+<div>
+<img src="assets/aacd-7206e.svg" alt="">
+<div>
+<small>Matéria-Prima</small>
+<strong></strong>
+</div>
+</div>
+<div>
+<img src="assets/aacd-1b4db.svg" alt="">
+<div>
+<small>Fila Atual</small>
+<strong></strong>
+</div>
+</div>
+</div>
+<div class="match-actions">
+<small><img src="assets/aacd-69e66.svg" alt=""></small>
+<div>
+<button class="btn-back" type="button" data-match-detail aria-expanded="false" aria-controls="">Ver Ficha Técnica</button>
+<button class="btn btn-conexo" type="button" data-connect-order="">Conectar e Enviar Pedido <img src="assets/aacd-87a82.svg" alt="">
+</button>
+</div>
+</div>
+<div class="aacd-order-detail" hidden><p><strong></strong></p><p><strong></strong></p><p><strong></strong></p><p></p></div>
+</article>
+</template>
+<template id="home-partner-template">
+<div class="home-partner-line">
+<span class="round-icon">
+<img src="assets/aacd-c6315.svg" alt="">
+</span>
+<div>
+<strong></strong>
+<small></small>
+</div>
+<img src="assets/aacd-cb673.svg" alt="">
+</div>
+</template>
   <script src="vendor/bootstrap.bundle.min.js">
 </script>
   <script src="app.js">

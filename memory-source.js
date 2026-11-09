@@ -46,6 +46,7 @@ export function createMemorySource(seed) {
       remove('reviews', id);
       return candidate;
     },
+    async listHomePartners() { return state.homePartners; },
     async listMatches() { return state.matches; },
     async getProfile(area) { return state.profiles[area]; },
     async saveProfile(area, record) { state.profiles[area] = record; return record; },

@@ -3,6 +3,20 @@
 // Volume X/Y/Z e needsMaterial das três impressoras são placeholders fictícios.
 // PENDÊNCIA: validar a lista de materiais com a AACD.
 const examples = {
+  "homePartners": [
+  {
+    "name": "FabLab Mauá - Bloco W",
+    "description": "Prusa XL 5T • PETG & TPU",
+    "icon": "assets/aacd-c6315.svg",
+    "approve": false
+  },
+  {
+    "name": "Núcleo BioEngenharia Poli",
+    "description": "Impressora FDM",
+    "icon": "assets/aacd-409f4.svg",
+    "approve": true
+  }
+],
   "printers": [
     {
       "id": "1",

@@ -6,7 +6,7 @@ import { createMemorySource } from './memory-source.js';
 const methods = [
   'listPrinters', 'getPrinter', 'savePrinter', 'removePrinter',
   'listOrders', 'getOrder', 'createOrder', 'saveOrder', 'listHistory', 'addHistory',
-  'listPartners', 'listReviews', 'reviewPartner', 'listMatches',
+  'listPartners', 'listReviews', 'reviewPartner', 'listMatches', 'listHomePartners',
   'getProfile', 'saveProfile', 'getCurrentUser'
 ];
 export function createDataService(source) {
@@ -19,6 +19,6 @@ const service = createDataService(createMemorySource(createMockData()));
 export const {
   listPrinters, getPrinter, savePrinter, removePrinter,
   listOrders, getOrder, createOrder, saveOrder, listHistory, addHistory,
-  listPartners, listReviews, reviewPartner, listMatches,
+  listPartners, listReviews, reviewPartner, listMatches, listHomePartners,
   getProfile, saveProfile, getCurrentUser
 } = service;

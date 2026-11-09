@@ -1,5 +1,8 @@
 'use strict';
 
+// Ponte temporária até a conversão de todos os controladores em módulos ES.
+const dataReady = import('./data.js');
+
 // Todas as telas já existem no HTML. Navegar apenas alterna hidden/inert;
 // nenhum formulário é recriado e os valores permanecem nos próprios campos.
 const app = document.getElementById('app');
