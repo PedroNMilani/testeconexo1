@@ -166,7 +166,7 @@ document.getElementById('aacd-review-list').addEventListener('click', event => {
     location.lastChild.textContent = 'São Paulo, SP • Butantã';
     card.querySelector('.aacd-status').textContent = '● Homologado';
     const info = card.querySelectorAll('.network-info strong');
-    info[0].textContent = '4 Impressoras FDM / MSLA';
+    info[0].textContent = '4 Impressoras FDM';
     info[1].textContent = 'Engenharia Biomédica';
     card.querySelector('.network-materials p').textContent = 'Materiais sujeitos à validação clínica AACD';
     aacdNetwork.append(card);

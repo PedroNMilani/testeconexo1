@@ -5,7 +5,9 @@ const partnerSections = new Set(['parceiro-inicio', 'parceiro-pedidos', 'parceir
 const printerRecords = new Map([
   ['1', { name: 'Bambu Lab X1-Carbon', asset: 'bambu', label: 'BAMBU LAB COREXY', kind: 'FDM Industrial' }],
   ['2', { name: 'Creality Ender 3 S1 Pro', asset: 'creality', label: 'CREALITY FDM STANDBY', kind: 'FDM Standby' }],
-  ['3', { name: 'Anycubic Photon Mono X', asset: 'resin', label: 'ANYCUBIC MONO SLA', kind: 'SLA Resina' }]
+  // Placeholders fictícios: modelo FDM, volume X/Y/Z (mm) e bico; não representam equipamento real.
+  // PENDÊNCIA: materiais de exemplo ainda não validados com a AACD.
+  ['3', { name: 'Impressora FDM 03', asset: 'bambu', label: 'IMPRESSORA FDM 03', kind: 'FDM', materials: ['PLA'], nozzles: ['0.4'], volumes: { X: '200', Y: '200', Z: '200' } }]
 ]);
 let printerSequence = 3;
 let selectedPrinter = '1';
