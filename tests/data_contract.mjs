@@ -1,0 +1,43 @@
+import assert from 'node:assert/strict';
+import { createDataService } from '../data.js';
+import { createMockData } from '../mock-data.js';
+import { createMemorySource } from '../memory-source.js';
+const seed = createMockData();
+const data = createDataService(createMemorySource(seed));
+seed.printers[0].name = 'Alterado fora da fonte';
+const printers = await data.listPrinters();
+assert.equal(printers.length, 3);
+for (const printer of printers) {
+  assert.ok(printer.materials.length && printer.nozzles.length);
+  for (const axis of ['X', 'Y', 'Z']) assert.ok(Number(printer.volumes[axis]) > 0);
+  assert.ok(['Sim', 'Não'].includes(printer.needsMaterial));
+}
+const original = await data.getPrinter('1');
+printers[0].materials.push('alteração externa');
+assert.deepEqual(await data.getPrinter('1'), original);
+const input = { ...original, volumes: { X: '210', Y: '200', Z: '200' } };
+const output = await data.savePrinter(input);
+input.volumes.X = '999';
+output.volumes.Y = '999';
+assert.equal((await data.getPrinter('1')).volumes.X, '210');
+assert.equal((await data.getPrinter('1')).volumes.Y, '200');
+const profile = await data.getProfile('partner');
+const savedProfile = await data.saveProfile('partner', profile);
+profile['profile-institution'] = 'externo';
+savedProfile['profile-institution'] = 'externo';
+assert.notEqual((await data.getProfile('partner'))['profile-institution'], 'externo');
+const partners = await data.listPartners();
+const reviews = await data.listReviews();
+await data.reviewPartner(reviews[0].id, true);
+assert.equal((await data.listPartners()).length, partners.length + 1);
+assert.equal((await data.listReviews()).length, reviews.length - 1);
+const draft = { code: '#CONTRATO', scope: 'aacd', materials: ['PLA'] };
+const order = await data.createOrder(draft);
+draft.materials.push('externo');
+order.materials.push('externo');
+assert.deepEqual((await data.getOrder(order.id)).materials, ['PLA']);
+await assert.rejects(data.createOrder(draft), /já foi conectado/);
+// Outra instância com o mesmo contrato: não depende do singleton nem do DOM.
+const second = createDataService(createMemorySource(createMockData()));
+assert.deepEqual(await second.getPrinter('1'), original);
+console.log('PASS: contrato assíncrono, registros completos, isolamento de leitura/escrita e instâncias independentes.');
