@@ -157,10 +157,11 @@ document.getElementById('reset-form').addEventListener('submit', event => {
 
 // Senhas e dados permanecem apenas nos campos desta aba. Não há persistência
 // em cookies, localStorage ou sessionStorage, nem envio a um backend.
+// O mapa é parte da tela, inclusive na prévia. Não aguarda catálogos ou sessão.
+mountLocation('registration-location',{street:'#parceiro-dados-street',city:'#parceiro-dados-city',state:'#parceiro-dados-state',number:'#parceiro-dados-number'});
 await Promise.all([initPartner(), initAacd()]);
 if(backendEnabled){
   try{const catalog=await api('/catalogos');for(const id of ['cadastro-aacd-unit','aacd-profile-unit']){const select=document.getElementById(id),selected=select.value;select.replaceChildren(...['',...catalog.unidades].map(unit=>{const option=document.createElement('option');option.value=unit;option.textContent=unit||'Selecione sua unidade';return option;}));select.value=selected;}}catch(error){document.getElementById('login-feedback').textContent=error.message;}
-  mountLocation('registration-location',{street:'#parceiro-dados-street',city:'#parceiro-dados-city',state:'#parceiro-dados-state',number:'#parceiro-dados-number'});
   try{await restoreSession();renderBackendNotice();document.dispatchEvent(new CustomEvent('conexo:data-changed'));}catch(error){document.getElementById('login-feedback').textContent=error.message;}
 }
 setLoginMode('aacd');

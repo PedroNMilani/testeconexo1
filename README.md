@@ -104,3 +104,5 @@ Use `CONEXO_TEST_URL` para mudar a URL de teste e `CHROMIUM_PATH` para indicar o
 Para validar o contrato assíncrono e o isolamento das cópias, execute `node tests/data_contract.mjs`. As telas importam apenas `data.js`; para mudar a origem dos dados, forneça outro adaptador com os métodos do contrato e altere a composição em `data.js`, sem modificar as telas. Nenhuma fonte vazia foi criada.
 
 O contrato de dados cobre isolamento de cópias, registros completos, transições e recusa sem histórico. O smoke cobre o salvamento sem alterações das três impressoras iniciais, os filtros do enum e os fluxos de aceite, conclusão e recusa. As pendências estão em [DECISIONS.md](DECISIONS.md).
+
+O mapa do cadastro também aparece na prévia estática (por exemplo, Live Server na porta 5500), com ajuste manual do pino. A busca automática de endereço e a gravação do cadastro exigem o backend.

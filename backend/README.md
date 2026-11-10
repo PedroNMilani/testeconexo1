@@ -103,3 +103,5 @@ Executado nesta entrega em Linux: 14 testes com MySQL 8.4 e MongoDB 7.0 reais e 
 Chamadas reais ao Nominatim, tiles OSM e widget UserWay não foram validadas nesta rede. Nos testes, o widget e tiles foram bloqueados explicitamente e a geocodificação externa foi simulada em testes unitários; o fluxo de navegador usou o fallback local. Não há alegação de teste do conteúdo externo.
 
 Recuperação de senha por email, pedidos/match reais, coordenadas das unidades solicitantes e implantação HTTPS são próximas etapas. Antes de disponibilizar acesso externo, configurar banco com autenticação, HTTPS/reverse proxy e cookies Secure; o servidor atual escuta só em loopback.
+
+Regressão de visibilidade do mapa, sem banco: `python ../tests/map_visibility.py`. Verifica prévia estática e catálogo do backend pendente, com imagens externas bloqueadas explicitamente. O mapa é montado antes das consultas de inicialização.
