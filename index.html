@@ -7,6 +7,7 @@
   <title>CoNexo — Sobre Nós</title>
   <link rel="stylesheet" href="vendor/bootstrap.min.css">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
 </head>
 <body>
   <a class="skip-link" id="skip-link" href="#sobre-nos-titulo">Ir para o conteúdo</a>
@@ -63,7 +64,8 @@
 </div>
 </div>
 </header>
-  <main id="app">
+  <p id="backend-stage-notice" class="alert alert-info m-3" role="status" hidden>Cadastros, impressoras e acessos usam o banco. Pedidos e recomendações ainda são exemplos de demonstração nesta entrega.</p>
+<main id="app">
 <section id="sobre-nos" class="app-section" data-page aria-labelledby="sobre-nos-titulo">
 <div class="page">
 <div class="page-title">
@@ -294,7 +296,7 @@ E-mail de contato:
 <a class="btn-back" href="#sobre-nos" data-section="sobre-nos">Cancelar</a>
 <p class="compliance">
 <img src="assets/shield.png" alt="" class="icon ">
-<span>Os cadastros são avaliados pela comissão de Tecnologia Assistiva da AACD antes do primeiro despacho técnico.</span>
+<span>O cadastro precisa ser homologado pela AACD antes da participação na rede.</span>
 </p>
 <button type="submit" class="btn btn-conexo" id="termos-uso-confirm-terms" disabled="" aria-describedby="termos-uso-terms-status">Confirmar</button>
 </div>
@@ -331,7 +333,7 @@ E-mail de contato:
 <div class="field">
 <label class="form-label" for="parceiro-dados-state">Estado<span class="visually-hidden"> (obrigatório)</span>
 </label>
-<input class="form-control" id="parceiro-dados-state" name="state" type="text" placeholder="Ex: São Paulo" required="">
+<select class="form-select" id="parceiro-dados-state" name="state" required><option value="">Selecione a UF</option><option value="AC">Acre</option><option value="AL">Alagoas</option><option value="AP">Amapá</option><option value="AM">Amazonas</option><option value="BA">Bahia</option><option value="CE">Ceará</option><option value="DF">Distrito Federal</option><option value="ES">Espírito Santo</option><option value="GO">Goiás</option><option value="MA">Maranhão</option><option value="MT">Mato Grosso</option><option value="MS">Mato Grosso do Sul</option><option value="MG">Minas Gerais</option><option value="PR">Paraná</option><option value="PB">Paraíba</option><option value="PA">Pará</option><option value="PE">Pernambuco</option><option value="PI">Piauí</option><option value="RN">Rio Grande do Norte</option><option value="RS">Rio Grande do Sul</option><option value="RJ">Rio de Janeiro</option><option value="RO">Rondônia</option><option value="RR">Roraima</option><option value="SC">Santa Catarina</option><option value="SE">Sergipe</option><option value="SP">São Paulo</option><option value="TO">Tocantins</option></select>
 </div>
 </div>
 <div class="col-md-3">
@@ -341,13 +343,7 @@ E-mail de contato:
 <input class="form-control" id="parceiro-dados-city" name="city" type="text" placeholder="Ex: São Caetano do Sul" required="">
 </div>
 </div>
-<div class="col-md-6">
-<div class="field">
-<label class="form-label" for="parceiro-dados-district">Bairro<span class="visually-hidden"> (obrigatório)</span>
-</label>
-<input class="form-control" id="parceiro-dados-district" name="district" type="text" placeholder="Ex: Santa Paula" required="">
-</div>
-</div>
+
 <div class="col-md-4">
 <div class="field">
 <label class="form-label" for="parceiro-dados-street">Rua / Avenida<span class="visually-hidden"> (obrigatório)</span>
@@ -357,9 +353,9 @@ E-mail de contato:
 </div>
 <div class="col-md-2">
 <div class="field">
-<label class="form-label" for="parceiro-dados-number">Número<span class="visually-hidden"> (obrigatório)</span>
+<label class="form-label" for="parceiro-dados-number">Número (opcional)
 </label>
-<input class="form-control" id="parceiro-dados-number" name="number" type="text" placeholder="Ex: 4445" required="">
+<input class="form-control" id="parceiro-dados-number" name="number" type="text" placeholder="Ex: 4445">
 </div>
 </div>
 <div class="col-md-6">
@@ -375,6 +371,7 @@ E-mail de contato:
 </label>
 <input class="form-control" id="parceiro-dados-email" name="email" type="email" placeholder="contato@lab3d.usp.br" required="" autocomplete="email">
 </div>
+<div class="field"><label class="form-label" for="parceiro-dados-phone">Telefone com DDD</label><input id="parceiro-dados-phone" class="form-control" name="phone" type="tel" autocomplete="tel" required></div>
 <div class="field">
 <label class="form-label" for="parceiro-dados-password">Crie uma senha:<span class="visually-hidden"> (obrigatório)</span>
 </label>
@@ -402,7 +399,7 @@ E-mail de contato:
 <a class="btn-back" href="#termos-uso" data-section="termos-uso">Voltar</a>
 <p class="compliance">
 <img src="assets/shield.png" alt="" class="icon ">
-<span>Os cadastros são avaliados pela comissão de Tecnologia Assistiva da AACD antes do primeiro despacho técnico.</span>
+<span>O cadastro precisa ser homologado pela AACD antes da participação na rede.</span>
 </p>
 <button type="submit" class="btn btn-conexo">Avançar</button>
 </div>
@@ -430,9 +427,9 @@ E-mail de contato:
 </div>
 <div class="volume-row">
 <div class="field">
-<label class="form-label" for="parceiro-equipamentos-printer">Modelos de Impressora 3D Disponíveis<span class="visually-hidden"> (obrigatório)</span>
+<label class="form-label" for="register-printer-name">Modelo da impressora<span class="visually-hidden"> (obrigatório)</span>
 </label>
-<input class="form-control" id="parceiro-equipamentos-printer" name="printer" type="text" placeholder="Ex: Creality CR-M4, Voron 2.4, Bambu Lab X1C" required="">
+<input class="form-control" id="register-printer-name" name="printerName" type="text" placeholder="Ex: Creality CR-M4, Voron 2.4, Bambu Lab X1C" required="">
 </div>
 <div class="field">
 <label class="form-label" for="parceiro-equipamentos-volumeX">Volume X<span class="visually-hidden"> (obrigatório)</span>
@@ -451,7 +448,7 @@ E-mail de contato:
 </div>
 </div>
 <div class="choice-head">
-<label>Materiais Aptos e Homologados</label>
+<label>Materiais compatíveis com a impressora</label>
 <span>Selecione todos os disponíveis</span>
 </div>
 <div class="choices">
@@ -464,6 +461,7 @@ E-mail de contato:
 <label class="choice">
 <input type="checkbox" name="materials" value="TPU">TPU / Filamentos Flexíveis (Poliuretano Termoplástico)</label>
 </div>
+<div class="choice-head"><label>Materiais disponíveis nesta impressora</label><span>Selecione os que a instituição pode fornecer</span></div><div class="choices"><label class="choice"><input type="checkbox" name="materialsAvailable" value="PLA">PLA</label><label class="choice"><input type="checkbox" name="materialsAvailable" value="PETG">PETG</label><label class="choice"><input type="checkbox" name="materialsAvailable" value="ABS">ABS</label><label class="choice"><input type="checkbox" name="materialsAvailable" value="TPU">TPU</label></div>
 <div class="choice-head">
 <label>Bicos Disponíveis para a Impressora</label>
 <span>Selecione todos os disponíveis</span>
@@ -489,7 +487,7 @@ E-mail de contato:
 <a class="btn-back" href="#parceiro-dados" data-section="parceiro-dados">Voltar</a>
 <p class="compliance">
 <img src="assets/shield.png" alt="" class="icon ">
-<span>Os cadastros são avaliados pela comissão de Tecnologia Assistiva da AACD antes do primeiro despacho técnico.</span>
+<span>O cadastro precisa ser homologado pela AACD antes da participação na rede.</span>
 </p>
 <button type="submit" class="btn btn-conexo">Avançar</button>
 </div>
@@ -511,34 +509,12 @@ E-mail de contato:
 <div class="section-heading">
 <span class="step" aria-hidden="true">3</span>
 <div>
-<h2>Disponibilidade e Logística</h2>
-<p>Previsão de atendimento voluntário ou convênio e formato de envio.</p>
+<h2>Localização da instituição</h2><p>Confirme onde a instituição está localizada.</p>
 </div>
-</div>
-<div class="field">
-<label class="form-label" for="parceiro-logistica-hours">Horas disponíveis por semana</label>
-<select class="form-select" id="parceiro-logistica-hours" name="hours" required="">
-<option value="">Selecione a estimativa</option>
-<option>Até 5 horas</option>
-<option>6 a 10 horas</option>
-<option>11 a 20 horas</option>
-<option>Mais de 20 horas</option>
-</select>
-</div>
-<div class="field">
-<label class="form-label" for="parceiro-logistica-needsMaterial">Precisa de material?</label>
-<select class="form-select" id="parceiro-logistica-needsMaterial" name="needsMaterial" required="">
-<option value="">Sim ou Não</option>
-<option>Sim</option>
-<option>Não</option>
-</select>
-</div>
-<div class="field">
-<label class="form-label" for="parceiro-logistica-notes">Observações ou Certificações Específicas <span>Opcional</span>
-</label>
-<textarea id="parceiro-logistica-notes" name="notes" class="form-control" placeholder="Ex: Contamos com estufa desumidificadora de filamento e bicos de aço endurecido...">
-</textarea>
-</div>
+</div><div id="registration-location" class="location-box" hidden><p>Localize o endereço, ajuste o pino se necessário e confirme o local da instituição.</p><button type="button" class="btn btn-sm btn-outline-success" data-geocode>Localizar no mapa</button><div class="location-map" data-map role="region" aria-label="Mapa da localização da instituição"></div><p class="feedback" data-location-feedback role="status"></p><label class="choice"><input type="checkbox" data-confirm-location>Confirmo que o pino indica o local da instituição</label><p class="small">O número não é enviado à consulta de geocodificação. Use as setas no pino para ajustar pelo teclado.</p></div>
+
+
+
 <div class="progress" role="progressbar" aria-label="Progresso do cadastro: etapa 3 de 3" aria-valuenow="98" aria-valuemin="0" aria-valuemax="100">
 <div class="progress-bar" style="width:98%">
 </div>
@@ -559,7 +535,7 @@ E-mail de contato:
 <a class="btn-back" href="#parceiro-equipamentos" data-section="parceiro-equipamentos">Voltar</a>
 <p class="compliance">
 <img src="assets/shield.png" alt="" class="icon ">
-<span>Os cadastros são avaliados pela comissão de Tecnologia Assistiva da AACD antes do primeiro despacho técnico.</span>
+<span>O cadastro precisa ser homologado pela AACD antes da participação na rede.</span>
 </p>
 <button type="submit" class="btn btn-conexo">Avançar</button>
 </div>
@@ -643,7 +619,7 @@ E-mail de contato:
 <a class="btn-back" href="#login" data-section="login" data-login-mode="aacd">Voltar</a>
 <p class="compliance">
 <img src="assets/shield.png" alt="" class="icon ">
-<span>Os cadastros são avaliados pela comissão de Tecnologia Assistiva da AACD antes do primeiro despacho técnico.</span>
+<span>O cadastro precisa ser homologado pela AACD antes da participação na rede.</span>
 </p>
 <button type="submit" class="btn btn-conexo">Avançar</button>
 </div>
@@ -763,7 +739,7 @@ E-mail de contato:
 <h3 id="editor-name">Bambu Lab X1-Carbon</h3>
 <p id="editor-id">ID: IMP-01 • FDM Industrial</p>
 </div>
- <h2 class="editor-subtitle">Materiais Aptos e Homologados</h2>
+ <h2 class="editor-subtitle">Materiais compatíveis com a impressora</h2>
  <form id="printer-form" class="form-card technical printer-form" data-form="printer">
  <div id="new-printer-fields" hidden>
 <div class="field">
@@ -786,7 +762,7 @@ E-mail de contato:
 </div>
 </div>
 <div class="choice-head">
-<label>Materiais Aptos e Homologados</label>
+<label>Materiais compatíveis com a impressora</label>
 <span>Selecione todos os disponíveis</span>
 </div>
 <div class="choices">
@@ -799,6 +775,7 @@ E-mail de contato:
 <label class="choice">
 <input type="checkbox" name="materials" value="TPU">TPU / Filamentos Flexíveis (Poliuretano Termoplástico)</label>
 </div>
+<div class="choice-head"><label>Materiais disponíveis nesta impressora</label><span>Selecione os que a instituição pode fornecer</span></div><div class="choices"><label class="choice"><input type="checkbox" name="materialsAvailable" value="PLA">PLA</label><label class="choice"><input type="checkbox" name="materialsAvailable" value="PETG">PETG</label><label class="choice"><input type="checkbox" name="materialsAvailable" value="ABS">ABS</label><label class="choice"><input type="checkbox" name="materialsAvailable" value="TPU">TPU</label></div>
 <div class="choice-head">
 <label>Bicos Disponíveis para a Impressora</label>
 <span>Selecione todos os disponíveis</span>
@@ -854,7 +831,7 @@ E-mail de contato:
 <div class="col-md-4">
 <div class="field">
 <label class="form-label" for="profile-state">Estado</label>
-<input class="form-control" placeholder="Ex: São Paulo" id="profile-state" name="profile-state" type="text" value="" required>
+<select class="form-select" id="profile-state" name="profile-state" required><option value="">Selecione a UF</option><option value="AC">Acre</option><option value="AL">Alagoas</option><option value="AP">Amapá</option><option value="AM">Amazonas</option><option value="BA">Bahia</option><option value="CE">Ceará</option><option value="DF">Distrito Federal</option><option value="ES">Espírito Santo</option><option value="GO">Goiás</option><option value="MA">Maranhão</option><option value="MT">Mato Grosso</option><option value="MS">Mato Grosso do Sul</option><option value="MG">Minas Gerais</option><option value="PR">Paraná</option><option value="PB">Paraíba</option><option value="PA">Pará</option><option value="PE">Pernambuco</option><option value="PI">Piauí</option><option value="RN">Rio Grande do Norte</option><option value="RS">Rio Grande do Sul</option><option value="RJ">Rio de Janeiro</option><option value="RO">Rondônia</option><option value="RR">Roraima</option><option value="SC">Santa Catarina</option><option value="SE">Sergipe</option><option value="SP">São Paulo</option><option value="TO">Tocantins</option></select>
 </div>
 </div>
 <div class="col-md-4">
@@ -863,12 +840,7 @@ E-mail de contato:
 <input class="form-control" placeholder="Ex: São Caetano do Sul" id="profile-city" name="profile-city" type="text" value="" required>
 </div>
 </div>
-<div class="col-md-4">
-<div class="field">
-<label class="form-label" for="profile-district">Bairro</label>
-<input class="form-control" placeholder="Ex: Santa Paula" id="profile-district" name="profile-district" type="text" value="" required>
-</div>
-</div>
+
 </div>
  <div class="row row-fields">
 <div class="col-md-5">
@@ -879,8 +851,8 @@ E-mail de contato:
 </div>
 <div class="col-md-3">
 <div class="field">
-<label class="form-label" for="profile-number">Número</label>
-<input class="form-control" placeholder="Ex: 4445" id="profile-number" name="profile-number" type="text" value="" required>
+<label class="form-label" for="profile-number">Número (opcional)</label>
+<input class="form-control" placeholder="Ex: 4445" id="profile-number" name="profile-number" type="text" value="">
 </div>
 </div>
 </div>
@@ -888,7 +860,7 @@ E-mail de contato:
 <label class="form-label" for="profile-responsible">Responsável Técnico</label>
 <input class="form-control" placeholder="Ex: Dra. Mariana Costa ou Eng. Paulo Silva" id="profile-responsible" name="profile-responsible" type="text" value="" required>
 </div>
- <div class="editor-actions">
+ <div id="profile-location" class="location-box" hidden><p>Localize o endereço, ajuste o pino se necessário e confirme o local da instituição.</p><button type="button" class="btn btn-sm btn-outline-success" data-geocode>Localizar no mapa</button><div class="location-map" data-map role="region" aria-label="Mapa da localização da instituição"></div><p class="feedback" data-location-feedback role="status"></p><label class="choice"><input type="checkbox" data-confirm-location>Confirmo que o pino indica o local da instituição</label><p class="small">O número não é enviado à consulta de geocodificação. Use as setas no pino para ajustar pelo teclado.</p></div><div class="editor-actions">
 <button type="button" class="btn-back" id="cancel-profile">Cancelar</button>
 <button class="btn btn-conexo" type="submit">Atualizar</button>
 </div>
@@ -1071,6 +1043,7 @@ E-mail de contato:
 <b id="aacd-review-count">0</b> Na fila</span>
 </div>
 </div>
+<section id="aacd-users-panel" hidden><h2>Contas AACD aguardando homologação</h2><div id="aacd-users-list"></div><p id="aacd-users-feedback" class="feedback" role="status"></p></section>
 <div id="aacd-review-list">
 
 
@@ -1094,15 +1067,16 @@ E-mail de contato:
 <span class="step">1</span>
 <div>
 <h2>Informações Gerais do Pedido</h2>
-<p>Definição do paciente, código interno de prontuário e prioridade ambulatorial</p>
+<p>Identificação da solicitação e prioridade de produção</p>
 </div>
 </div>
 <div class="field">
 <label class="form-label" for="aacd-order-code">Nome / Código do Pedido</label>
 <div class="aacd-code-input">
 <img src="assets/aacd-a7d5a.svg" alt="">
-<input class="form-control" id="aacd-order-code" name="code" value="#PED-2024-089h" required>
+<input class="form-control" id="aacd-order-code" name="code"  required>
 </div>
+<button type="button" id="generate-request-code" class="btn btn-sm btn-outline-success mt-2">Gerar Código</button>
 </div>
 <fieldset class="aacd-priority">
 <legend>Prioridade Clínica de Atendimento</legend>
@@ -1372,6 +1346,7 @@ E-mail de contato:
 </div>
   </div>
 
+<div class="modal fade" id="code-dialog" tabindex="-1" aria-labelledby="code-dialog-title" aria-hidden="true"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h2 class="modal-title fs-5" id="code-dialog-title">Gerar código da solicitação</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button></div><form id="code-generator-form"><div class="modal-body"><label class="form-label" for="code-material">Material para o código</label><select id="code-material" class="form-select" required><option value="">Selecione um material</option><option>PLA</option><option>PETG</option><option>ABS</option><option>TPU</option></select><p id="code-generator-feedback" class="form-error" role="alert"></p></div><div class="modal-footer"><button class="btn btn-conexo" type="submit">Gerar</button></div></form></div></div></div>
 <template id="printer-template">
 <article class="printer-card" data-printer-id="">
  <div class="printer-art ">
@@ -1635,6 +1610,8 @@ E-mail de contato:
 </template>
   <script src="vendor/bootstrap.bundle.min.js">
 </script>
+<script src="runtime-config.js"></script>
+<script src="vendor/leaflet/leaflet.js"></script>
 <script type="module" src="app.js"></script>
 <script src="https://cdn.userway.org/widget.js" data-account="jJiXFJSARR" async></script>
 </body>

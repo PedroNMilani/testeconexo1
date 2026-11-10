@@ -69,3 +69,5 @@
 
 /* Os três filtros do enum e Todos cabem também na largura de celular. */
 @media(max-width:600px){#aacd-pedidos .history-tabs{max-width:100%;flex-wrap:wrap;border-radius:24px}}
+
+.location-box{margin:20px 0;min-width:0}.location-map{height:280px;margin:16px 0;border-radius:16px;max-width:100%;isolation:isolate}.location-box .choice{display:flex;align-items:center;gap:10px}.location-box .feedback{margin-top:12px}#aacd-users-panel{margin:24px 0}#aacd-users-list article{padding:18px;border:1px solid #bfc9c0;border-radius:16px;margin:12px 0;overflow-wrap:anywhere}

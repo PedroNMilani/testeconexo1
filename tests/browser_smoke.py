@@ -141,7 +141,7 @@ with sync_playwright() as p:
  page.get_by_role('button',name='Adicionar impressora',exact=True).click()
  page.locator('#new-printer-name').fill('Prusa Teste')
  for axis in ['X','Y','Z']:page.locator('#edit-volume'+axis).fill('200')
- page.locator('#printer-form [value="PLA"]').check()
+ page.locator('#printer-form [name="materials"][value="PLA"]').check()
  page.locator('#edit-needs-material').select_option(label='Não')
  page.get_by_role('button',name='Adicionar',exact=True).click()
  expect(page.locator('#parceiro-inicio')).to_be_visible()

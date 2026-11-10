@@ -1,3 +1,4 @@
+import { backendEnabled, sessionUser, sessionKey } from './auth-client.js';
 import * as data from './data.js';
 import { ORDER_STATUS, ORDER_STATUS_UI } from './data.js';
 import { activeSection, navigate } from './router.js';
@@ -26,7 +27,8 @@ function renderPrinter(record) {
   return card;
 }
 async function renderPrinters() {
-  const printers = await data.listPrinters();
+  const actor=sessionKey();const printers = await data.listPrinters();
+  if(backendEnabled&&actor!==sessionKey())return;
   printerGrid.replaceChildren(...printers.map(renderPrinter));
   document.getElementById('printer-count').textContent = printers.length;
   document.getElementById('connected-count').textContent = `${printers.length} conectadas`;
@@ -87,7 +89,7 @@ async function renderHistory() {
     return row;
   }));
 }
-async function renderPartner() { await Promise.all([renderPrinters(), renderPartnerOrders(), renderHistory()]); }
+async function renderPartner() { try{await Promise.all([renderPrinters(), renderPartnerOrders(), renderHistory()]);}catch(error){document.getElementById('printer-feedback').textContent=error.message;} }
 bindAreaHeader({ sections: partnerSections, headerId: 'partner-header', nav: '.partner-nav', accountButtonId: 'account-button' });
 bindLogout('[data-logout]', 'parceiro');
 const renderPartnerProfile = bindProfile({
@@ -119,11 +121,13 @@ async function openPrinter(id) {
   printerForm.querySelectorAll('[name="materials"]').forEach(input => { input.checked = record?.materials.includes(input.value) || false; });
   printerForm.querySelectorAll('[name="nozzles"]').forEach(input => { input.checked = (record?.nozzles || ['0.2', '0.4', '0.6', '0.8']).includes(input.value); });
   document.getElementById('edit-needs-material').value = record?.needsMaterial || '';
+  if(backendEnabled){document.getElementById('edit-needs-material').closest('.field').hidden=true;document.getElementById('edit-needs-material').required=false;}
+  printerForm.querySelectorAll('[name="materialsAvailable"]').forEach(input=>{input.checked=(record?.materialsAvailable||[]).includes(input.value);});
   navigate('parceiro-impressora');
 }
 document.addEventListener('click', event => {
   const edit = event.target.closest('[data-edit-printer]');
-  if (edit) openPrinter(edit.dataset.editPrinter);
+  if (edit) openPrinter(edit.dataset.editPrinter).catch(error=>{document.getElementById('printer-feedback').textContent=error.message;});
 });
 document.getElementById('add-printer').addEventListener('click', () => openPrinter(null));
 printerForm.addEventListener('submit', async event => {
@@ -135,24 +139,30 @@ printerForm.addEventListener('submit', async event => {
     printerForm.querySelector('.form-error').textContent = 'Selecione pelo menos um material e um bico disponível.';
     return;
   }
+  const saveButton=document.getElementById('save-printer');saveButton.disabled=true;
+  try{
   const creating = selectedPrinter === null;
   const previous = creating ? {} : await data.getPrinter(selectedPrinter);
   const record = await data.savePrinter({ ...previous,
     ...(creating ? { name: document.getElementById('new-printer-name').value.trim(), asset: 'bambu', label: 'BAMBU LAB COREXY', kind: 'FDM Industrial', available: true } : {}),
     materials, nozzles,
+    materialsAvailable:[...printerForm.querySelectorAll('[name="materialsAvailable"]:checked')].map(input=>input.value),
     volumes: Object.fromEntries(['X', 'Y', 'Z'].map(axis => [axis, printerForm.elements.namedItem('edit-volume' + axis).value])),
     needsMaterial: document.getElementById('edit-needs-material').value
   });
   await renderPrinters();
   document.getElementById('printer-feedback').textContent = `${record.name}: ${creating ? 'adicionada' : 'atualizada'} nesta demonstração.`;
   navigate('parceiro-inicio');
+  }catch(error){printerForm.querySelector('.form-error').textContent=error.message;}finally{saveButton.disabled=false;}
 });
 document.getElementById('remove-printer').addEventListener('click', async () => {
+  try{
   const record = await data.removePrinter(selectedPrinter);
   if (!record) return;
   await renderPrinters();
   document.getElementById('printer-feedback').textContent = `${record.name}: removida nesta demonstração.`;
   navigate('parceiro-inicio');
+  }catch(error){printerForm.querySelector('.form-error').textContent=error.message;}
 });
 document.getElementById('next-printer').addEventListener('click', () => {
   if (matchMedia('(max-width: 600px)').matches) {
@@ -181,5 +191,6 @@ document.getElementById('parceiro-pedidos').addEventListener('click', async even
   document.dispatchEvent(new CustomEvent('conexo:data-changed'));
   document.getElementById('orders-feedback').textContent = `Pedido #${order.id} ${action === 'accept' ? 'aceito' : action === 'complete' ? 'concluído' : 'recusado'} nesta demonstração.`;
 });
+document.addEventListener('conexo:session',()=>{if(sessionUser?.perfil==='parceiro')renderPartner();else if(backendEnabled){printerGrid.replaceChildren();document.getElementById('printer-count').textContent='0';}});
 await Promise.all([renderPartner(), renderPartnerProfile()]);
 }

@@ -1,3 +1,4 @@
+import { backendEnabled, sessionUser, api, sessionKey } from './auth-client.js';
 import * as data from './data.js';
 import { ORDER_STATUS, ORDER_STATUS_UI } from './data.js';
 import { activeSection, navigate } from './router.js';
@@ -156,13 +157,14 @@ function renderNetwork() {
 document.getElementById('aacd-partner-search').addEventListener('input', renderNetwork);
 function renderReview(candidate) {
   const review = instance('review-template'); review.dataset.candidate = candidate.id;
+  if(backendEnabled)review.querySelector('[data-review-action=reject]').hidden=true;
   text(review, 'h2', candidate.name); text(review, 'summary p', candidate.description);
   review.querySelectorAll('.review-info-grid>div').forEach((cell, i) => {
     const info = candidate.info[i]; text(cell, 'small', info.label); tail(cell.querySelector('strong'), info.value); text(cell, 'p', info.note); cell.querySelector('img').src = info.icon;
   });
-  text(review, '.aacd-review-content h3:nth-of-type(2) small', `${candidate.machines.length} Máquinas Habilitadas`);
+  text(review, '.aacd-review-content h3:nth-of-type(2) small', `${candidate.machines.length} Máquinas ${backendEnabled?'Cadastradas':'Habilitadas'}`);
   review.querySelector('.review-machine-grid').replaceChildren(...candidate.machines.map(machine => {
-    const card = instance('machine-template'); text(card, 'h4', machine.name); text(card, 'p', machine.kind);
+    const card = instance('machine-template'); if(backendEnabled)card.querySelector('.machine-approved').hidden=true; text(card, 'h4', machine.name); text(card, 'p', machine.kind);
     card.querySelectorAll('div>span').forEach((span, i) => { span.textContent = machine.specs[i]; }); return card;
   }));
   return review;
@@ -180,10 +182,12 @@ document.getElementById('aacd-review-list').addEventListener('toggle', event => 
 document.getElementById('aacd-review-list').addEventListener('click', async event => {
   const button = event.target.closest('[data-review-action]'); if (!button) return;
   const approved = button.dataset.reviewAction === 'approve';
+  button.disabled=true;try{
   const candidate = await data.reviewPartner(button.closest('[data-candidate]').dataset.candidate, approved);
   if (!candidate) return;
   partners = await data.listPartners(); await renderReviews(); renderNetwork();
   document.getElementById('aacd-review-feedback').textContent = `${candidate.name}: cadastro ${approved ? 'homologado' : 'rejeitado'} nesta demonstração.`;
+  }catch(error){document.getElementById('aacd-review-feedback').textContent=error.message;}finally{button.disabled=false;}
 });
 function renderMatches() {
   document.getElementById('aacd-match-list').replaceChildren(...matches.map(match => {
@@ -221,11 +225,15 @@ function renderAacdMetrics() {
   document.querySelector('#aacd-inicio .metric-bottom small.cyan').textContent = `${new Set(orders.filter(order => order.status === ORDER_STATUS.IN_PRODUCTION).map(order => order.lab)).size} Laboratórios`;
 }
 async function renderAacd() {
+  try{
+  const actor=sessionKey();
   [orders, partners, matches] = await Promise.all([data.listOrders({ scope: 'aacd' }), data.listPartners(), data.listMatches()]);
+  if(backendEnabled&&actor!==sessionKey())return;
   // Os exemplos mantêm a ordem original; novos registros aparecem primeiro.
   orders.sort((a, b) => Number(b.id) - Number(a.id));
   renderAacdOrders(); renderNetwork(); renderMatches(); renderAacdMetrics();
   await Promise.all([renderReviews(), renderHomePartners()]);
+  }catch(error){document.getElementById('aacd-orders-feedback').textContent=error.message;}
 }
 document.addEventListener('conexo:data-changed', renderAacd);
 
@@ -321,5 +329,22 @@ document.getElementById('aacd-match-list').addEventListener('click', async event
   document.getElementById('aacd-orders-feedback').textContent = `${draft.code} conectado a ${match.name} nesta demonstração. Nenhum envio real foi realizado.`;
   navigate('aacd-pedidos');
 });
+async function renderAacdUsers(){
+  const panel=document.getElementById('aacd-users-panel');
+  panel.hidden=!backendEnabled||sessionUser?.perfil!=='aacd'||!sessionUser.homologado;
+  if(panel.hidden){document.getElementById('aacd-users-list').replaceChildren();return;}
+  try{
+    const actor=sessionKey();const {items}=await api('/aacd/pendentes');if(actor!==sessionKey())return;
+    document.getElementById('aacd-users-list').replaceChildren(...items.map(user=>{
+      const row=document.createElement('article'),title=document.createElement('h3'),info=document.createElement('p'),button=document.createElement('button');
+      title.textContent=user.nome;info.textContent=user.email+' — '+user.unidade;button.type='button';button.className='btn btn-conexo';button.textContent='Homologar conta AACD';
+      button.addEventListener('click',async()=>{button.disabled=true;try{await api('/aacd/'+encodeURIComponent(user.id)+'/homologacao',{method:'POST'});await renderAacdUsers();document.getElementById('aacd-users-feedback').textContent='Conta AACD homologada.';}catch(error){button.disabled=false;document.getElementById('aacd-users-feedback').textContent=error.message;}});
+      row.append(title,info,button);return row;
+    }));
+    if(!items.length)document.getElementById('aacd-users-feedback').textContent='Nenhuma conta AACD aguardando homologação.';
+  }catch(error){document.getElementById('aacd-users-feedback').textContent=error.message;}
+}
+document.addEventListener('conexo:navigate',event=>{if(event.detail.section==='aacd-homologacao')renderAacdUsers();});
+document.addEventListener('conexo:session',()=>{if(sessionUser?.perfil==='aacd'&&sessionUser.homologado)renderAacd();else if(backendEnabled){document.getElementById('aacd-network-grid').replaceChildren();document.getElementById('aacd-review-list').replaceChildren();partners=[];}renderAacdUsers();});
 await Promise.all([renderAacd(), renderAacdProfile()]);
 }

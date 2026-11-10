@@ -1,9 +1,11 @@
+import { MATERIALS } from './material-catalog.js';
 import { ORDER_STATUS, assertOrderStatus } from './order-status.js';
 
 // Adaptador privado em memória. Somente data.js é consumido pelas telas.
 export function createMemorySource(seed) {
   const state = structuredClone(seed);
   state.orders.forEach(order => assertOrderStatus(order.status));
+  let codeSequence = 0;
   const collection = name => state[name];
   const find = (name, id) => collection(name).find(item => item.id === id) ?? null;
   const nextId = name => String(Math.max(0, ...collection(name).map(item => Number(item.id) || 0)) + 1);
@@ -80,6 +82,10 @@ export function createMemorySource(seed) {
     async listMatches() { return state.matches; },
     async getProfile(area) { return state.profiles[area]; },
     async saveProfile(area, record) { state.profiles[area] = record; return record; },
-    async getCurrentUser() { return state.currentUser; }
+    async getCurrentUser() { return state.currentUser; },
+    async generateRequestCode(material) {
+      if (!MATERIALS.includes(material)) throw new TypeError('Escolha um material válido.');
+      const id=String(++codeSequence);return {id,material,code:material+'-'+id.padStart(6,'0')};
+    }
   };
 }

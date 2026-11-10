@@ -1,3 +1,6 @@
+import { backendEnabled, sessionUser, login, api, restoreSession, canOpen, internalDestination, renderBackendNotice } from './auth-client.js';
+import { mountLocation, locationValue, resetLocation } from './location-ui.js';
+import * as data from './data.js';
 import { activeSection, loginMode, navigate, setLoginMode, configureRouter, bindRouter } from './router.js';
 import { initPartner } from './partner.js';
 import { initAacd } from './aacd.js';
@@ -10,6 +13,7 @@ const resetDialog = bootstrap.Modal.getOrCreateInstance(document.getElementById(
 const evaluationDialog = bootstrap.Modal.getOrCreateInstance(document.getElementById('evaluation-dialog'));
 let termsReachedEnd = false;
 let termsAccepted = false;
+let partnerAccountCreated=false,previousSession=null;
 
 function renderLoginMode() {
   document.querySelectorAll('#login [data-login-mode]').forEach(button => {
@@ -25,7 +29,7 @@ function renderLoginMode() {
 }
 
 configureRouter({
-  guard: destination => partnerSteps.includes(destination) && !termsAccepted ? 'termos-uso' : destination,
+  guard: destination => !canOpen(destination)?'login':partnerSteps.includes(destination) && !termsAccepted ? 'termos-uso' : destination,
   renderMode: renderLoginMode
 });
 bindRouter();
@@ -68,7 +72,7 @@ app.addEventListener('input', event => {
   if (error) error.textContent = '';
 });
 
-app.addEventListener('submit', event => {
+app.addEventListener('submit', async event => {
   event.preventDefault();
   const form = event.target;
   // Um envio disparado por script de uma seção inativa não avança o fluxo.
@@ -94,6 +98,17 @@ app.addEventListener('submit', event => {
 
   switch (activeSection) {
     case 'login':
+      if(backendEnabled){
+        const button=form.querySelector('[type=submit]');button.disabled=true;
+        try{
+          const user=await login({email:form.elements.namedItem('email').value,password:form.elements.namedItem('password').value});
+          form.elements.namedItem('password').value='';renderBackendNotice();
+          document.dispatchEvent(new CustomEvent('conexo:data-changed'));
+          if(user.perfil==='aacd'&&!user.homologado){document.getElementById('login-feedback').textContent='Sua conta AACD aguarda homologação por um integrante já homologado.';}
+          else navigate(internalDestination(user));
+        }catch(error){document.getElementById('login-feedback').textContent=error.message;}finally{button.disabled=false;}
+        break;
+      }
       if (loginMode === 'parceiro') {
         document.dispatchEvent(new CustomEvent('conexo:partner-login', {
           detail: { email: form.elements.namedItem('email').value }
@@ -120,9 +135,16 @@ app.addEventListener('submit', event => {
       break;
     }
     case 'parceiro-logistica':
+      if(backendEnabled){await registerPartner(form);break;}
+      evaluationDialog.show();break;
     case 'cadastro-aacd':
-      evaluationDialog.show();
-      break;
+      if(backendEnabled){
+        const button=form.querySelector('[type=submit]');button.disabled=true;
+        try{await api('/auth/cadastros/aacd',{method:'POST',body:{email:form.elements.namedItem('email').value,password:form.elements.namedItem('password').value,phone:form.elements.namedItem('phone').value,unit:form.elements.namedItem('unit').value,holder:form.elements.namedItem('holder').value}});form.elements.namedItem('password').value='';form.elements.namedItem('confirmation').value='';evaluationDialog.show();}
+        catch(error){form.querySelector('.form-error').textContent=error.message;}finally{button.disabled=false;}
+        break;
+      }
+      evaluationDialog.show();break;
   }
 });
 
@@ -136,5 +158,56 @@ document.getElementById('reset-form').addEventListener('submit', event => {
 // Senhas e dados permanecem apenas nos campos desta aba. Não há persistência
 // em cookies, localStorage ou sessionStorage, nem envio a um backend.
 await Promise.all([initPartner(), initAacd()]);
+if(backendEnabled){
+  try{const catalog=await api('/catalogos');for(const id of ['cadastro-aacd-unit','aacd-profile-unit']){const select=document.getElementById(id),selected=select.value;select.replaceChildren(...['',...catalog.unidades].map(unit=>{const option=document.createElement('option');option.value=unit;option.textContent=unit||'Selecione sua unidade';return option;}));select.value=selected;}}catch(error){document.getElementById('login-feedback').textContent=error.message;}
+  mountLocation('registration-location',{street:'#parceiro-dados-street',city:'#parceiro-dados-city',state:'#parceiro-dados-state',number:'#parceiro-dados-number'});
+  try{await restoreSession();renderBackendNotice();document.dispatchEvent(new CustomEvent('conexo:data-changed'));}catch(error){document.getElementById('login-feedback').textContent=error.message;}
+}
 setLoginMode('aacd');
 navigate(location.hash.slice(1) || 'sobre-nos', { replace: true });
+
+// O gerador também funciona no protótipo; a API reserva um ID persistente quando o Express está ativo.
+const codeDialog=bootstrap.Modal.getOrCreateInstance(document.getElementById('code-dialog'));
+document.getElementById('generate-request-code').addEventListener('click',()=>{document.getElementById('code-generator-feedback').textContent='';codeDialog.show();});
+document.getElementById('code-generator-form').addEventListener('submit',async event=>{
+  event.preventDefault();if(!event.target.reportValidity())return;
+  const button=event.target.querySelector('[type=submit]');button.disabled=true;
+  try{const generated=await data.generateRequestCode(document.getElementById('code-material').value);const field=document.getElementById('aacd-order-code');field.value=generated.code;field.setCustomValidity('');codeDialog.hide();}
+  catch(error){document.getElementById('code-generator-feedback').textContent=error.message;}
+  finally{button.disabled=false;}
+});
+async function registerPartner(form){
+  const errorBox=form.querySelector('.form-error'),button=form.querySelector('[type=submit]');button.disabled=true;
+  try{
+    for(const section of ['parceiro-dados','parceiro-equipamentos']){if(partnerAccountCreated&&section==='parceiro-dados')continue;const previous=document.querySelector('#'+section+' form');if(!previous.checkValidity()){navigate(section);previous.reportValidity();return;}}
+    const equipmentCheck=document.querySelector('#parceiro-equipamentos form');
+    const compatible=[...equipmentCheck.querySelectorAll('[name=materials]:checked')].map(input=>input.value);
+    const available=[...equipmentCheck.querySelectorAll('[name=materialsAvailable]:checked')].map(input=>input.value);
+    if(!compatible.length||!equipmentCheck.querySelector('[name=nozzles]:checked')||available.some(material=>!compatible.includes(material))){navigate('parceiro-equipamentos');equipmentCheck.querySelector('.form-error').textContent='Selecione materiais compatíveis e bicos; os materiais disponíveis devem estar entre os compatíveis.';return;}
+    const location=locationValue('registration-location');
+    if(!location.locationConfirmed)throw new Error('Localize e confirme o pino da instituição no mapa.');
+    const fields=Object.fromEntries(new FormData(document.querySelector('#parceiro-dados form')));
+    if(!partnerAccountCreated){
+      await api('/auth/cadastros/parceiros',{method:'POST',body:{institution:fields.institution,responsible:fields.responsible,email:fields.email,phone:fields.phone,password:fields.password,street:fields.street,number:fields.number,city:fields.city,state:fields.state,...location,termsAccepted}});
+      partnerAccountCreated=true;
+    }
+    if(!sessionUser||sessionUser.email!==fields.email.trim().toLowerCase()){if(!fields.password)throw new Error('Entre na conta criada para adicionar sua impressora.');await login({email:fields.email,password:fields.password});}
+    document.querySelector('#parceiro-dados [name=password]').value='';document.querySelector('#parceiro-dados [name=confirmation]').value='';
+    const equipment=document.querySelector('#parceiro-equipamentos form');
+    await data.savePrinter({name:document.getElementById('register-printer-name').value,materials:[...equipment.querySelectorAll('[name=materials]:checked')].map(input=>input.value),materialsAvailable:[...equipment.querySelectorAll('[name=materialsAvailable]:checked')].map(input=>input.value),nozzles:[...equipment.querySelectorAll('[name=nozzles]:checked')].map(input=>input.value),volumes:Object.fromEntries(['X','Y','Z'].map(axis=>[axis,equipment.elements.namedItem('volume'+axis).value]))});
+    document.querySelector('#parceiro-dados [name=password]').value='';document.querySelector('#parceiro-dados [name=confirmation]').value='';
+    renderBackendNotice();document.dispatchEvent(new CustomEvent('conexo:data-changed'));evaluationDialog.show();
+  }catch(error){errorBox.textContent=(partnerAccountCreated?'A conta foi criada. A impressora ainda precisa ser salva: ':'')+error.message;}
+  finally{button.disabled=false;}
+}
+document.getElementById('evaluation-dialog').addEventListener('hidden.bs.modal',()=>{if(backendEnabled)navigate(sessionUser?.perfil==='parceiro'?'parceiro-inicio':'login');});
+
+document.addEventListener('conexo:session',()=>{
+  if(previousSession&&!sessionUser){
+    partnerAccountCreated=false;termsAccepted=false;termsReachedEnd=false;confirmTerms.disabled=true;termsScroll.scrollTop=0;
+    document.querySelectorAll('#parceiro-dados form,#parceiro-equipamentos form').forEach(form=>form.reset());
+    resetRegistrationLocation();
+  }
+  previousSession=sessionUser?sessionUser.perfil+'/'+sessionUser.id:null;
+});
+function resetRegistrationLocation(){resetLocation('registration-location',null);}
