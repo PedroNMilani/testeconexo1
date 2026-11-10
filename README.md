@@ -1,5 +1,8 @@
 # CoNexo — SPA por seções
 
+A primeira fatia de backend está em [`backend/README.md`](backend/README.md), com cadastro/login bcrypt, homologação, MongoDB e instruções para Windows/CMD. Execute o Express para usar autenticação real. O servidor Python abaixo mantém o protótipo em memória. Pedidos e match ainda são demonstrativos nesta entrega.
+
+
 Implementação em HTML, CSS, Bootstrap 5.3.3 e JavaScript do protótipo CoNexo. A estrutura da antiga versão 2 foi consolidada na raiz. A primeira implementação, que recriava as telas via JavaScript, foi removida.
 
 ## Executar
