@@ -1,0 +1,120 @@
+{
+  "$jsonSchema": {
+    "bsonType": "object",
+    "required": [
+      "id_parceiro",
+      "modelo",
+      "capacidade",
+      "bicos",
+      "materiais_compativeis",
+      "materiais_disponiveis",
+      "precisa_material",
+      "ativa",
+      "criada_em"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "_id": {
+        "bsonType": "objectId"
+      },
+      "id_parceiro": {
+        "bsonType": [
+          "double",
+          "int",
+          "long",
+          "decimal"
+        ],
+        "minimum": 1
+      },
+      "modelo": {
+        "bsonType": "string",
+        "minLength": 1,
+        "maxLength": 160
+      },
+      "capacidade": {
+        "bsonType": "object",
+        "required": [
+          "x",
+          "y",
+          "z"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "x": {
+            "bsonType": [
+              "double",
+              "int",
+              "long",
+              "decimal"
+            ],
+            "minimum": 0,
+            "exclusiveMinimum": true
+          },
+          "y": {
+            "bsonType": [
+              "double",
+              "int",
+              "long",
+              "decimal"
+            ],
+            "minimum": 0,
+            "exclusiveMinimum": true
+          },
+          "z": {
+            "bsonType": [
+              "double",
+              "int",
+              "long",
+              "decimal"
+            ],
+            "minimum": 0,
+            "exclusiveMinimum": true
+          }
+        }
+      },
+      "materiais_compativeis": {
+        "bsonType": "array",
+        "minItems": 1,
+        "uniqueItems": true,
+        "items": {
+          "bsonType": "string",
+          "minLength": 1,
+          "maxLength": 32
+        }
+      },
+      "materiais_disponiveis": {
+        "bsonType": "array",
+        "uniqueItems": true,
+        "items": {
+          "bsonType": "string",
+          "minLength": 1,
+          "maxLength": 32
+        }
+      },
+      "precisa_material": {
+        "bsonType": "bool"
+      },
+      "ativa": {
+        "bsonType": "bool"
+      },
+      "criada_em": {
+        "bsonType": "date"
+      },
+      "bicos": {
+        "bsonType": "array",
+        "minItems": 1,
+        "uniqueItems": true,
+        "items": {
+          "bsonType": [
+            "double",
+            "int",
+            "long",
+            "decimal"
+          ],
+          "minimum": 0,
+          "exclusiveMinimum": true
+        }
+      }
+    }
+  }
+}
