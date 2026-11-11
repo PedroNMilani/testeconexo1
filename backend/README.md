@@ -75,6 +75,8 @@ O backend verifica permissões e homologação a cada chamada protegida; usa SQL
 
 Nominatim é chamado no backend, com fila global de uma requisição/segundo, cache e busca estruturada sem número. Há fallback cidade/estado. O mapa exige confirmação do pino; o backend verifica a coordenada confirmada contra polígonos brasileiros, não apenas uma caixa. Fonte e limites de precisão estão em `data/README.md`. O marcador aceita arraste e ajuste pelas setas. Alterar endereço invalida a confirmação; trocar de conta reinicializa o mapa para a pessoa correta.
 
+As imagens do mapa vêm diretamente de `https://tile.openstreetmap.org`, com atribuição visível. A camada do Leaflet usa `referrerPolicy: 'strict-origin-when-cross-origin'` para enviar a origem do site, exigida pela [política de uso de tiles do OpenStreetMap](https://operations.osmfoundation.org/policies/tiles/), sem enviar caminhos ou parâmetros da página. A política geral do backend continua `same-origin`; a exceção é específica das imagens do mapa. O teste `tests/map_visibility.py` verifica esse cabeçalho sem acessar o serviço externo.
+
 Na execução conectada, Express serve apenas os estáticos permitidos, sem publicar `.env`, código do backend ou SQL. `runtime-config.js` liga a autenticação real; falha da API não faz fallback para login fictício. Abrir com `python -m http.server` continua sendo o protótipo explícito, sem persistência.
 
 ## API desta fatia

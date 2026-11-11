@@ -11,7 +11,8 @@ export function mountLocation(id, fields, initial) {
   let ready=Boolean(initial),confirmed=Boolean(initial),revision=0;
   const map=L.map(canvas).setView(initial?[point.latitude,point.longitude]:[-14.2,-51.9],initial?15:4);
   const imageStatus=document.createElement('p');imageStatus.setAttribute('role','status');imageStatus.dataset.mapLoadStatus='';canvas.after(imageStatus);
-  const tiles=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'});
+  // OSM exige Referer válido. Envia só a origem nas imagens, mesmo com a política same-origin do backend.
+  const tiles=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,referrerPolicy:'strict-origin-when-cross-origin',attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'});
   tiles.on('tileerror',()=>{imageStatus.textContent='Não foi possível carregar as imagens do mapa. Verifique a conexão com a internet.';});
   tiles.on('tileload',()=>{imageStatus.textContent='';});tiles.addTo(map);
   const marker=L.marker(initial?[point.latitude,point.longitude]:[-14.2,-51.9],{draggable:true,keyboard:true,title:'Local da instituição; arraste ou use as setas para ajustar'}).addTo(map);
