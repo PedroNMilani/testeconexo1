@@ -8,6 +8,8 @@ Implementado: cadastro e login dos dois perfis, bcrypt, sessão persistente em M
 
 Requer Node.js 24+, MySQL Server 8.0.16+ ou 8.4 e MongoDB 7+. MySQL Workbench e Compass são clientes; os servidores precisam estar iniciados. Não exige Bash ou Docker.
 
+Mantenha também o `package.json` da raiz do repositório: ele declara os arquivos JavaScript compartilhados, como `material-catalog.js`, como ES Modules. As dependências continuam sendo instaladas apenas na pasta `backend`.
+
 No Workbench, prepare um schema e usuário de desenvolvimento (substitua a senha):
 
 ```sql
