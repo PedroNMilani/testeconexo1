@@ -20,7 +20,7 @@ export function mountLocation(id, fields, initial) {
     geocodeButton.disabled = true;
     geocodeButton.textContent = 'Busca por endereço (requer backend)';
     feedback.textContent =
-      'Na prévia, ajuste o pino manualmente. A busca por endereço fica disponível ao iniciar o backend.';
+      'Inicie o backend para buscar o endereço e confirmar a localização no mapa.';
   }
   let point = initial
     ? { latitude: initial.latitude, longitude: initial.longitude }
@@ -28,6 +28,7 @@ export function mountLocation(id, fields, initial) {
   let ready = Boolean(initial),
     confirmed = Boolean(initial),
     revision = 0;
+  confirmation.disabled = !ready;
   const map = L.map(canvas).setView(
     initial ? [point.latitude, point.longitude] : [-14.2, -51.9],
     initial ? 15 : 4
@@ -65,8 +66,12 @@ export function mountLocation(id, fields, initial) {
     feedback.textContent = `Pino: ${p.lat.toFixed(5)}, ${p.lng.toFixed(5)}. Confirme se corresponde à instituição.`;
   };
   const moved = () => {
+    if (!ready) {
+      feedback.textContent =
+        'Clique em “Localizar endereço” antes de ajustar e confirmar o pino.';
+      return;
+    }
     revision++;
-    ready = true;
     confirmed = false;
     confirmation.checked = false;
     status();
@@ -97,7 +102,7 @@ export function mountLocation(id, fields, initial) {
     if (!ready) {
       confirmation.checked = false;
       feedback.textContent =
-        'Localize o endereço ou mova o pino antes de confirmar.';
+        'Localize o endereço antes de confirmar o pino.';
     }
   });
   for (const selector of [
@@ -111,6 +116,7 @@ export function mountLocation(id, fields, initial) {
       confirmed = false;
       ready = false;
       confirmation.checked = false;
+      confirmation.disabled = true;
     });
   container
     .querySelector('[data-geocode]')
@@ -122,6 +128,7 @@ export function mountLocation(id, fields, initial) {
       confirmed = false;
       ready = false;
       confirmation.checked = false;
+      confirmation.disabled = true;
       feedback.textContent = 'Localizando endereço…';
       try {
         const result = await api('/localizacoes/geocodificar', {
@@ -141,6 +148,7 @@ export function mountLocation(id, fields, initial) {
         ready = true;
         confirmed = false;
         confirmation.checked = false;
+        confirmation.disabled = false;
         status();
         if (result.nivel !== 'rua')
           feedback.textContent =
@@ -165,6 +173,7 @@ export function mountLocation(id, fields, initial) {
         : null;
       ready = confirmed = Boolean(value);
       confirmation.checked = confirmed;
+      confirmation.disabled = !ready;
       marker.setLatLng(
         value ? [point.latitude, point.longitude] : [-14.2, -51.9]
       );
