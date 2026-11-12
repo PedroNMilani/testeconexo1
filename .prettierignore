@@ -1,0 +1,5 @@
+node_modules/
+vendor/
+assets/
+backend/data/
+package-lock.json

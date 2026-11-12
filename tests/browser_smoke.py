@@ -23,10 +23,15 @@ with sync_playwright() as p:
   expect(page.locator('#'+section)).to_be_visible()
  page.evaluate("location.hash='aacd-pedidos'")
  expect(page.locator('#aacd-pedidos')).to_be_visible()
- page.get_by_role('button',name='Em Produção',exact=True).click()
- assert page.locator('#aacd-order-list .aacd-order-row:visible').count()==1
- page.get_by_role('button',name='Entregues',exact=True).click()
- assert page.locator('#aacd-order-list .aacd-order-row:visible').count()==2
+ # Filtros usam os status do contrato, sem pressupor contagens anteriores à migração.
+ status_filters=page.evaluate('''async()=>{
+  const data=await import('./data.js'); const orders=await data.listOrders({scope:'aacd'});
+  return Object.values(data.ORDER_STATUS).map(status=>({status,label:data.ORDER_STATUS_UI[status].filterLabel,count:orders.filter(o=>o.status===status).length}));
+ }''')
+ for status_filter in status_filters:
+  page.get_by_role('button',name=status_filter['label'],exact=True).click()
+  assert page.locator('#aacd-order-list .aacd-order-row:visible').count()==status_filter['count']
+  assert page.locator('#aacd-order-list .aacd-order-row:visible').evaluate_all('(rows,status)=>rows.every(row=>row.dataset.status===status)',status_filter['status'])
  page.get_by_role('button',name='Todos',exact=True).click()
  page.locator('#aacd-order-search').fill('1090')
  assert page.locator('#aacd-order-list .aacd-order-row:visible').count()==1
@@ -136,7 +141,7 @@ with sync_playwright() as p:
  page.get_by_role('button',name='Adicionar impressora',exact=True).click()
  page.locator('#new-printer-name').fill('Prusa Teste')
  for axis in ['X','Y','Z']:page.locator('#edit-volume'+axis).fill('200')
- page.locator('#printer-form [value="PLA"]').check()
+ page.locator('#printer-form [name="materials"][value="PLA"]').check()
  page.locator('#edit-needs-material').select_option(label='Não')
  page.get_by_role('button',name='Adicionar',exact=True).click()
  expect(page.locator('#parceiro-inicio')).to_be_visible()
@@ -178,6 +183,60 @@ with sync_playwright() as p:
  assert saved_card.inner_text()==initial_card_data, 'Salvar sem alterações deve preservar os dados exibidos no card.'
  assert not errors,errors
  regression_page.close()
+ # Verifica também as demais impressoras iniciais em uma sessão independente.
+ workflow=b.new_page(viewport={'width':1440,'height':1000})
+ workflow.on('pageerror',lambda e:errors.append(str(e)))
+ workflow.goto(URL+'#parceiro-inicio')
+ expect(workflow.locator('#parceiro-inicio')).to_be_visible()
+ for printer_id in ['2','3']:
+  card=workflow.locator(f'#printer-grid [data-printer-id="{printer_id}"]')
+  before=card.inner_text()
+  card.get_by_role('button',name='Gerenciar',exact=True).click()
+  expect(workflow.locator('#parceiro-impressora')).to_be_visible()
+  for axis in ['X','Y','Z']:assert float(workflow.locator('#edit-volume'+axis).input_value())>0
+  assert workflow.locator('#printer-form [name="materials"]:checked').count()>0
+  assert workflow.locator('#printer-form [name="nozzles"]:checked').count()>0
+  assert workflow.locator('#edit-needs-material').input_value() in ['Sim','Não']
+  workflow.get_by_role('button',name='Atualizar',exact=True).click()
+  expect(workflow.locator('#parceiro-inicio')).to_be_visible()
+  assert card.inner_text()==before
+ # Recusar desassocia e preserva o pedido sem criar registro de histórico.
+ initial=workflow.evaluate('''async()=>{
+  const d=await import('./data.js');return {pending:await d.listOrders({partnerId:'current-partner',status:d.ORDER_STATUS.NOT_ACCEPTED}),history:await d.listHistory()};
+ }''')
+ refused_id=initial['pending'][0]['id']
+ accepted_id=initial['pending'][1]['id']
+ workflow.evaluate("location.hash='parceiro-pedidos'")
+ expect(workflow.locator('#parceiro-pedidos')).to_be_visible()
+ workflow.locator(f'[data-order-id="{refused_id}"] [data-order-action="refuse"]').click()
+ expect(workflow.locator(f'[data-order-id="{refused_id}"]')).to_have_count(0)
+ refused=workflow.evaluate('''async(id)=>{const d=await import('./data.js');return {order:await d.getOrder(id),history:await d.listHistory()}}''',refused_id)
+ assert refused['order']['status']=='não aceito' and refused['order']['partnerId'] is None
+ assert refused['history']==initial['history']
+ expect(workflow.locator('#pending-count')).to_have_text(str(len(initial['pending'])-1))
+ workflow.locator(f'[data-order-id="{accepted_id}"] [data-order-action="accept"]').click()
+ expect(workflow.locator(f'#active-orders [data-order-id="{accepted_id}"]')).to_be_visible()
+ assert workflow.evaluate('''async(id)=>(await (await import('./data.js')).getOrder(id)).status''',accepted_id)=='em produção'
+ workflow.locator(f'[data-order-id="{accepted_id}"] [data-order-action="complete"]').click()
+ expect(workflow.locator(f'[data-order-id="{accepted_id}"]')).to_have_count(0)
+ history=workflow.evaluate('''async()=>await (await import('./data.js')).listHistory()''')
+ assert len(history)==len(initial['history'])+1
+ assert all(order['status']=='finalizado' for order in history)
+ assert all(order['id']!=refused_id for order in history)
+ expect(workflow.locator('#production-history .history-row')).to_have_count(len(history))
+ assert not workflow.locator('#production-history').get_by_text('Cancelado',exact=True).count()
+ # Guarda de cadastro, bloqueio dos termos e navegação por seções continuam ativos.
+ workflow.evaluate("location.hash='parceiro-dados'")
+ expect(workflow.locator('#termos-uso')).to_be_visible()
+ confirm=workflow.locator('#termos-uso-confirm-terms')
+ expect(confirm).to_be_disabled()
+ workflow.locator('#termos-uso-terms-scroll').evaluate('(el)=>{el.scrollTop=el.scrollHeight;el.dispatchEvent(new Event("scroll"))}')
+ expect(confirm).to_be_enabled()
+ confirm.click()
+ expect(workflow.locator('#parceiro-dados')).to_be_visible()
+ assert not errors,errors
+ workflow.close()
+ print('PASS: três impressoras iniciais; filtros do enum; aceite, conclusão e recusa sem histórico; guarda e scroll dos termos.')
  print('PASS: salvar uma impressora inicial sem alterações preserva os dados do card.')
  print('PASS: AACD login, 9 seções, histórico, busca, filtros, CSV, rede, homologação, 3 etapas, URL, conexão sem duplicação, perfil, conta, hover/foco/toque e lápis em novas impressoras, imagens e responsividade.')
  b.close()

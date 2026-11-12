@@ -1,16 +1,19 @@
 # CoNexo — SPA por seções
 
+A primeira fatia de backend está em [`backend/README.md`](backend/README.md), com cadastro/login bcrypt, homologação, MongoDB e instruções para Windows/CMD. Execute o Express para usar autenticação real. O servidor Python abaixo mantém o protótipo em memória. Pedidos e match ainda são demonstrativos nesta entrega.
+
+
 Implementação em HTML, CSS, Bootstrap 5.3.3 e JavaScript do protótipo CoNexo. A estrutura da antiga versão 2 foi consolidada na raiz. A primeira implementação, que recriava as telas via JavaScript, foi removida.
 
 ## Executar
 
-Baixe o repositório completo e abra `index.html`, ou execute nesta pasta:
+Baixe o repositório completo e execute nesta pasta:
 
 ```sh
 python3 -m http.server 8000
 ```
 
-Acesse `http://localhost:8000`. Bootstrap, fonte Plus Jakarta Sans e recursos visuais estão incluídos localmente.
+Acesse **http://localhost:8000/**. Os módulos ES exigem um servidor HTTP: abrir `index.html` por `file://` não funciona. Bootstrap, fonte Plus Jakarta Sans e recursos visuais estão incluídos localmente.
 
 ## Navegação e telas
 
@@ -41,13 +44,13 @@ Todas as telas estão declaradas como `<section data-page>` dentro de um único 
 
 Para acessar uma área, selecione **Equipe AACD** ou **Parceiro** no Login. Use, por exemplo, `teste@exemplo.com` e `Teste1234`. Nesta demonstração frontend, campos válidos abrem o painel correspondente sem autenticação real. Também é possível acessar as seções diretamente pelo endereço, como `index.html#aacd-inicio`.
 
-O menu da conta permite editar o perfil e sair. O lápis de edição aparece em todos os cards de impressoras ao passar o cursor e ao focar o card pelo teclado; em dispositivos sem hover permanece acessível. A regra também se aplica às impressoras adicionadas durante a sessão. As impressoras podem ser adicionadas, alteradas e removidas durante a sessão. No celular, a lista de impressoras é um carrossel horizontal. Os pedidos permitem expandir/recolher grupos, visualizar detalhes, aceitar, recusar e concluir; as ações atualizam os cartões, contadores e o histórico em memória.
+O menu da conta permite editar o perfil e sair. O lápis de edição aparece em todos os cards de impressoras ao passar o cursor e ao focar o card pelo teclado; em dispositivos sem hover permanece acessível. A regra também se aplica às impressoras adicionadas durante a sessão. As impressoras podem ser adicionadas, alteradas e removidas durante a sessão. No celular, a lista de impressoras é um carrossel horizontal. Os pedidos permitem expandir/recolher grupos, visualizar detalhes, aceitar, recusar e concluir; as ações passam pela camada de dados e redesenham cartões e contadores. O histórico contém apenas finalizados. Recusar devolve o pedido como “não aceito”, sem parceiro associado e sem registro no histórico.
 
 ## Área AACD
 
-O painel liga as seções de parceiros, pedidos e criação de demanda. O histórico permite pesquisar os quatro registros do protótipo, filtrar por situação, material e prioridade, expandir detalhes e exportar os resultados filtrados em CSV. A paginação usa os registros realmente disponíveis na demonstração; páginas adicionais são habilitadas quando novos pedidos são criados.
+O painel liga as seções de parceiros, pedidos e criação de demanda. O histórico permite pesquisar os quatro registros do protótipo, filtrar pelos três status do enum, material e prioridade, expandir detalhes e exportar os resultados filtrados em CSV. A paginação usa os registros realmente disponíveis na demonstração; páginas adicionais são habilitadas quando novos pedidos são criados.
 
-A rede permite pesquisar laboratórios por nome e localização. Na homologação, cada candidato pode ser expandido para conferir informações gerais e as quatro máquinas desenhadas no Figma. O estado expandido mostra somente o candidato selecionado; recolher restaura a fila. Homologar adiciona o laboratório à rede local e rejeitar o remove da fila, atualizando os indicadores da demonstração.
+A rede permite pesquisar laboratórios por nome e localização. Na homologação, cada candidato pode ser expandido para conferir informações gerais e as quatro máquinas dos exemplos, ajustadas ao escopo somente FDM. O estado expandido mostra somente o candidato selecionado; recolher restaura a fila. Homologar adiciona o laboratório à rede local e rejeitar o remove da fila, atualizando os indicadores da demonstração.
 
 O novo pedido usa as três etapas conectadas no protótipo (`376:788`, `376:894`, `96:1783`). Os valores permanecem preenchidos ao voltar. A conexão valida todas as etapas, aceita apenas links HTTP/HTTPS e adiciona o pedido ao histórico com o laboratório escolhido. O mesmo código não pode ser enviado duas vezes nesta sessão. Os percentuais de compatibilidade e as recomendações reproduzem os exemplos do Figma; não há cálculo real de compatibilidade nem envio para laboratórios externos.
 
@@ -60,8 +63,15 @@ A barra do cadastro mantém a linha verde sobre a cinza nos comprimentos do Figm
 ## Arquivos
 
 - `index.html`: todas as seções, cabeçalhos, rodapé e modais estáticos.
-- `app.js`: navegação por seções, Login e cadastros.
-- `partner.js`: interações da área do parceiro e dados demonstrativos em memória.
+- `app.js`: entrada ES module, inicialização das áreas, Login e cadastros.
+- `router.js`: navegação por seções e History API.
+- `shared-ui.js`: cabeçalhos, perfis, logout e utilitários de templates compartilhados.
+- `data.js`: única interface assíncrona de leitura/escrita; recebe e devolve cópias.
+- `order-status.js`: enum único, rótulos e classes dos pedidos.
+- `DECISIONS.md`: decisões aplicadas e pendências de validação.
+- `memory-source.js`: adaptador privado em memória, substituível por outra fonte com o mesmo contrato.
+- `mock-data.js`: exemplos fictícios, incluindo registros completos das três impressoras.
+- `partner.js`: renderização e interações da área do parceiro, consumindo `data.js`.
 - `aacd.js`: histórico, filtros, CSV, rede, homologação, criação de pedidos e perfil AACD.
 - `tests/browser_smoke.py`: teste de navegador reproduzível dos fluxos AACD e do lápis das impressoras.
 - `styles.css`: tokens visuais, estilos das telas e adaptação para celular.
@@ -72,7 +82,7 @@ A barra do cadastro mantém a linha verde sobre a cinza nos comprimentos do Figm
 
 Não há backend. Login, redefinição de senha, cadastros, perfil, impressoras e pedidos não fazem chamadas a um servidor. As alterações duram enquanto a página estiver aberta e são reiniciadas ao recarregar. Senhas e dados de formulário não são gravados em cookies, localStorage ou sessionStorage.
 
-Os dados de pedidos, suas datas e os indicadores iniciais reproduzem o protótipo; os indicadores de resumo e a quantidade de cartões não representam uma base real conciliada. O email `xxxxxx@aacd.org.br` é um placeholder do Figma. As opções de unidade e disponibilidade são demonstrativas, porque o protótipo não apresenta os menus abertos.
+Os pedidos e suas datas são exemplos fictícios baseados no protótipo. Contadores, paginação e totais são calculados a partir dos registros disponíveis; não representam uma base real da AACD. Os únicos status de pedido são “não aceito”, “em produção” e “finalizado”; entrega e cancelamento não são representados no modelo. O email `xxxxxx@aacd.org.br` é um placeholder do Figma. As opções de unidade e disponibilidade são demonstrativas, porque o protótipo não apresenta os menus abertos.
 
 O Figma conecta “Adicionar impressora” à tela de edição existente. A criação reutiliza essa mesma seção e exibe um campo de modelo. As ações de pedidos que não têm outra tela desenhada atualizam os dados em memória; os detalhes são expandidos no próprio cartão. As telas internas da AACD foram adicionadas nesta atualização, mantendo a navegação por seções.
 
@@ -89,4 +99,10 @@ Para repetir o teste, instale o pacote Python `playwright`, disponibilize o Chro
 python3 tests/browser_smoke.py
 ```
 
-Use `CONEXO_TEST_URL` para mudar a URL de teste e `CHROMIUM_PATH` para indicar o executável do navegador. A abertura por `file://` não foi verificada porque a política do navegador deste ambiente bloqueia esse protocolo.
+Use `CONEXO_TEST_URL` para mudar a URL de teste e `CHROMIUM_PATH` para indicar o executável do navegador. Use HTTP para executar a SPA: os módulos ES não funcionam por `file://`.
+
+Para validar o contrato assíncrono e o isolamento das cópias, execute `node tests/data_contract.mjs`. As telas importam apenas `data.js`; para mudar a origem dos dados, forneça outro adaptador com os métodos do contrato e altere a composição em `data.js`, sem modificar as telas. Nenhuma fonte vazia foi criada.
+
+O contrato de dados cobre isolamento de cópias, registros completos, transições e recusa sem histórico. O smoke cobre o salvamento sem alterações das três impressoras iniciais, os filtros do enum e os fluxos de aceite, conclusão e recusa. As pendências estão em [DECISIONS.md](DECISIONS.md).
+
+O mapa do cadastro também aparece na prévia estática (por exemplo, Live Server na porta 5500), com ajuste manual do pino. A busca automática de endereço e a gravação do cadastro exigem o backend.

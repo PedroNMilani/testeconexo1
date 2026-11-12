@@ -1,0 +1,121 @@
+import assert from 'node:assert/strict';
+import { createDataService } from '../data.js';
+import { createMockData } from '../mock-data.js';
+import { createMemorySource } from '../memory-source.js';
+const seed = createMockData();
+const data = createDataService(createMemorySource(seed));
+seed.printers[0].name = 'Alterado fora da fonte';
+const printers = await data.listPrinters();
+assert.equal(printers.length, 3);
+for (const printer of printers) {
+  assert.ok(printer.materials.length && printer.nozzles.length);
+  for (const axis of ['X', 'Y', 'Z'])
+    assert.ok(Number(printer.volumes[axis]) > 0);
+  assert.ok(['Sim', 'Não'].includes(printer.needsMaterial));
+}
+const original = await data.getPrinter('1');
+printers[0].materials.push('alteração externa');
+assert.deepEqual(await data.getPrinter('1'), original);
+const input = { ...original, volumes: { X: '210', Y: '200', Z: '200' } };
+const output = await data.savePrinter(input);
+input.volumes.X = '999';
+output.volumes.Y = '999';
+assert.equal((await data.getPrinter('1')).volumes.X, '210');
+assert.equal((await data.getPrinter('1')).volumes.Y, '200');
+const profile = await data.getProfile('partner');
+const savedProfile = await data.saveProfile('partner', profile);
+profile['profile-institution'] = 'externo';
+savedProfile['profile-institution'] = 'externo';
+assert.notEqual(
+  (await data.getProfile('partner'))['profile-institution'],
+  'externo'
+);
+const partners = await data.listPartners();
+const reviews = await data.listReviews();
+await data.reviewPartner(reviews[0].id, true);
+assert.equal((await data.listPartners()).length, partners.length + 1);
+assert.equal((await data.listReviews()).length, reviews.length - 1);
+const draft = { code: '#CONTRATO', scope: 'aacd', materials: ['PLA'] };
+const order = await data.createOrder(draft);
+draft.materials.push('externo');
+order.materials.push('externo');
+assert.deepEqual((await data.getOrder(order.id)).materials, ['PLA']);
+await assert.rejects(data.createOrder(draft), /já foi conectado/);
+// Outra instância com o mesmo contrato: não depende do singleton nem do DOM.
+const second = createDataService(createMemorySource(createMockData()));
+assert.deepEqual(await second.getPrinter('1'), original);
+console.log(
+  'PASS: contrato assíncrono, registros completos, isolamento de leitura/escrita e instâncias independentes.'
+);
+
+const { ORDER_STATUS } = await import('../data.js');
+assert.deepEqual(Object.values(ORDER_STATUS), [
+  'não aceito',
+  'em produção',
+  'finalizado'
+]);
+assert.ok(
+  (await second.listOrders()).every((order) =>
+    Object.values(ORDER_STATUS).includes(order.status)
+  )
+);
+const beforeHistory = await second.listHistory();
+assert.ok(
+  beforeHistory.every((order) => order.status === ORDER_STATUS.FINISHED)
+);
+const pending = await second.listOrders({
+  partnerId: 'current-partner',
+  status: ORDER_STATUS.NOT_ACCEPTED
+});
+const refused = await second.refuseOrder(pending[0].id);
+assert.equal(refused.status, ORDER_STATUS.NOT_ACCEPTED);
+assert.equal(refused.partnerId, null);
+assert.equal(refused.lab, '');
+assert.ok(
+  !(await second.listOrders({ partnerId: 'current-partner' })).some(
+    (order) => order.id === refused.id
+  )
+);
+assert.ok((await second.listOrders()).some((order) => order.id === refused.id));
+assert.deepEqual(
+  await second.listHistory(),
+  beforeHistory,
+  'Recusa não registra histórico.'
+);
+await assert.rejects(second.acceptOrder(refused.id), /indisponível/);
+const accepted = await second.acceptOrder(pending[1].id);
+assert.equal(accepted.status, ORDER_STATUS.IN_PRODUCTION);
+await assert.rejects(second.refuseOrder(accepted.id), /indisponível/);
+const finished = await second.finishOrder(accepted.id);
+assert.equal(finished.status, ORDER_STATUS.FINISHED);
+const history = await second.listHistory();
+assert.equal(history.length, beforeHistory.length + 1);
+assert.ok(history.every((order) => order.status === ORDER_STATUS.FINISHED));
+history[0].device = 'alteração externa';
+assert.notEqual((await second.listHistory())[0].device, 'alteração externa');
+await assert.rejects(second.finishOrder(accepted.id), /em produção/);
+await assert.rejects(
+  second.createOrder({ code: '#INVALIDO', status: 'cancelado' }),
+  /Status/
+);
+await assert.rejects(
+  second.savePrinter({ ...original, volumes: { X: '0', Y: '200', Z: '200' } }),
+  /obrigatórios/
+);
+assert.deepEqual(await second.getPrinter(original.id), original);
+for (const method of [
+  'listPartners',
+  'listReviews',
+  'listMatches',
+  'listHomePartners'
+]) {
+  const snapshot = await second[method]();
+  snapshot[0].name = 'alteração externa';
+  assert.notEqual((await second[method]())[0].name, 'alteração externa');
+}
+const user = await second.getCurrentUser();
+user.role = 'alteração externa';
+assert.notEqual((await second.getCurrentUser()).role, 'alteração externa');
+console.log(
+  'PASS: enum único, transições, recusa sem associação/histórico, somente finalizados no histórico e rejeição de dados inválidos.'
+);
