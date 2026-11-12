@@ -275,7 +275,7 @@ document.addEventListener('conexo:session', () => {
 });
 function resetRegistrationLocation() { resetLocation('registration-location', null); }
 
-// Vê se o parceiro está homologado ou não
+// Confere se o parceiro está homologado ou não
 document.getElementById('check-partner-approval')
   .addEventListener('click', async event => {
     const button = event.currentTarget;
