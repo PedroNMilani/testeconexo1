@@ -10,11 +10,11 @@ Registro de 10/11/2026. Documentação de execução e limites: [backend/README.
 ## Decisões da equipe — não validadas pela AACD
 
 - Todos os integrantes AACD já homologados podem homologar novas contas AACD. A equipe cria e entrega a primeira conta pelo seed.
-- Origem da distância: solicitante. Interpretação para a próxima fatia: unidade solicitante; ainda é necessário cadastrar suas coordenadas reais.
-- Código digitável ou gerado, usando um material escolhido e um ID numérico. Implementado: botão, seleção do material e reserva persistente de ID; salvar a Solicitação/Pedido real é a próxima fatia.
+- Origem da distância: solicitante. Origem implementada: unidade solicitante, usando as coordenadas fornecidas pela equipe em 12/11/2026.
+- Código digitável ou gerado, usando um material escolhido e um ID numérico. Implementado: botão, seleção do material, reserva persistente de ID e gravação da solicitação/pedido ao encaminhar.
 - Necessidade de fornecimento calculada pelo material escolhido, segundo sua presença em disponíveis. Implementado: função compartilhada e DTO por material. O booleano legado é apenas resumo, não autoridade nem filtro.
 - Finalizar encerra a Solicitação, sem tratar entrega. Cancelar retira das listas ativas e mantém o Pedido cancelado no banco, conforme esclarecimento de Pedro.
-- Contas AACD devem ver pedidos da própria unidade. Essa regra, encerramento, cancelamento e histórico de recusas serão aplicados à API de pedidos na próxima fatia. O protótipo em memória ainda conserva regras antigas e é identificado como demonstração na interface.
+- Contas AACD devem ver pedidos da própria unidade. Isolamento por unidade, encerramento, cancelamento e histórico de recusas estão aplicados à API conectada. A prévia estática permanece uma demonstração em memória.
 
 ## Sugestões técnicas aplicadas nesta fatia
 
@@ -27,9 +27,13 @@ Registro de 10/11/2026. Documentação de execução e limites: [backend/README.
 
 ## Escopo entregue e pendências
 
-Entregues cadastro/login, seed bcrypt, homologação AACD/parceiro, perfil próprio, impressoras Mongo e soft delete, mapa/confirmacão e botão de código. Não foram implementados pedidos/match persistentes, máquina nova de estados nas telas, isolamento de pedidos por unidade, recuperação por email ou implantação pública. A lista de materiais e os pesos de fila continuam sem validação da AACD.
+Além de contas, homologação, impressoras, mapa e códigos, a etapa de 12/11/2026 conecta solicitações, pedidos, recomendações e histórico às APIs. Pedidos são isolados por unidade AACD e proprietário parceiro, com cinco estados, uma tentativa ativa por solicitação e auditoria persistida. Recusa permite novo encaminhamento; cancelamento e finalização encerram a solicitação.
 
-Os testes usaram bancos descartáveis. Nenhum banco de Pedro foi acessado. Resultados e limitações constam no README do backend.
+As coordenadas de Ibirapuera, Mooca, Mogi das Cruzes, Osasco, Uberlândia, Recife e Porto Alegre foram fornecidas pela equipe e estão em `backend/src/units.js`, com substituição opcional por configuração. A distância parte da unidade da conta solicitante e é gravada no pedido no momento do match.
+
+Recuperação por e-mail continua pendente porque a equipe ainda não possui provedor. Não há envio simulado. Implantação pública, lista restrita de hosts dos arquivos, catálogo de materiais e pesos de fila continuam dependendo de configuração/validação da equipe. Esses pontos não são apresentados como validação pela AACD.
+
+Os testes usam bancos descartáveis. Nenhum banco de Pedro foi acessado. A migração é aditiva e pode ser repetida; orientações e limites constam no README do backend.
 
 ---
 

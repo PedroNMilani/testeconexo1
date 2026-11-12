@@ -287,7 +287,7 @@ document.getElementById('reset-form').addEventListener('submit', (event) => {
   event.preventDefault();
   if (!event.target.reportValidity()) return;
   document.getElementById('reset-feedback').textContent =
-    'Demonstração: solicitação de redefinição validada. O envio do e-mail depende da integração com o servidor.';
+    'A recuperação de senha por e-mail ainda não está disponível. Entre em contato com a equipe.';
 });
 
 // Senhas e dados permanecem apenas nos campos desta aba. Não há persistência
@@ -488,8 +488,9 @@ function resetRegistrationLocation() {
 }
 
 // Confere se o parceiro está homologado ou não
-document.getElementById('check-partner-approval')
-  .addEventListener('click', async event => {
+document
+  .getElementById('check-partner-approval')
+  .addEventListener('click', async (event) => {
     const button = event.currentTarget;
     const feedback = document.getElementById('partner-evaluation-feedback');
 

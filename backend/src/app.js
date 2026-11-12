@@ -8,6 +8,7 @@ import path from 'node:path';
 import { createAuthService, email, phone, string } from './auth-service.js';
 import { createRepository, publicUser } from './repository.js';
 import { HttpError, check } from './errors.js';
+import { createOrderService } from './orders.js';
 import { generateCode } from './code-service.js';
 import { UFS } from './geo.js';
 import { MATERIALS } from '../../material-catalog.js';
@@ -16,7 +17,8 @@ const token = () => randomBytes(32).toString('hex');
 export function createApp({ pool, config, geo, printers, sessionStore }) {
   const app = express(),
     repo = createRepository(pool),
-    auth = createAuthService(repo, config, geo);
+    auth = createAuthService(repo, config, geo),
+    orders = createOrderService({ pool, printers, config });
   const Store = MySQLStoreFactory(session);
   const store =
     sessionStore ||
@@ -328,20 +330,98 @@ export function createApp({ pool, config, geo, printers, sessionStore }) {
         .status(201)
         .json(await generateCode(pool, req.user, req.body?.material))
   );
+  app.post('/api/recomendacoes', signed, approvedAACD, async (req, res) =>
+    res.json({ items: await orders.preview(req.user, req.body || {}) })
+  );
+  app.post('/api/pedidos', signed, approvedAACD, async (req, res) =>
+    res
+      .status(201)
+      .json(await orders.createAndConnect(req.user, req.body || {}))
+  );
+  app.get('/api/solicitacoes', signed, approvedAACD, async (req, res) =>
+    res.json({ items: await orders.listRequests(req.user) })
+  );
+  app.post('/api/solicitacoes', signed, approvedAACD, async (req, res) =>
+    res.status(201).json(await orders.createRequest(req.user, req.body || {}))
+  );
+  app.get('/api/solicitacoes/:id', signed, approvedAACD, async (req, res) =>
+    res.json(await orders.request(req.user, req.params.id))
+  );
+  app.get(
+    '/api/solicitacoes/:id/recomendacoes',
+    signed,
+    approvedAACD,
+    async (req, res) =>
+      res.json({ items: await orders.matches(req.user, req.params.id) })
+  );
+  app.post(
+    '/api/solicitacoes/:id/pedidos',
+    signed,
+    approvedAACD,
+    async (req, res) =>
+      res
+        .status(201)
+        .json(await orders.connect(req.user, req.params.id, req.body || {}))
+  );
+  app.get('/api/pedidos', signed, async (req, res) =>
+    res.json({ items: await orders.list(req.user) })
+  );
+  app.get('/api/pedidos/:id', signed, async (req, res) =>
+    res.json((await orders.list(req.user, req.params.id))[0])
+  );
+  app.get('/api/pedidos/:id/eventos', signed, async (req, res) =>
+    res.json({ items: await orders.history(req.user, req.params.id) })
+  );
+  app.post('/api/pedidos/:id/acoes/:action', signed, async (req, res) =>
+    res.json(
+      await orders.transition(req.user, req.params.id, req.params.action)
+    )
+  );
+  async function writePrinter(user, action) {
+    const db = await pool.getConnection();
+    try {
+      await db.beginTransaction();
+      await db.execute('SELECT id FROM parceiro WHERE id=? FOR UPDATE', [
+        user.id
+      ]);
+      const result = await action();
+      await db.commit();
+      return result;
+    } catch (error) {
+      await db.rollback();
+      throw error;
+    } finally {
+      db.release();
+    }
+  }
   app.get('/api/impressoras', signed, partner, async (req, res) =>
     res.json({ items: await printers.list(req.user) })
   );
   app.post('/api/impressoras', signed, partner, async (req, res) =>
-    res.status(201).json(await printers.save(req.user, req.body || {}))
+    res
+      .status(201)
+      .json(
+        await writePrinter(req.user, () =>
+          printers.save(req.user, req.body || {})
+        )
+      )
   );
   app.get('/api/impressoras/:id', signed, partner, async (req, res) =>
     res.json(await printers.get(req.user, req.params.id))
   );
   app.patch('/api/impressoras/:id', signed, partner, async (req, res) =>
-    res.json(await printers.save(req.user, req.body || {}, req.params.id))
+    res.json(
+      await writePrinter(req.user, () =>
+        printers.save(req.user, req.body || {}, req.params.id)
+      )
+    )
   );
   app.delete('/api/impressoras/:id', signed, partner, async (req, res) =>
-    res.json(await printers.remove(req.user, req.params.id))
+    res.json(
+      await writePrinter(req.user, () =>
+        printers.remove(req.user, req.params.id)
+      )
+    )
   );
   app.use('/api', (req, res) =>
     res.status(404).json({

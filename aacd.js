@@ -66,7 +66,9 @@ export async function initAacd() {
     home: 'aacd-inicio',
     loginEvent: 'conexo:aacd-login',
     nameError: 'Informe o nome do responsável.',
-    success: 'Perfil AACD atualizado nesta demonstração.'
+    success: backendEnabled
+      ? 'Perfil AACD atualizado.'
+      : 'Perfil AACD atualizado nesta demonstração.'
   });
   function aacdNormalize(value) {
     return String(value)
@@ -172,6 +174,19 @@ export async function initAacd() {
     trigger.setAttribute('aria-controls', detail.id);
     trigger.setAttribute('aria-expanded', String(!detail.hidden));
     trigger.setAttribute('aria-label', `Detalhes do pedido ${order.code}`);
+    if (
+      backendEnabled &&
+      [ORDER_STATUS.NOT_ACCEPTED, ORDER_STATUS.IN_PRODUCTION].includes(
+        order.status
+      )
+    ) {
+      const cancel = document.createElement('button');
+      cancel.type = 'button';
+      cancel.className = 'btn-back';
+      cancel.dataset.cancelOrder = order.id;
+      cancel.textContent = 'Cancelar pedido';
+      row.querySelector('.aacd-order-detail').append(cancel);
+    }
     return row;
   }
   function renderAacdOrders({ resetPage = false } = {}) {
@@ -189,7 +204,7 @@ export async function initAacd() {
     );
     document.getElementById('aacd-order-empty').hidden = filtered.length !== 0;
     document.getElementById('aacd-order-count').textContent =
-      `Exibindo ${visible.size} de ${filtered.length} pedidos encontrados nesta demonstração`;
+      `Exibindo ${visible.size} de ${filtered.length} pedidos encontrados${backendEnabled ? '' : ' nesta demonstração'}`;
     document.querySelectorAll('[data-aacd-page]').forEach((button) => {
       const page = button.dataset.aacdPage;
       button.disabled =
@@ -259,7 +274,24 @@ export async function initAacd() {
       renderAacdOrders();
     })
   );
-  aacdOrderList.addEventListener('click', (event) => {
+  aacdOrderList.addEventListener('click', async (event) => {
+    const cancel = event.target.closest('[data-cancel-order]');
+    if (cancel) {
+      cancel.disabled = true;
+      try {
+        await data.cancelOrder(cancel.dataset.cancelOrder);
+        await renderAacd();
+        document.getElementById('aacd-orders-feedback').textContent =
+          'Pedido cancelado e solicitação encerrada.';
+      } catch (error) {
+        document.getElementById('aacd-orders-feedback').textContent =
+          error.message;
+      } finally {
+        cancel.disabled = false;
+      }
+      return;
+    }
+
     const button = event.target.closest('[data-aacd-detail]');
     if (!button) return;
     const id = button.closest('[data-aacd-order]').dataset.aacdOrder;
@@ -426,7 +458,7 @@ export async function initAacd() {
         await renderReviews();
         renderNetwork();
         document.getElementById('aacd-review-feedback').textContent =
-          `${candidate.name}: cadastro ${approved ? 'homologado' : 'rejeitado'} nesta demonstração.`;
+          `${candidate.name}: cadastro ${approved ? 'homologado' : 'rejeitado'}${backendEnabled ? '' : ' nesta demonstração'}.`;
       } catch (error) {
         document.getElementById('aacd-review-feedback').textContent =
           error.message;
@@ -452,6 +484,9 @@ export async function initAacd() {
         card.querySelector('.match-score img').src = match.scoreIcon;
         text(card, '.match-score b', match.scoreLabel);
         text(card, '.match-score small', match.scoreNote);
+        if (backendEnabled)
+          card.querySelectorAll('.match-specs small')[2].textContent =
+            'Fornecimento de material';
         card.querySelectorAll('.match-specs strong').forEach((value, i) => {
           value.textContent = match.specs[i];
         });
@@ -523,6 +558,94 @@ export async function initAacd() {
     ).textContent =
       `${new Set(orders.filter((order) => order.status === ORDER_STATUS.IN_PRODUCTION).map((order) => order.lab)).size} Laboratórios`;
   }
+  async function renderOpenRequests() {
+    const panel = document.getElementById('aacd-open-requests');
+    if (!backendEnabled) {
+      panel.hidden = true;
+      return;
+    }
+    const actor = sessionKey();
+    const requests = await data.listRequests();
+    if (actor !== sessionKey()) return;
+    const open = requests.filter(
+      (s) =>
+        !s.encerrada_em &&
+        !['pendente', 'em_producao'].includes(s.ultimo_status)
+    );
+    panel.hidden = !open.length;
+    panel.querySelector('[data-open-requests]').replaceChildren(
+      ...open.map((s) => {
+        const row = document.createElement('article'),
+          label = document.createElement('span'),
+          button = document.createElement('button');
+        label.textContent =
+          (s.codigo || 'SOL-' + s.id) +
+          ' — ' +
+          (s.ultimo_status === 'recusado'
+            ? 'Recusado; escolha outro parceiro'
+            : 'Aguardando encaminhamento');
+        button.type = 'button';
+        button.className = 'btn-back';
+        button.textContent = 'Selecionar parceiro';
+        button.addEventListener('click', async () => {
+          button.disabled = true;
+          try {
+            const request = await data.getRequest(s.id);
+            document.getElementById('aacd-order-code').value = request.codigo;
+            const priority = {
+              padrao: 'Padrão',
+              medio: 'Médio',
+              urgente: 'Urgente'
+            }[request.prioridade];
+            aacdOrderForms[0]
+              .querySelectorAll('[name=priority]')
+              .forEach((input) => (input.checked = input.value === priority));
+            for (const axis of ['X', 'Y', 'Z'])
+              document.getElementById('aacd-volume' + axis).value =
+                request['capacidade_' + axis.toLowerCase()];
+            aacdOrderForms[1]
+              .querySelectorAll('[name=materials]')
+              .forEach(
+                (input) =>
+                  (input.checked = request.materials.includes(input.value))
+              );
+            aacdOrderForms[1]
+              .querySelectorAll('[name=nozzles]')
+              .forEach(
+                (input) =>
+                  (input.checked = request.nozzles.includes(
+                    Number(input.value)
+                  ))
+              );
+            document.getElementById('aacd-order-url').value = request.link;
+            document.getElementById('aacd-order-notes').value =
+              request.observacoes || '';
+            const aacdDraft = readAacdDraft();
+            matches = await data.listMatches({ requestId: s.id });
+            renderMatches();
+            document.getElementById('aacd-demand-code').textContent =
+              aacdDraft.code;
+            document.getElementById('aacd-demand-material').textContent =
+              aacdDraft.materials.join(', ');
+            document.querySelector('#aacd-demand-volume span').textContent =
+              aacdDraft.volumes.join('×') + ' mm';
+            document.getElementById('aacd-connect-feedback').textContent =
+              matches.length
+                ? ''
+                : 'Nenhuma impressora homologada atende aos requisitos.';
+            navigate('aacd-conectar');
+          } catch (error) {
+            document.getElementById('aacd-orders-feedback').textContent =
+              error.message;
+          } finally {
+            button.disabled = false;
+          }
+        });
+        row.append(label, button);
+        return row;
+      })
+    );
+  }
   async function renderAacd() {
     try {
       const actor = sessionKey();
@@ -538,7 +661,11 @@ export async function initAacd() {
       renderNetwork();
       renderMatches();
       renderAacdMetrics();
-      await Promise.all([renderReviews(), renderHomePartners()]);
+      await Promise.all([
+        renderReviews(),
+        renderHomePartners(),
+        renderOpenRequests()
+      ]);
     } catch (error) {
       document.getElementById('aacd-orders-feedback').textContent =
         error.message;
@@ -551,7 +678,7 @@ export async function initAacd() {
     const input = document.getElementById('aacd-volume' + axis);
     input.min = '1';
     input.max = '10000';
-    input.step = '0.1';
+    input.step = backendEnabled ? '1' : '0.1';
   }
   aacdOrderForms[1].querySelectorAll('[name="nozzles"]').forEach((input) => {
     input.checked = true;
@@ -620,7 +747,7 @@ export async function initAacd() {
       const error = form.querySelector('.form-error');
       if (error) error.textContent = '';
     });
-    form.addEventListener('submit', (event) => {
+    form.addEventListener('submit', async (event) => {
       event.preventDefault();
       if (activeSection !== `aacd-pedido-${index + 1}`) return;
       if (!validateAacdStep(index + 1)) return;
@@ -634,8 +761,23 @@ export async function initAacd() {
           aacdDraft.materials.join(', ');
         document.querySelector('#aacd-demand-volume span').textContent =
           aacdDraft.volumes.join('×') + ' mm';
-        document.getElementById('aacd-connect-feedback').textContent = '';
-        navigate('aacd-conectar');
+        const button = form.querySelector('[type=submit]');
+        button.disabled = true;
+        try {
+          const actor = sessionKey();
+          matches = await data.listMatches(aacdDraft);
+          if (backendEnabled && actor !== sessionKey()) return;
+          renderMatches();
+          document.getElementById('aacd-connect-feedback').textContent =
+            matches.length
+              ? ''
+              : 'Nenhuma impressora homologada atende aos requisitos. Revise materiais, bicos e dimensões.';
+          navigate('aacd-conectar');
+        } catch (error) {
+          form.querySelector('.form-error').textContent = error.message;
+        } finally {
+          button.disabled = false;
+        }
       }
     });
   }
@@ -663,9 +805,18 @@ export async function initAacd() {
         (record) => record.id === button.dataset.connectOrder
       );
       if (!match) return;
+      button.disabled = true;
       try {
         await data.createOrder({
           ...draft,
+          selection: backendEnabled
+            ? {
+                partnerId: match.partnerId,
+                printerId: match.printerId,
+                material: match.material,
+                nozzle: match.nozzle
+              }
+            : undefined,
           volumes: Object.fromEntries(
             ['X', 'Y', 'Z'].map((axis, i) => [axis, draft.volumes[i]])
           ),
@@ -683,6 +834,8 @@ export async function initAacd() {
         document.getElementById('aacd-connect-feedback').textContent =
           error.message;
         return;
+      } finally {
+        button.disabled = false;
       }
       aacdOrderSearch.value = '';
       aacdMaterialFilter.value = '';
@@ -700,7 +853,9 @@ export async function initAacd() {
       await renderAacd();
       document.dispatchEvent(new CustomEvent('conexo:data-changed'));
       document.getElementById('aacd-orders-feedback').textContent =
-        `${draft.code} conectado a ${match.name} nesta demonstração. Nenhum envio real foi realizado.`;
+        backendEnabled
+          ? `${draft.code} conectado a ${match.name}. Pedido salvo e disponível para o parceiro.`
+          : `${draft.code} conectado a ${match.name} nesta demonstração. Nenhum envio real foi realizado.`;
       navigate('aacd-pedidos');
     });
   async function renderAacdUsers() {

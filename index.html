@@ -116,8 +116,7 @@
       class="alert alert-info m-3"
       role="status"
       hidden
-      >Cadastros, impressoras e acessos usam o banco. Pedidos e recomendações
-      ainda são exemplos de demonstração nesta entrega.</p
+      >Cadastros, impressoras e pedidos estão conectados ao banco de dados.</p
     >
     <!-- TELAS DA APLICAÇÃO: o roteador alterna a seção visível usando data-page -->
     <main id="app">
@@ -2172,6 +2171,11 @@
             </div>
           </div>
           <!-- Lista de pedidos: preenchida dinamicamente pelo JavaScript -->
+          <!-- Solicitações persistidas que ainda podem ser encaminhadas a um parceiro -->
+          <section id="aacd-open-requests" class="open-requests" hidden>
+            <h2>Solicitações para encaminhar</h2>
+            <div data-open-requests></div>
+          </section>
           <div id="aacd-order-list"> </div>
           <p id="aacd-order-empty" class="feedback" hidden
             >Nenhum pedido encontrado.</p
