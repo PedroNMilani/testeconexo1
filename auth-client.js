@@ -33,7 +33,14 @@ export function internalDestination(user = sessionUser) {return user?.perfil==='
 export function canOpen(section) {
   if(!backendEnabled)return true;
   if(section.startsWith('aacd-'))return sessionUser?.perfil==='aacd'&&sessionUser.homologado;
-  if(['parceiro-inicio','parceiro-pedidos','parceiro-impressora','parceiro-perfil'].includes(section))return sessionUser?.perfil==='parceiro';
+  if ([
+  'parceiro-inicio',
+  'parceiro-pedidos',
+  'parceiro-impressora',
+  'parceiro-perfil'
+  ].includes(section)) {
+  return sessionUser?.perfil === 'parceiro' && sessionUser.homologado === true;
+  };
   return true;
 }
 export function renderBackendNotice() {
