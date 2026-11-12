@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { setTimeout } from 'node:timers/promises';
 import { booleanPointInPolygon } from '@turf/boolean-point-in-polygon';
-import { check } from './errors.js';
+import { check, HttpError } from './errors.js';
 const states = JSON.parse(
   readFileSync(
     new URL('../data/brasil-estados.geojson', import.meta.url),
@@ -28,21 +28,6 @@ export function insideBrazil(latitude, longitude) {
       booleanPointInPolygon([longitude, latitude], feature)
     )
   );
-}
-function stateCenter(uf) {
-  const feature = states.find((x) => x.properties.sigla === uf);
-  const points = [];
-  function visit(value) {
-    if (typeof value[0] === 'number') points.push(value);
-    else value.forEach(visit);
-  }
-  visit(feature.geometry.coordinates);
-  const lon = points.map((x) => x[0]),
-    lat = points.map((x) => x[1]);
-  return {
-    latitude: (Math.min(...lat) + Math.max(...lat)) / 2,
-    longitude: (Math.min(...lon) + Math.max(...lon)) / 2
-  };
 }
 export function createGeoService({
   userAgent,
@@ -76,16 +61,17 @@ export function createGeoService({
             headers: { 'User-Agent': userAgent, Accept: 'application/json' },
             signal: AbortSignal.timeout(timeoutMs)
           });
-          if (!response.ok) return null;
+          if (!response.ok) throw new Error('Falha do provedor');
           const values = await response.json();
-          const item = Array.isArray(values) ? values[0] : null;
+          if (!Array.isArray(values)) throw new Error('Resposta inválida');
+          const item = values[0];
           const point = item
             ? { latitude: Number(item.lat), longitude: Number(item.lon) }
             : null;
-          const result =
-            point && insideBrazil(point.latitude, point.longitude)
-              ? point
-              : null;
+          if (point && !insideBrazil(point.latitude, point.longitude)) {
+            throw new Error('Coordenadas inválidas');
+          }
+          const result = point;
           if (cache.size >= 1000) cache.delete(cache.keys().next().value);
           cache.set(key, {
             value: result,
@@ -93,7 +79,11 @@ export function createGeoService({
           });
           return result;
         } catch {
-          return null;
+          throw new HttpError(
+            503,
+            'Não foi possível consultar o endereço. Tente novamente.',
+            'GEOCODING_UNAVAILABLE'
+          );
         }
       });
     queue = operation.then(
@@ -137,17 +127,25 @@ export function createGeoService({
     );
     const state = UFS.find((item) => item.uf === body.state).nome;
     // Nunca enviamos número, responsável, email ou outros campos ao provedor.
-    if (userAgent && !userAgent.includes('seu-email')) {
-      const point = await search({
-        street: body.street.trim(),
-        city: body.city.trim(),
-        state
-      });
-      if (point) return { ...point, nivel: 'rua' };
-      const city = await search({ city: body.city.trim(), state });
-      if (city) return { ...city, nivel: 'cidade' };
-    }
-    return { ...stateCenter(body.state), nivel: 'uf' };
+    check(
+      userAgent && !userAgent.includes('seu-email'),
+      'A busca de endereço não está configurada.',
+      503,
+      'GEOCODING_NOT_CONFIGURED'
+    );
+    const point = await search({
+      street: body.street.trim(),
+      city: body.city.trim(),
+      state
+    });
+    if (point) return { ...point, nivel: 'rua' };
+    const city = await search({ city: body.city.trim(), state });
+    if (city) return { ...city, nivel: 'cidade' };
+    throw new HttpError(
+      404,
+      'Endereço não encontrado. Confira a rua, a cidade e a UF e tente novamente.',
+      'GEOCODING_NOT_FOUND'
+    );
   }
   return { validateConfirmed, geocode };
 }
