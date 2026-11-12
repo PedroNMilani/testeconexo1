@@ -33,22 +33,24 @@ function showPendingPartner() {
   evaluationDialog.show();
 }
 
-// Impede fechar o pop-up enquanto o parceiro estiver pendente.
-evaluationElement.addEventListener('hide.bs.modal', event => {
-  if (partnerPending()) event.preventDefault();
-});
 
-// Esconde o botão de fechar somente para o parceiro pendente.
 // O mesmo modal também é usado pelo cadastro AACD.
 evaluationElement.addEventListener('show.bs.modal', () => {
   evaluationElement
     .querySelectorAll('[data-bs-dismiss="modal"]')
     .forEach(button => {
-      button.hidden = partnerPending();
+      button.hidden = false;
     });
 
   document.getElementById('partner-evaluation-actions').hidden =
     !partnerPending();
+});
+
+//Redireciona a página sobre nós ao fechar o pop-up de homologação
+evaluationElement.addEventListener('hidden.bs.modal', () => {
+  if (partnerPending()) {
+    navigate('sobre-nos', { replace: true });
+  }
 });
 
 function renderLoginMode() {
