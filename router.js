@@ -1,10 +1,18 @@
 // Navegação única por seções. Nenhum dado de negócio é armazenado aqui.
-const pages = new Map([...document.querySelectorAll('#app [data-page]')].map(section => [section.id, section]));
+const pages = new Map(
+  [...document.querySelectorAll('#app [data-page]')].map((section) => [
+    section.id,
+    section
+  ])
+);
 export let activeSection = 'sobre-nos';
 export let loginMode = 'aacd';
-let guard = destination => destination;
+let guard = (destination) => destination;
 let renderMode = () => {};
-export function configureRouter(options) { guard = options.guard; renderMode = options.renderMode; }
+export function configureRouter(options) {
+  guard = options.guard;
+  renderMode = options.renderMode;
+}
 export function setLoginMode(mode) {
   loginMode = mode === 'parceiro' ? 'parceiro' : 'aacd';
   renderMode(loginMode);
@@ -32,7 +40,10 @@ const titles = {
   'aacd-perfil': 'Editar a Conta AACD'
 };
 
-export function navigate(sectionId, { replace = false, fromHistory = false, mode } = {}) {
+export function navigate(
+  sectionId,
+  { replace = false, fromHistory = false, mode } = {}
+) {
   let destination = pages.has(sectionId) ? sectionId : 'sobre-nos';
   destination = guard(destination);
 
@@ -41,7 +52,10 @@ export function navigate(sectionId, { replace = false, fromHistory = false, mode
   const hash = `#${destination}`;
   if (replace || fromHistory) {
     history.replaceState(state, '', hash);
-  } else if (!fromHistory && (location.hash !== hash || history.state?.loginMode !== loginMode)) {
+  } else if (
+    !fromHistory &&
+    (location.hash !== hash || history.state?.loginMode !== loginMode)
+  ) {
     history.pushState(state, '', hash);
   }
 
@@ -60,28 +74,40 @@ export function navigate(sectionId, { replace = false, fromHistory = false, mode
   document.getElementById('skip-link').setAttribute('href', `#${heading.id}`);
   window.scrollTo(0, 0);
   heading.focus({ preventScroll: true });
-  document.dispatchEvent(new CustomEvent('conexo:navigate', { detail: { section: destination } }));
+  document.dispatchEvent(
+    new CustomEvent('conexo:navigate', { detail: { section: destination } })
+  );
 }
-
 
 export function bindRouter() {
-// Cada link mantém seu href real. O JavaScript intercepta somente a navegação
-// interna normal, preservando cliques modificados e o histórico do navegador.
-document.addEventListener('click', event => {
-  const target = event.target.closest('[data-section]');
-  if (!target || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
-  event.preventDefault();
-  navigate(target.dataset.section, { mode: target.dataset.loginMode });
-});
+  // Cada link mantém seu href real. O JavaScript intercepta somente a navegação
+  // interna normal, preservando cliques modificados e o histórico do navegador.
+  document.addEventListener('click', (event) => {
+    const target = event.target.closest('[data-section]');
+    if (
+      !target ||
+      event.button !== 0 ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.shiftKey ||
+      event.altKey
+    )
+      return;
+    event.preventDefault();
+    navigate(target.dataset.section, { mode: target.dataset.loginMode });
+  });
 
-function readLocation() {
-  const id = location.hash.slice(1) || 'sobre-nos';
-  // O link de pular conteúdo deve focar o título, sem trocar de seção.
-  if (id === `${activeSection}-titulo`) return;
-  if (id === activeSection && (!history.state?.loginMode || history.state.loginMode === loginMode)) return;
-  navigate(id, { fromHistory: true, mode: history.state?.loginMode });
-}
-window.addEventListener('popstate', readLocation);
-window.addEventListener('hashchange', readLocation);
-
+  function readLocation() {
+    const id = location.hash.slice(1) || 'sobre-nos';
+    // O link de pular conteúdo deve focar o título, sem trocar de seção.
+    if (id === `${activeSection}-titulo`) return;
+    if (
+      id === activeSection &&
+      (!history.state?.loginMode || history.state.loginMode === loginMode)
+    )
+      return;
+    navigate(id, { fromHistory: true, mode: history.state?.loginMode });
+  }
+  window.addEventListener('popstate', readLocation);
+  window.addEventListener('hashchange', readLocation);
 }

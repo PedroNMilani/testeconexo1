@@ -1,30 +1,72 @@
 {
   "$jsonSchema": {
     "bsonType": "object",
-    "required": ["_id", "id_parceiro", "modelo", "capacidade", "bicos_mm", "materiais_compativeis", "materiais_disponiveis", "precisa_material", "ativa", "criada_em", "atualizada_em"],
+    "required": [
+      "_id",
+      "id_parceiro",
+      "modelo",
+      "capacidade",
+      "bicos_mm",
+      "materiais_compativeis",
+      "materiais_disponiveis",
+      "precisa_material",
+      "ativa",
+      "criada_em",
+      "atualizada_em"
+    ],
     "additionalProperties": false,
     "properties": {
-      "_id": {"bsonType": "objectId"},
-      "id_parceiro": {"bsonType": "string", "pattern": "^[1-9][0-9]*$"},
-      "modelo": {"bsonType": "string", "minLength": 1, "maxLength": 160},
+      "_id": { "bsonType": "objectId" },
+      "id_parceiro": { "bsonType": "string", "pattern": "^[1-9][0-9]*$" },
+      "modelo": { "bsonType": "string", "minLength": 1, "maxLength": 160 },
       "capacidade": {
         "bsonType": "object",
         "required": ["x", "y", "z"],
         "additionalProperties": false,
         "properties": {
-          "x": {"bsonType": ["double", "int", "long", "decimal"], "minimum": 0, "exclusiveMinimum": true},
-          "y": {"bsonType": ["double", "int", "long", "decimal"], "minimum": 0, "exclusiveMinimum": true},
-          "z": {"bsonType": ["double", "int", "long", "decimal"], "minimum": 0, "exclusiveMinimum": true}
+          "x": {
+            "bsonType": ["double", "int", "long", "decimal"],
+            "minimum": 0,
+            "exclusiveMinimum": true
+          },
+          "y": {
+            "bsonType": ["double", "int", "long", "decimal"],
+            "minimum": 0,
+            "exclusiveMinimum": true
+          },
+          "z": {
+            "bsonType": ["double", "int", "long", "decimal"],
+            "minimum": 0,
+            "exclusiveMinimum": true
+          }
         }
       },
-      "bicos_mm": {"bsonType": "array", "minItems": 1, "uniqueItems": true, "items": {"bsonType": ["double", "int", "long", "decimal"], "minimum": 0, "exclusiveMinimum": true}},
-      "materiais_compativeis": {"bsonType": "array", "minItems": 1, "uniqueItems": true, "items": {"bsonType": "string", "minLength": 1, "maxLength": 32}},
-      "materiais_disponiveis": {"bsonType": "array", "uniqueItems": true, "items": {"bsonType": "string", "minLength": 1, "maxLength": 32}},
-      "precisa_material": {"bsonType": "bool"},
-      "ativa": {"bsonType": "bool"},
-      "criada_em": {"bsonType": "date"},
-      "atualizada_em": {"bsonType": "date"},
-      "excluida_em": {"bsonType": ["date", "null"]}
+      "bicos_mm": {
+        "bsonType": "array",
+        "minItems": 1,
+        "uniqueItems": true,
+        "items": {
+          "bsonType": ["double", "int", "long", "decimal"],
+          "minimum": 0,
+          "exclusiveMinimum": true
+        }
+      },
+      "materiais_compativeis": {
+        "bsonType": "array",
+        "minItems": 1,
+        "uniqueItems": true,
+        "items": { "bsonType": "string", "minLength": 1, "maxLength": 32 }
+      },
+      "materiais_disponiveis": {
+        "bsonType": "array",
+        "uniqueItems": true,
+        "items": { "bsonType": "string", "minLength": 1, "maxLength": 32 }
+      },
+      "precisa_material": { "bsonType": "bool" },
+      "ativa": { "bsonType": "bool" },
+      "criada_em": { "bsonType": "date" },
+      "atualizada_em": { "bsonType": "date" },
+      "excluida_em": { "bsonType": ["date", "null"] }
     }
   }
 }

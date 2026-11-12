@@ -18,12 +18,7 @@
         "bsonType": "objectId"
       },
       "id_parceiro": {
-        "bsonType": [
-          "double",
-          "int",
-          "long",
-          "decimal"
-        ],
+        "bsonType": ["double", "int", "long", "decimal"],
         "minimum": 1
       },
       "modelo": {
@@ -33,40 +28,21 @@
       },
       "capacidade": {
         "bsonType": "object",
-        "required": [
-          "x",
-          "y",
-          "z"
-        ],
+        "required": ["x", "y", "z"],
         "additionalProperties": false,
         "properties": {
           "x": {
-            "bsonType": [
-              "double",
-              "int",
-              "long",
-              "decimal"
-            ],
+            "bsonType": ["double", "int", "long", "decimal"],
             "minimum": 0,
             "exclusiveMinimum": true
           },
           "y": {
-            "bsonType": [
-              "double",
-              "int",
-              "long",
-              "decimal"
-            ],
+            "bsonType": ["double", "int", "long", "decimal"],
             "minimum": 0,
             "exclusiveMinimum": true
           },
           "z": {
-            "bsonType": [
-              "double",
-              "int",
-              "long",
-              "decimal"
-            ],
+            "bsonType": ["double", "int", "long", "decimal"],
             "minimum": 0,
             "exclusiveMinimum": true
           }
@@ -105,12 +81,7 @@
         "minItems": 1,
         "uniqueItems": true,
         "items": {
-          "bsonType": [
-            "double",
-            "int",
-            "long",
-            "decimal"
-          ],
+          "bsonType": ["double", "int", "long", "decimal"],
           "minimum": 0,
           "exclusiveMinimum": true
         }
