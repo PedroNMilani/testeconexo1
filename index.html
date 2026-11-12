@@ -11,9 +11,11 @@
   </head>
 
   <body>
+    <!-- Acessibilidade: atalho para o conteúdo da tela atual -->
     <a class="skip-link" id="skip-link" href="#sobre-nos-titulo"
       >Ir para o conteúdo</a
     >
+    <!-- CABEÇALHO PÚBLICO: marca e acesso ao login -->
     <header id="site-header">
       <a
         href="#sobre-nos"
@@ -31,6 +33,7 @@
         >Entrar</a
       >
     </header>
+    <!-- CABEÇALHO DO PARCEIRO: navegação e menu da conta -->
     <header id="partner-header" hidden>
       <a href="#parceiro-inicio" data-section="parceiro-inicio" class="">
         <img class="logo" src="assets/logo.png" alt="CoNexo" />
@@ -69,6 +72,7 @@
         </div>
       </div>
     </header>
+    <!-- CABEÇALHO DA AACD: navegação e menu da conta -->
     <header id="aacd-header" hidden>
       <a href="#aacd-inicio" data-section="aacd-inicio" class="">
         <img class="logo" src="assets/logo.png" alt="CoNexo" />
@@ -106,6 +110,7 @@
         </div>
       </div>
     </header>
+    <!-- Aviso compartilhado sobre dados reais e dados de demonstração -->
     <p
       id="backend-stage-notice"
       class="alert alert-info m-3"
@@ -114,7 +119,9 @@
       >Cadastros, impressoras e acessos usam o banco. Pedidos e recomendações
       ainda são exemplos de demonstração nesta entrega.</p
     >
+    <!-- TELAS DA APLICAÇÃO: o roteador alterna a seção visível usando data-page -->
     <main id="app">
+      <!-- ===== TELA 01: Sobre Nós (#sobre-nos) ===== -->
       <section
         id="sobre-nos"
         class="app-section"
@@ -122,11 +129,13 @@
         aria-labelledby="sobre-nos-titulo"
       >
         <div class="page">
+          <!-- Título da tela e navegação de retorno -->
           <div class="page-title">
             <h1 id="sobre-nos-titulo" class="screen-heading" tabindex="-1"
               >Sobre Nós</h1
             >
           </div>
+          <!-- Apresentação do projeto e benefícios da rede -->
           <section class="intro" aria-label="Apresentação Geral">
             <div>
               <span class="eyebrow">PROPÓSITO &amp; CONEXÃO</span>
@@ -181,6 +190,7 @@
               </article>
             </div>
           </section>
+          <!-- Pilares institucionais: missão, visão e valores -->
           <section class="pillars" aria-label="Pilares institucionais">
             <article class="pillar">
               <div>
@@ -242,6 +252,7 @@
               >
             </article>
           </section>
+          <!-- Chamada para participar da rede -->
           <div class="cta">
             <a
               class="btn btn-conexo"
@@ -254,7 +265,9 @@
           </div>
         </div>
       </section>
+      <!-- FIM DA TELA: Sobre Nós (#sobre-nos) -->
 
+      <!-- ===== TELA 02: Login da AACD e do parceiro (#login) ===== -->
       <section
         id="login"
         class="app-section"
@@ -264,6 +277,7 @@
         inert
       >
         <div class="login-page">
+          <!-- Título da tela e navegação de retorno -->
           <div class="page-title">
             <a
               class="back"
@@ -276,6 +290,7 @@
               >Faça seu Login!</h1
             >
           </div>
+          <!-- Painel de acesso: imagem institucional e formulário -->
           <div class="login-panel">
             <img
               src="assets/login.jpg"
@@ -283,6 +298,7 @@
               alt="Atendimento especializado em reabilitação"
             />
             <div class="login-form">
+              <!-- Seleção do tipo de acesso: equipe AACD ou parceiro -->
               <div class="login-tabs" role="group" aria-label="Tipo de acesso">
                 <button
                   type="button"
@@ -301,6 +317,7 @@
                   >Parceiro</button
                 >
               </div>
+              <!-- Formulário de login: credenciais, recuperação de senha e acesso ao cadastro -->
               <form data-form="login">
                 <div class="field">
                   <label class="form-label" for="login-login-email"
@@ -362,7 +379,9 @@
           </div>
         </div>
       </section>
+      <!-- FIM DA TELA: Login da AACD e do parceiro (#login) -->
 
+      <!-- ===== TELA 03: Termos de uso do cadastro de parceiro (#termos-uso) ===== -->
       <section
         id="termos-uso"
         class="app-section"
@@ -372,6 +391,7 @@
         inert
       >
         <div class="page registration">
+          <!-- Título da tela e navegação de retorno -->
           <div class="page-title">
             <a
               class="back"
@@ -384,6 +404,7 @@
               >Cadastro de Parceiro Técnico</h1
             >
           </div>
+          <!-- Termos de uso e confirmação da leitura -->
           <form data-form="terms">
             <div class="form-card">
               <h2 class="terms-title">Termos de Uso</h2>
@@ -392,6 +413,7 @@
                 os nossos Termos de Uso e com a nossa Política de
                 Privacidade.</p
               >
+              <!-- Leitura dos termos: conteúdo com rolagem para liberar a confirmação -->
               <div
                 class="terms-scroll"
                 id="termos-uso-terms-scroll"
@@ -539,6 +561,7 @@
                 plataforma.<br />
                 E-mail de contato:
               </div>
+              <!-- Indicador de progresso do cadastro -->
               <div class="progress" aria-hidden="true">
                 <div
                   class="progress-bar"
@@ -553,6 +576,7 @@
               <p class="form-error" id="termos-uso-form-error" role="alert">
               </p>
             </div>
+            <!-- Ações do formulário: retorno e avanço ou confirmação -->
             <div class="form-actions">
               <a class="btn-back" href="#sobre-nos" data-section="sobre-nos"
                 >Cancelar</a
@@ -583,7 +607,9 @@
           </a>
         </div>
       </section>
+      <!-- FIM DA TELA: Termos de uso do cadastro de parceiro (#termos-uso) -->
 
+      <!-- ===== TELA 04: Cadastro de parceiro — etapa 1: dados da instituição (#parceiro-dados) ===== -->
       <section
         id="parceiro-dados"
         class="app-section"
@@ -593,6 +619,7 @@
         inert
       >
         <div class="page registration">
+          <!-- Título da tela e navegação de retorno -->
           <div class="page-title">
             <a
               class="back"
@@ -605,6 +632,7 @@
               >Cadastro de Parceiro Técnico</h1
             >
           </div>
+          <!-- Formulário da etapa atual do cadastro de parceiro -->
           <form data-form="parceiro">
             <div class="form-card">
               <div class="section-heading">
@@ -822,6 +850,7 @@
                   >
                 </div>
               </div>
+              <!-- Indicador de progresso do cadastro -->
               <div
                 class="progress"
                 role="progressbar"
@@ -835,6 +864,7 @@
               <p class="form-error" id="parceiro-dados-form-error" role="alert">
               </p>
             </div>
+            <!-- Ações do formulário: retorno e avanço ou confirmação -->
             <div class="form-actions">
               <a class="btn-back" href="#termos-uso" data-section="termos-uso"
                 >Voltar</a
@@ -858,7 +888,9 @@
           </a>
         </div>
       </section>
+      <!-- FIM DA TELA: Cadastro de parceiro — etapa 1: dados da instituição (#parceiro-dados) -->
 
+      <!-- ===== TELA 05: Cadastro de parceiro — etapa 2: capacidade técnica e equipamentos (#parceiro-equipamentos) ===== -->
       <section
         id="parceiro-equipamentos"
         class="app-section"
@@ -868,6 +900,7 @@
         inert
       >
         <div class="page registration">
+          <!-- Título da tela e navegação de retorno -->
           <div class="page-title">
             <a
               class="back"
@@ -883,6 +916,7 @@
               >Cadastro de Parceiro Técnico</h1
             >
           </div>
+          <!-- Formulário da etapa atual do cadastro de parceiro -->
           <form data-form="parceiro">
             <div class="form-card technical">
               <div class="section-heading">
@@ -895,6 +929,7 @@
                   >
                 </div>
               </div>
+              <!-- Volume de impressão: dimensões nos eixos X, Y e Z -->
               <div class="volume-row">
                 <div class="field">
                   <label class="form-label" for="register-printer-name"
@@ -960,6 +995,7 @@
                   />
                 </div>
               </div>
+              <!-- Seleção de materiais compatíveis com a impressora -->
               <div class="choice-head">
                 <label>Materiais compatíveis com a impressora</label>
                 <span>Selecione todos os disponíveis</span>
@@ -982,6 +1018,7 @@
                   Filamentos Flexíveis (Poliuretano Termoplástico)</label
                 >
               </div>
+              <!-- Seleção de materiais disponíveis nesta impressora -->
               <div class="choice-head"
                 ><label>Materiais disponíveis nesta impressora</label
                 ><span>Selecione os que a instituição pode fornecer</span></div
@@ -1013,6 +1050,7 @@
                   />TPU</label
                 ></div
               >
+              <!-- Seleção de bicos disponíveis para a impressora -->
               <div class="choice-head">
                 <label>Bicos Disponíveis para a Impressora</label>
                 <span>Selecione todos os disponíveis</span>
@@ -1035,6 +1073,7 @@
                   mm</label
                 >
               </div>
+              <!-- Indicador de progresso do cadastro -->
               <div
                 class="progress"
                 role="progressbar"
@@ -1052,6 +1091,7 @@
               >
               </p>
             </div>
+            <!-- Ações do formulário: retorno e avanço ou confirmação -->
             <div class="form-actions">
               <a
                 class="btn-back"
@@ -1078,7 +1118,9 @@
           </a>
         </div>
       </section>
+      <!-- FIM DA TELA: Cadastro de parceiro — etapa 2: capacidade técnica e equipamentos (#parceiro-equipamentos) -->
 
+      <!-- ===== TELA 06: Cadastro de parceiro — etapa 3: confirmação da localização (#parceiro-logistica) ===== -->
       <section
         id="parceiro-logistica"
         class="app-section"
@@ -1088,6 +1130,7 @@
         inert
       >
         <div class="page registration">
+          <!-- Título da tela e navegação de retorno -->
           <div class="page-title">
             <a
               class="back"
@@ -1103,6 +1146,7 @@
               >Cadastro de Parceiro Técnico</h1
             >
           </div>
+          <!-- Formulário da etapa atual do cadastro de parceiro -->
           <form data-form="parceiro">
             <div class="form-card logistics">
               <div class="section-heading">
@@ -1112,6 +1156,7 @@
                   <p>Confirme onde a instituição está localizada.</p>
                 </div>
               </div>
+              <!-- Localização da instituição: busca de endereço, mapa e confirmação do pino -->
               <div id="registration-location" class="location-box" hidden>
                 <p
                   >Localize o endereço, ajuste o pino se necessário e confirme o
@@ -1139,6 +1184,7 @@
                 >
               </div>
 
+              <!-- Indicador de progresso do cadastro -->
               <div
                 class="progress"
                 role="progressbar"
@@ -1156,6 +1202,7 @@
               >
               </p>
             </div>
+            <!-- Orientações de higiene, segurança e rastreabilidade -->
             <section
               class="conditions"
               aria-label="Condições de higiene e segurança"
@@ -1182,6 +1229,7 @@
                 >
               </ul>
             </section>
+            <!-- Ações do formulário: retorno e avanço ou confirmação -->
             <div class="form-actions">
               <a
                 class="btn-back"
@@ -1208,7 +1256,9 @@
           </a>
         </div>
       </section>
+      <!-- FIM DA TELA: Cadastro de parceiro — etapa 3: confirmação da localização (#parceiro-logistica) -->
 
+      <!-- ===== TELA 07: Cadastro da equipe AACD (#cadastro-aacd) ===== -->
       <section
         id="cadastro-aacd"
         class="app-section"
@@ -1218,6 +1268,7 @@
         inert
       >
         <div class="page registration">
+          <!-- Título da tela e navegação de retorno -->
           <div class="page-title">
             <a
               class="back"
@@ -1231,6 +1282,7 @@
               >Cadastro AACD</h1
             >
           </div>
+          <!-- Formulário de cadastro: unidade, contato e credenciais da equipe AACD -->
           <form data-form="aacd">
             <div class="form-card">
               <div class="section-heading">
@@ -1364,6 +1416,7 @@
               <p class="form-error" id="cadastro-aacd-form-error" role="alert">
               </p>
             </div>
+            <!-- Ações do formulário: retorno e avanço ou confirmação -->
             <div class="form-actions">
               <a
                 class="btn-back"
@@ -1391,6 +1444,8 @@
           </a>
         </div>
       </section>
+      <!-- FIM DA TELA: Cadastro da equipe AACD (#cadastro-aacd) -->
+      <!-- ===== TELA 08: Parceiro — início, impressoras e histórico de produção (#parceiro-inicio) ===== -->
       <section
         id="parceiro-inicio"
         data-page
@@ -1403,6 +1458,7 @@
           <h1 id="parceiro-inicio-titulo" class="screen-heading" tabindex="-1"
             >Laboratório Mauá 3D FabLab</h1
           >
+          <!-- Resumo do parceiro: impressoras, atendimentos e pedidos pendentes -->
           <div class="partner-summary">
             <span class="partner-label">
               <span class="dot"> </span>POLO PARCEIRO DE MANUFATURA</span
@@ -1433,6 +1489,7 @@
                 impressora</button
               >
             </div>
+            <!-- Impressoras do parceiro: cartões e navegação do carrossel -->
             <div class="printer-carousel">
               <div class="printer-grid" id="printer-grid">
                 <!-- Placeholder FDM fictício: modelo, bico e volume no registro de exemplo. -->
@@ -1448,6 +1505,7 @@
             </div>
             <p class="feedback" id="printer-feedback" role="status"> </p>
           </div>
+          <!-- Histórico de produção e acesso aos pedidos -->
           <div class="production-history">
             <div class="partner-section-heading">
               <h2>Histórico de Produção</h2>
@@ -1467,6 +1525,8 @@
           </div>
         </div>
       </section>
+      <!-- FIM DA TELA: Parceiro — início, impressoras e histórico de produção (#parceiro-inicio) -->
+      <!-- ===== TELA 09: Parceiro — pedidos ativos e pendentes (#parceiro-pedidos) ===== -->
       <section
         id="parceiro-pedidos"
         data-page
@@ -1482,6 +1542,7 @@
             tabindex="-1"
             >Pedidos do parceiro</h1
           >
+          <!-- Pedidos ativos: acompanhamento da produção -->
           <section class="order-group">
             <button
               class="order-group-toggle"
@@ -1501,6 +1562,7 @@
               <p class="order-empty" hidden>Nenhum pedido ativo.</p>
             </div>
           </section>
+          <!-- Pedidos pendentes: aguardando aceite do parceiro -->
           <section class="order-group">
             <button
               class="order-group-toggle"
@@ -1523,6 +1585,8 @@
           <p id="orders-feedback" class="feedback" role="status"> </p>
         </div>
       </section>
+      <!-- FIM DA TELA: Parceiro — pedidos ativos e pendentes (#parceiro-pedidos) -->
+      <!-- ===== TELA 10: Parceiro — cadastro e edição de impressora (#parceiro-impressora) ===== -->
       <section
         id="parceiro-impressora"
         data-page
@@ -1532,6 +1596,7 @@
         aria-labelledby="parceiro-impressora-titulo"
       >
         <div class="partner-page printer-editor-page">
+          <!-- Título da tela e navegação de retorno -->
           <div class="printer-page-title">
             <a
               href="#parceiro-inicio"
@@ -1546,6 +1611,7 @@
               >Sua impressora</h1
             >
           </div>
+          <!-- Prévia da impressora selecionada: imagem, modelo e identificação -->
           <div class="printer-preview">
             <div class="printer-art" id="editor-art">
               <img src="assets/partner-bambu.svg" alt="" />
@@ -1557,11 +1623,13 @@
           <h2 class="editor-subtitle"
             >Materiais compatíveis com a impressora</h2
           >
+          <!-- Formulário da impressora: modelo, volume, materiais e bicos -->
           <form
             id="printer-form"
             class="form-card technical printer-form"
             data-form="printer"
           >
+            <!-- Identificação do modelo: campos exibidos ao adicionar uma impressora -->
             <div id="new-printer-fields" hidden>
               <div class="field">
                 <label class="form-label" for="new-printer-name"
@@ -1576,6 +1644,7 @@
                 />
               </div>
             </div>
+            <!-- Volume de impressão: dimensões nos eixos X, Y e Z -->
             <div class="printer-volumes">
               <div class="field">
                 <label class="form-label" for="edit-volumeX">Volume X</label>
@@ -1611,6 +1680,7 @@
                 />
               </div>
             </div>
+            <!-- Seleção de materiais compatíveis com a impressora -->
             <div class="choice-head">
               <label>Materiais compatíveis com a impressora</label>
               <span>Selecione todos os disponíveis</span>
@@ -1633,6 +1703,7 @@
                 Filamentos Flexíveis (Poliuretano Termoplástico)</label
               >
             </div>
+            <!-- Seleção de materiais disponíveis nesta impressora -->
             <div class="choice-head"
               ><label>Materiais disponíveis nesta impressora</label
               ><span>Selecione os que a instituição pode fornecer</span></div
@@ -1664,6 +1735,7 @@
                 />TPU</label
               ></div
             >
+            <!-- Seleção de bicos disponíveis para a impressora -->
             <div class="choice-head">
               <label>Bicos Disponíveis para a Impressora</label>
               <span>Selecione todos os disponíveis</span>
@@ -1703,6 +1775,7 @@
               </select>
             </div>
             <p class="form-error" role="alert"> </p>
+            <!-- Ações de edição: cancelar e salvar as alterações -->
             <div class="editor-actions">
               <button type="button" id="remove-printer" class="danger-button"
                 >Remover</button
@@ -1714,6 +1787,8 @@
           </form>
         </div>
       </section>
+      <!-- FIM DA TELA: Parceiro — cadastro e edição de impressora (#parceiro-impressora) -->
+      <!-- ===== TELA 11: Parceiro — edição da conta e localização (#parceiro-perfil) ===== -->
       <section
         id="parceiro-perfil"
         data-page
@@ -1723,11 +1798,13 @@
         aria-labelledby="parceiro-perfil-titulo"
       >
         <div class="partner-page profile-page">
+          <!-- Formulário da conta do parceiro: identificação, contato e endereço -->
           <form
             id="partner-profile-form"
             class="profile-card"
             data-form="profile"
           >
+            <!-- Identificação da conta em edição -->
             <div class="profile-heading">
               <h1
                 id="parceiro-perfil-titulo"
@@ -1879,6 +1956,7 @@
                 required
               />
             </div>
+            <!-- Localização do parceiro: atualização do endereço e confirmação do pino -->
             <div id="profile-location" class="location-box" hidden>
               <p
                 >Localize o endereço, ajuste o pino se necessário e confirme o
@@ -1905,6 +1983,7 @@
                 setas no pino para ajustar pelo teclado.</p
               >
             </div>
+            <!-- Ações de edição: cancelar e salvar as alterações -->
             <div class="editor-actions">
               <button type="button" class="btn-back" id="cancel-profile"
                 >Cancelar</button
@@ -1915,6 +1994,8 @@
           </form>
         </div>
       </section>
+      <!-- FIM DA TELA: Parceiro — edição da conta e localização (#parceiro-perfil) -->
+      <!-- ===== TELA 12: AACD — início e resumo da rede (#aacd-inicio) ===== -->
       <section
         id="aacd-inicio"
         class="app-section"
@@ -1924,11 +2005,13 @@
         inert
       >
         <div class="aacd-page aacd-home">
+          <!-- Título da tela e navegação de retorno -->
           <div class="aacd-heading">
             <h1 id="aacd-inicio-titulo" class="screen-heading" tabindex="-1"
               >Minhas Conexões</h1
             >
           </div>
+          <!-- Indicadores da rede: pedidos abertos, em produção e finalizados -->
           <div class="aacd-metrics">
             <article class="aacd-metric">
               <div>
@@ -1970,6 +2053,7 @@
               </div>
             </article>
           </div>
+          <!-- Ações principais: criar pedido e acessar homologações -->
           <div class="aacd-actions-grid">
             <article class="aacd-action-card">
               <h2>Criar Novo Pedido de Impressão 3D</h2>
@@ -2002,6 +2086,8 @@
           </div>
         </div>
       </section>
+      <!-- FIM DA TELA: AACD — início e resumo da rede (#aacd-inicio) -->
+      <!-- ===== TELA 13: AACD — histórico e atividades da rede (#aacd-pedidos) ===== -->
       <section
         id="aacd-pedidos"
         class="app-section"
@@ -2011,11 +2097,13 @@
         inert
       >
         <div class="aacd-page aacd-history">
+          <!-- Título da tela e navegação de retorno -->
           <div class="aacd-heading">
             <h1 id="aacd-pedidos-titulo" class="screen-heading" tabindex="-1"
               >Histórico e Atividades da Rede</h1
             >
           </div>
+          <!-- Descrição do histórico e seleção da situação dos pedidos -->
           <div class="aacd-history-toolbar">
             <p
               >Rastreabilidade de órteses, adaptações posturais e
@@ -2031,6 +2119,7 @@
               >
             </div>
           </div>
+          <!-- Busca de pedidos, acesso aos filtros e exportação CSV -->
           <div class="aacd-search-row">
             <label class="aacd-search">
               <img src="assets/aacd-f1c66.svg" alt="" />
@@ -2055,6 +2144,7 @@
               <img src="assets/aacd-d1599.svg" alt="" />Exportar CSV</button
             >
           </div>
+          <!-- Filtros adicionais: material e prioridade do pedido -->
           <div class="collapse" id="aacd-order-filters">
             <div class="aacd-filter-fields">
               <label for="aacd-filter-material"
@@ -2081,10 +2171,12 @@
               >
             </div>
           </div>
+          <!-- Lista de pedidos: preenchida dinamicamente pelo JavaScript -->
           <div id="aacd-order-list"> </div>
           <p id="aacd-order-empty" class="feedback" hidden
             >Nenhum pedido encontrado.</p
           >
+          <!-- Paginação dos resultados de pedidos -->
           <div class="aacd-pagination">
             <p id="aacd-order-count"></p>
             <nav aria-label="Páginas de pedidos">
@@ -2102,6 +2194,8 @@
           <p class="feedback" id="aacd-orders-feedback" role="status"> </p>
         </div>
       </section>
+      <!-- FIM DA TELA: AACD — histórico e atividades da rede (#aacd-pedidos) -->
+      <!-- ===== TELA 14: AACD — rede de parceiros homologados (#aacd-parceiros) ===== -->
       <section
         id="aacd-parceiros"
         class="app-section"
@@ -2111,6 +2205,7 @@
         inert
       >
         <div class="aacd-page aacd-network">
+          <!-- Título da tela e navegação de retorno -->
           <div class="aacd-heading">
             <h1 id="aacd-parceiros-titulo" class="screen-heading" tabindex="-1"
               >Rede de Parceiros Ativos</h1
@@ -2120,6 +2215,7 @@
             <img src="assets/aacd-b098e.svg" alt="" />
             <span data-homologated-count>0</span> Parceiros Homologados
           </p>
+          <!-- Busca de parceiros por laboratório, campus ou cidade -->
           <label class="aacd-network-search">
             <img src="assets/aacd-e8d26.svg" alt="" />
             <span class="visually-hidden">Buscar parceiros</span>
@@ -2129,10 +2225,12 @@
               placeholder="Buscar por laboratório, campus, cidade..."
             />
           </label>
+          <!-- Parceiros homologados: cartões preenchidos dinamicamente pelo JavaScript -->
           <div class="aacd-network-grid" id="aacd-network-grid"> </div>
           <p class="feedback" id="aacd-partner-empty" hidden
             >Nenhum parceiro encontrado.</p
           >
+          <!-- Acesso às novas solicitações de homologação -->
           <div class="aacd-new-partners">
             <div>
               <small>NOVOS PARCEIROS</small>
@@ -2148,6 +2246,8 @@
           </div>
         </div>
       </section>
+      <!-- FIM DA TELA: AACD — rede de parceiros homologados (#aacd-parceiros) -->
+      <!-- ===== TELA 15: AACD — homologação de parceiros e contas AACD (#aacd-homologacao) ===== -->
       <section
         id="aacd-homologacao"
         class="app-section"
@@ -2157,6 +2257,7 @@
         inert
       >
         <div class="aacd-page aacd-review-page">
+          <!-- Título da tela e navegação de retorno -->
           <div class="aacd-heading">
             <h1
               id="aacd-homologacao-titulo"
@@ -2165,6 +2266,7 @@
               >Homologação de Parceiros</h1
             >
           </div>
+          <!-- Resumo da fila: parceiros homologados e solicitações pendentes -->
           <div class="review-queue">
             <span>Fila de Análise:</span>
             <div>
@@ -2175,15 +2277,19 @@
               <span> <b id="aacd-review-count">0</b> Na fila</span>
             </div>
           </div>
+          <!-- Homologação de contas da equipe AACD -->
           <section id="aacd-users-panel" hidden>
             <h2>Contas AACD aguardando homologação</h2>
             <div id="aacd-users-list"></div>
             <p id="aacd-users-feedback" class="feedback" role="status"></p>
           </section>
+          <!-- Fila de parceiros para avaliação: preenchida dinamicamente pelo JavaScript -->
           <div id="aacd-review-list"> </div>
           <p class="feedback" id="aacd-review-feedback" role="status"> </p>
         </div>
       </section>
+      <!-- FIM DA TELA: AACD — homologação de parceiros e contas AACD (#aacd-homologacao) -->
+      <!-- ===== TELA 16: AACD — novo pedido, etapa 1: informações gerais (#aacd-pedido-1) ===== -->
       <section
         id="aacd-pedido-1"
         class="app-section"
@@ -2193,6 +2299,7 @@
         inert
       >
         <div class="aacd-page aacd-new-order">
+          <!-- Título da tela e navegação de retorno -->
           <div class="aacd-heading">
             <a href="#aacd-inicio" data-section="aacd-inicio" class="back">←</a>
             <h1 id="aacd-pedido-1-titulo" class="screen-heading" tabindex="-1"
@@ -2203,6 +2310,7 @@
               assistiva</p
             >
           </div>
+          <!-- Formulário da etapa atual de criação do pedido -->
           <form id="aacd-order-step-1" data-form="aacd-order">
             <div class="aacd-form-card">
               <div class="aacd-step-heading">
@@ -2232,6 +2340,7 @@
                   >Gerar Código</button
                 >
               </div>
+              <!-- Seleção da prioridade do pedido -->
               <fieldset class="aacd-priority">
                 <legend>Prioridade Clínica de Atendimento</legend>
                 <div>
@@ -2255,12 +2364,15 @@
                 </div>
               </fieldset>
             </div>
+            <!-- Navegação entre as etapas de criação do pedido -->
             <div class="aacd-advance">
               <button class="btn btn-conexo" type="submit">Avançar</button>
             </div>
           </form>
         </div>
       </section>
+      <!-- FIM DA TELA: AACD — novo pedido, etapa 1: informações gerais (#aacd-pedido-1) -->
+      <!-- ===== TELA 17: AACD — novo pedido, etapa 2: especificações técnicas (#aacd-pedido-2) ===== -->
       <section
         id="aacd-pedido-2"
         class="app-section"
@@ -2270,6 +2382,7 @@
         inert
       >
         <div class="aacd-page aacd-new-order">
+          <!-- Título da tela e navegação de retorno -->
           <div class="aacd-heading">
             <a href="#aacd-pedido-1" data-section="aacd-pedido-1" class="back"
               >←</a
@@ -2282,6 +2395,7 @@
               assistiva</p
             >
           </div>
+          <!-- Formulário da etapa atual de criação do pedido -->
           <form id="aacd-order-step-2" data-form="aacd-order">
             <div class="aacd-form-card">
               <div class="aacd-step-heading">
@@ -2299,6 +2413,7 @@
               </div>
               <h3 class="editor-subtitle">Materiais Aptos e Homologados</h3>
               <div class="form-card technical aacd-technical">
+                <!-- Volume de impressão: dimensões nos eixos X, Y e Z -->
                 <div class="printer-volumes">
                   <div class="field">
                     <label class="form-label" for="aacd-volumeX"
@@ -2343,6 +2458,7 @@
                     />
                   </div>
                 </div>
+                <!-- Seleção de materiais aptos e homologados -->
                 <div class="choice-head">
                   <label>Materiais Aptos e Homologados</label>
                   <span>Selecione todos os disponíveis</span>
@@ -2365,6 +2481,7 @@
                     Filamentos Flexíveis (Poliuretano Termoplástico)</label
                   >
                 </div>
+                <!-- Seleção de bicos disponíveis para a impressora -->
                 <div class="choice-head">
                   <label>Bicos Disponíveis para a Impressora</label>
                   <span>Selecione todos os disponíveis</span>
@@ -2390,12 +2507,15 @@
                 <p class="form-error" role="alert"> </p>
               </div>
             </div>
+            <!-- Navegação entre as etapas de criação do pedido -->
             <div class="aacd-advance">
               <button class="btn btn-conexo" type="submit">Avançar</button>
             </div>
           </form>
         </div>
       </section>
+      <!-- FIM DA TELA: AACD — novo pedido, etapa 2: especificações técnicas (#aacd-pedido-2) -->
+      <!-- ===== TELA 18: AACD — novo pedido, etapa 3: link do arquivo e observações (#aacd-pedido-3) ===== -->
       <section
         id="aacd-pedido-3"
         class="app-section"
@@ -2405,6 +2525,7 @@
         inert
       >
         <div class="aacd-page aacd-new-order">
+          <!-- Título da tela e navegação de retorno -->
           <div class="aacd-heading">
             <a href="#aacd-pedido-2" data-section="aacd-pedido-2" class="back"
               >←</a
@@ -2417,6 +2538,7 @@
               assistiva</p
             >
           </div>
+          <!-- Formulário da etapa atual de criação do pedido -->
           <form id="aacd-order-step-3" data-form="aacd-order">
             <div class="aacd-form-card">
               <div class="aacd-step-heading">
@@ -2456,6 +2578,7 @@
                 <span>Opcional</span>
               </div>
             </div>
+            <!-- Navegação entre as etapas de criação do pedido -->
             <div class="aacd-advance">
               <p>
                 <img src="assets/aacd-f0eb3.svg" alt="" />Após o envio, o pedido
@@ -2467,6 +2590,8 @@
           </form>
         </div>
       </section>
+      <!-- FIM DA TELA: AACD — novo pedido, etapa 3: link do arquivo e observações (#aacd-pedido-3) -->
+      <!-- ===== TELA 19: AACD — conexão do pedido com parceiros compatíveis (#aacd-conectar) ===== -->
       <section
         id="aacd-conectar"
         class="app-section"
@@ -2476,6 +2601,7 @@
         inert
       >
         <div class="aacd-page aacd-connect">
+          <!-- Título da tela e navegação de retorno -->
           <div class="aacd-heading">
             <a href="#aacd-pedido-3" data-section="aacd-pedido-3" class="back"
               >←</a
@@ -2485,6 +2611,7 @@
             >
           </div>
           <p class="network-total cyan"></p>
+          <!-- Resumo do pedido: demanda, material, volume e dados técnicos -->
           <article class="aacd-demand-summary">
             <span class="round-icon green">
               <img src="assets/aacd-6a97c.svg" alt="" />
@@ -2527,10 +2654,13 @@
             <img src="assets/aacd-f39fe.svg" alt="" />Parceiros Compatíveis
             Recomendados <img src="assets/aacd-bcd6c.svg" alt="" />
           </h3>
+          <!-- Parceiros compatíveis: recomendações preenchidas dinamicamente pelo JavaScript -->
           <div id="aacd-match-list"> </div>
           <p class="feedback" id="aacd-connect-feedback" role="status"> </p>
         </div>
       </section>
+      <!-- FIM DA TELA: AACD — conexão do pedido com parceiros compatíveis (#aacd-conectar) -->
+      <!-- ===== TELA 20: AACD — edição da conta (#aacd-perfil) ===== -->
       <section
         id="aacd-perfil"
         class="app-section"
@@ -2540,11 +2670,13 @@
         inert
       >
         <div class="aacd-page profile-page">
+          <!-- Formulário da conta AACD: unidade, titular e contato -->
           <form
             class="profile-card aacd-profile-card"
             id="aacd-profile-form"
             data-form="aacd-profile"
           >
+            <!-- Identificação da conta em edição -->
             <div class="profile-heading">
               <h1 id="aacd-perfil-titulo" class="screen-heading" tabindex="-1"
                 >Pedro - AACD</h1
@@ -2617,6 +2749,7 @@
                 required
               />
             </div>
+            <!-- Ações de edição: cancelar e salvar as alterações -->
             <div class="editor-actions">
               <button type="button" class="btn-back" id="aacd-profile-cancel"
                 >Cancelar</button
@@ -2627,7 +2760,9 @@
           </form>
         </div>
       </section>
+      <!-- FIM DA TELA: AACD — edição da conta (#aacd-perfil) -->
     </main>
+    <!-- RODAPÉ COMPARTILHADO: instituições parceiras -->
     <footer aria-label="Instituições parceiras">
       <p>Parceiros:</p>
       <div class="partners">
@@ -2640,6 +2775,7 @@
         <img class="aacd" src="assets/aacd.png" alt="AACD" />
       </div>
     </footer>
+    <!-- POP-UP: solicitação de redefinição de senha -->
     <div
       class="modal fade"
       id="reset-dialog"
@@ -2684,6 +2820,7 @@
         </div>
       </div>
     </div>
+    <!-- POP-UP: cadastro em avaliação e homologação pendente -->
     <div
       class="modal fade"
       id="evaluation-dialog"
@@ -2711,6 +2848,7 @@
               e-mail:</p
             >
             <p>sac@aacd.org.br</p>
+            <!-- Ações do parceiro pendente: consultar novamente a homologação -->
             <div id="partner-evaluation-actions" hidden>
               <button
                 type="button"
@@ -2726,6 +2864,7 @@
       </div>
     </div>
 
+    <!-- POP-UP: geração do código do pedido por material -->
     <div
       class="modal fade"
       id="code-dialog"
@@ -2769,6 +2908,7 @@
         </div>
       </div>
     </div>
+    <!-- TEMPLATE REUTILIZÁVEL: Cartão de impressora do parceiro (#printer-template) -->
     <template id="printer-template">
       <article class="printer-card" data-printer-id="">
         <div class="printer-art">
@@ -2803,6 +2943,7 @@
         >
       </article>
     </template>
+    <!-- TEMPLATE REUTILIZÁVEL: Item do histórico de produção (#history-template) -->
     <template id="history-template">
       <li class="history-row">
         <span class="history-id"></span>
@@ -2814,6 +2955,7 @@
         <span class="history-date"></span>
       </li>
     </template>
+    <!-- TEMPLATE REUTILIZÁVEL: Cartão de pedido ativo do parceiro (#active-order-template) -->
     <template id="active-order-template">
       <article class="order-card active-order" data-order-id="" data-state="">
         <div class="order-heading">
@@ -2862,6 +3004,7 @@
         </div>
       </article>
     </template>
+    <!-- TEMPLATE REUTILIZÁVEL: Cartão de pedido pendente do parceiro (#pending-order-template) -->
     <template id="pending-order-template">
       <article class="order-card" data-order-id="" data-state="">
         <div class="order-heading">
@@ -2921,6 +3064,7 @@
         </div>
       </article>
     </template>
+    <!-- TEMPLATE REUTILIZÁVEL: Pedido da AACD no histórico da rede (#aacd-order-template) -->
     <template id="aacd-order-template">
       <article
         class="aacd-order-row"
@@ -2963,6 +3107,7 @@
         </div>
       </article>
     </template>
+    <!-- TEMPLATE REUTILIZÁVEL: Cartão de parceiro homologado na rede (#network-template) -->
     <template id="network-template">
       <article class="aacd-network-card">
         <div class="network-card-header">
@@ -2991,6 +3136,7 @@
         </div>
       </article>
     </template>
+    <!-- TEMPLATE REUTILIZÁVEL: Impressora do candidato em avaliação (#machine-template) -->
     <template id="machine-template">
       <article>
         <h4></h4>
@@ -3001,6 +3147,7 @@
         <div><span></span><span></span><span></span></div>
       </article>
     </template>
+    <!-- TEMPLATE REUTILIZÁVEL: Ficha de avaliação e homologação de parceiro (#review-template) -->
     <template id="review-template">
       <details class="aacd-review" data-candidate="">
         <summary>
@@ -3061,6 +3208,7 @@
         </div>
       </details>
     </template>
+    <!-- TEMPLATE REUTILIZÁVEL: Parceiro recomendado para receber um pedido (#match-template) -->
     <template id="match-template">
       <article class="aacd-match-card recommended" data-match="">
         <span class="recommendation-banner">
@@ -3135,6 +3283,7 @@
         </div>
       </article>
     </template>
+    <!-- TEMPLATE REUTILIZÁVEL: Resumo de parceiro no painel inicial (#home-partner-template) -->
     <template id="home-partner-template">
       <div class="home-partner-line">
         <span class="round-icon">
@@ -3147,6 +3296,7 @@
         <img src="assets/aacd-cb673.svg" alt="" />
       </div>
     </template>
+    <!-- SCRIPTS: bibliotecas, configuração, aplicação e widget de acessibilidade -->
     <script src="vendor/bootstrap.bundle.min.js"></script>
     <script src="runtime-config.js"></script>
     <script src="vendor/leaflet/leaflet.js"></script>
