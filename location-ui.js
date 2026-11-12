@@ -27,7 +27,8 @@ export function mountLocation(id, fields, initial) {
     : null;
   let ready = Boolean(initial),
     confirmed = Boolean(initial),
-    revision = 0;
+    revision = 0,
+    adjustmentRequired = false;
   confirmation.disabled = !ready;
   const map = L.map(canvas).setView(
     initial ? [point.latitude, point.longitude] : [-14.2, -51.9],
@@ -72,6 +73,8 @@ export function mountLocation(id, fields, initial) {
       return;
     }
     revision++;
+    adjustmentRequired = false;
+    confirmation.disabled = false;
     confirmed = false;
     confirmation.checked = false;
     status();
@@ -98,11 +101,11 @@ export function mountLocation(id, fields, initial) {
   });
   confirmation.checked = confirmed;
   confirmation.addEventListener('change', () => {
-    confirmed = ready && confirmation.checked;
-    if (!ready) {
+    confirmed = ready && !adjustmentRequired && confirmation.checked;
+    if (!ready || adjustmentRequired) {
       confirmation.checked = false;
       feedback.textContent =
-        'Localize o endereço antes de confirmar o pino.';
+        'Localize o endereço e ajuste o pino até a instituição antes de confirmar.';
     }
   });
   for (const selector of [
@@ -141,20 +144,25 @@ export function mountLocation(id, fields, initial) {
         });
         if (requestRevision !== revision) return;
         marker.setLatLng([result.latitude, result.longitude]);
-        map.setView(
-          marker.getLatLng(),
-          result.nivel === 'rua' ? 16 : result.nivel === 'cidade' ? 12 : 6
-        );
+        map.setView(marker.getLatLng(), result.nivel === 'rua' ? 16 : 12);
         ready = true;
         confirmed = false;
         confirmation.checked = false;
-        confirmation.disabled = false;
+        adjustmentRequired = result.nivel === 'cidade';
+        confirmation.disabled = adjustmentRequired;
         status();
         if (result.nivel !== 'rua')
           feedback.textContent =
-            'Não foi possível localizar a rua. O pino é aproximado: ajuste para o local da instituição e confirme.';
+            'Encontramos apenas a cidade. Arraste o pino até a instituição antes de confirmar.';
       } catch (error) {
-        feedback.textContent = error.message;
+        if (requestRevision !== revision) return;
+        const messages = {
+          GEOCODING_UNAVAILABLE:
+            'A busca de endereço está indisponível. Tente novamente em instantes.',
+          GEOCODING_NOT_CONFIGURED:
+            'A busca de endereço ainda não está disponível. Entre em contato com a equipe.'
+        };
+        feedback.textContent = messages[error.code] || error.message;
       } finally {
         button.disabled = false;
       }
@@ -171,6 +179,7 @@ export function mountLocation(id, fields, initial) {
       point = value
         ? { latitude: value.latitude, longitude: value.longitude }
         : null;
+      adjustmentRequired = false;
       ready = confirmed = Boolean(value);
       confirmation.checked = confirmed;
       confirmation.disabled = !ready;

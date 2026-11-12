@@ -36,7 +36,7 @@ Preencha `MYSQL_*`, `MONGO_*`, `AACD_UNITS`, `SESSION_SECRET` e os campos `SEED_
 node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
 ```
 
-Copie a saída para `SESSION_SECRET`. O programa recusa o placeholder. Não envie `.env` ao GitHub. As unidades padrão são as opções do protótipo, configuráveis em `AACD_UNITS`; precisam ser conferidas pela equipe. Configure `NOMINATIM_USER_AGENT` com identificação e contato reais para permitir a busca de endereço. Sem configuração, o mapa oferece o estado como referência, exigindo ajuste/confirmação.
+Copie a saída para `SESSION_SECRET`. O programa recusa o placeholder. Não envie `.env` ao GitHub. As unidades padrão são as opções do protótipo, configuráveis em `AACD_UNITS`; precisam ser conferidas pela equipe. Configure `NOMINATIM_USER_AGENT` com identificação e contato reais para permitir a busca de endereço. Sem configuração, a busca informa indisponibilidade e não libera a confirmação do pino.
 
 Crie a primeira conta com o seed e inicie:
 
@@ -73,7 +73,7 @@ A conta não pode trocar a própria unidade via perfil; isso impediria o futuro 
 
 O backend verifica permissões e homologação a cada chamada protegida; usa SQL parametrizado, filtros Mongo construídos no servidor, cookie HttpOnly/SameSite, CSRF e limite de tentativas. Não usa JWT/localStorage para autenticação. Senhas acima de 72 bytes UTF-8 são rejeitadas para evitar truncamento bcrypt.
 
-Nominatim é chamado no backend, com fila global de uma requisição/segundo, cache e busca estruturada sem número. Há fallback cidade/estado. O mapa exige confirmação do pino; o backend verifica a coordenada confirmada contra polígonos brasileiros, não apenas uma caixa. Fonte e limites de precisão estão em `data/README.md`. O marcador aceita arraste e ajuste pelas setas. Alterar endereço invalida a confirmação; trocar de conta reinicializa o mapa para a pessoa correta.
+Nominatim é chamado no backend, com fila global de uma requisição/segundo, cache e busca estruturada sem número. Se a rua não for encontrada, consulta a cidade e exige ajuste do pino antes de confirmar. Se não houver resultado ou a consulta falhar, informa o erro e permite nova tentativa, sem sugerir o centro do estado. O mapa exige confirmação do pino; o backend verifica a coordenada confirmada contra polígonos brasileiros, não apenas uma caixa. Fonte e limites de precisão estão em `data/README.md`. O marcador aceita arraste e ajuste pelas setas. Alterar endereço invalida a confirmação; trocar de conta reinicializa o mapa para a pessoa correta.
 
 As imagens do mapa vêm diretamente de `https://tile.openstreetmap.org`, com atribuição visível. A camada do Leaflet usa `referrerPolicy: 'strict-origin-when-cross-origin'` para enviar a origem do site, exigida pela [política de uso de tiles do OpenStreetMap](https://operations.osmfoundation.org/policies/tiles/), sem enviar caminhos ou parâmetros da página. A política geral do backend continua `same-origin`; a exceção é específica das imagens do mapa. O teste `tests/map_visibility.py` verifica esse cabeçalho sem acessar o serviço externo.
 

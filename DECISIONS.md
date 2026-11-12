@@ -68,7 +68,7 @@ O pedido novo de backend substitui as decisões provisórias anteriores quando h
 | E03 | Uma Solicitação pode ter várias tentativas de Pedido, com no máximo uma pendente/em produção | Preservar tentativas recusadas; não atualizar a mesma linha apagando o parceiro anterior |
 | E04 | Estados: pendente, em produção, recusado, cancelado, finalizado; sem expiração automática | Matriz de autoria/transições na proposta; substitui os três status do protótipo |
 | E05 | Urgente primeiro; médio=7, padrão=0, mais idade desde criação da Solicitação | Pesos configuráveis; só fila pendente do parceiro, nunca score de match; interpretação dos dias ainda proposta |
-| E06 | Endereço estruturado, Nominatim, confirmação/arraste Leaflet, fallback cidade/UF; coordenada confirmada dentro do Brasil | Não representa validação da localização por terceiro nem validação da AACD |
+| E06 | Endereço estruturado, Nominatim, confirmação/arraste Leaflet, aproximação da cidade com ajuste obrigatório do pino; coordenada confirmada dentro do Brasil | Não representa validação da localização por terceiro nem validação da AACD |
 | E07 | Link provavelmente limitado a Google Drive/OneDrive; tipo STL/G-code irrelevante | Lista exata de hosts ainda não validada |
 
 ## Sugestões técnicas — aguardam aprovação
@@ -82,7 +82,7 @@ O pedido novo de backend substitui as decisões provisórias anteriores quando h
 | S05 | Registrar bico escolhido e usar FKs compostas de material/bico aceitos | Mantém decisão de fabricação e reduz inconsistência |
 | S06 | Tabela de unidades com coordenadas de origem | Necessária se distância partir da unidade; confirmar central x unidade antes de popular |
 | S07 | Preservar referência/observações da Solicitação e nome do titular AACD existentes na UI | Campos não constavam da proposta de schema enviada; confirmar antes de implementar |
-| S08 | Geocodificação no backend com fila global 1 req/s, cache, identificação e fallback local UF | Navegadores separados não garantem limite global; não incluir número na consulta |
+| S08 | Geocodificação no backend com fila global 1 req/s, cache, identificação e erro explícito quando a consulta falha | Navegadores separados não garantem limite global; não incluir número na consulta |
 | S09 | Validar ponto em polígono do Brasil versionado | Bounding box inclui países vizinhos; dado geográfico precisa ser escolhido/versionado |
 | S10 | Disponibilidade/necessidade de material por opção escolhida | Booleano global pode contradizer listas por material; não removido do schema sem aprovação |
 | S11 | Revalidar impressora/dono/atividade/homologação/capacidade na criação; coordenar escrita por lock consultivo MySQL se exigida proteção contra corrida | Sem FK ou transação distribuída MySQL–Mongo; todos os writers precisam seguir o protocolo |
