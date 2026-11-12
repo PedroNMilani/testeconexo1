@@ -5,7 +5,7 @@
 // Obs.: este script NÃO foi executado em um servidor MongoDB (só o MySQL foi testado).
 // =====================================================================
 
-const dbConexo = db.getSiblingDB("conexo");   // nome do banco é uma suposição
+const dbConexo = db.getSiblingDB('conexo'); // nome do banco é uma suposição
 
 // ---------------------------------------------------------------------
 // Coleção IMPRESSORAS (apenas FDM; sem resina)
@@ -24,45 +24,56 @@ const dbConexo = db.getSiblingDB("conexo");   // nome do banco é uma suposiçã
 // Nomes de materiais devem vir da MESMA lista controlada do backend usada no MySQL
 // (solicitacao_material.material), senão "PLA" e "pla" não casam.
 // ---------------------------------------------------------------------
-dbConexo.createCollection("impressoras", {
+dbConexo.createCollection('impressoras', {
   validator: {
     $jsonSchema: {
-      bsonType: "object",
+      bsonType: 'object',
       required: [
-        "id_parceiro", "modelo", "capacidade", "bicos",
-        "materiais_compativeis", "materiais_disponiveis",
-        "precisa_material", "ativa", "criada_em"
+        'id_parceiro',
+        'modelo',
+        'capacidade',
+        'bicos',
+        'materiais_compativeis',
+        'materiais_disponiveis',
+        'precisa_material',
+        'ativa',
+        'criada_em'
       ],
       additionalProperties: false,
       properties: {
-        _id:        { bsonType: "objectId" },
-        id_parceiro: { bsonType: "number", minimum: 1 },
-        modelo:      { bsonType: "string", minLength: 1 },
+        _id: { bsonType: 'objectId' },
+        id_parceiro: { bsonType: 'number', minimum: 1 },
+        modelo: { bsonType: 'string', minLength: 1 },
         capacidade: {
-          bsonType: "object",
-          required: ["x", "y", "z"],
+          bsonType: 'object',
+          required: ['x', 'y', 'z'],
           additionalProperties: false,
           properties: {
-            x: { bsonType: "number", exclusiveMinimum: true, minimum: 0 },
-            y: { bsonType: "number", exclusiveMinimum: true, minimum: 0 },
-            z: { bsonType: "number", exclusiveMinimum: true, minimum: 0 }
+            x: { bsonType: 'number', exclusiveMinimum: true, minimum: 0 },
+            y: { bsonType: 'number', exclusiveMinimum: true, minimum: 0 },
+            z: { bsonType: 'number', exclusiveMinimum: true, minimum: 0 }
           }
         },
         bicos: {
-          bsonType: "array", minItems: 1, uniqueItems: true,
-          items: { bsonType: "number", exclusiveMinimum: true, minimum: 0 }
+          bsonType: 'array',
+          minItems: 1,
+          uniqueItems: true,
+          items: { bsonType: 'number', exclusiveMinimum: true, minimum: 0 }
         },
         materiais_compativeis: {
-          bsonType: "array", minItems: 1, uniqueItems: true,
-          items: { bsonType: "string" }
+          bsonType: 'array',
+          minItems: 1,
+          uniqueItems: true,
+          items: { bsonType: 'string' }
         },
         materiais_disponiveis: {
-          bsonType: "array", uniqueItems: true,
-          items: { bsonType: "string" }
+          bsonType: 'array',
+          uniqueItems: true,
+          items: { bsonType: 'string' }
         },
-        precisa_material: { bsonType: "bool" },
-        ativa:            { bsonType: "bool" },
-        criada_em:        { bsonType: "date" }
+        precisa_material: { bsonType: 'bool' },
+        ativa: { bsonType: 'bool' },
+        criada_em: { bsonType: 'date' }
       }
     }
   }
