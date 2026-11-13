@@ -480,10 +480,15 @@ export async function initAacd() {
         name.replaceChildren(match.name + ' ', location);
         text(card, '.match-header p', match.description);
         card.querySelector('.round-icon img').src = match.icon;
-        text(card, '.match-score strong span', match.score);
-        card.querySelector('.match-score img').src = match.scoreIcon;
-        text(card, '.match-score b', match.scoreLabel);
-        text(card, '.match-score small', match.scoreNote);
+        text(
+          card,
+          '[data-match-distance]',
+          Number.isFinite(match.distanceKm)
+            ? new Intl.NumberFormat('pt-BR', {
+                maximumFractionDigits: 2
+              }).format(match.distanceKm) + ' km'
+            : 'Não informada'
+        );
         if (backendEnabled)
           card.querySelectorAll('.match-specs small')[2].textContent =
             'Fornecimento de material';
