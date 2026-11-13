@@ -2,7 +2,9 @@
 export const ORDER_STATUS = Object.freeze({
   NOT_ACCEPTED: 'não aceito',
   IN_PRODUCTION: 'em produção',
-  FINISHED: 'finalizado'
+  FINISHED: 'finalizado',
+  REFUSED: 'recusado',
+  CANCELLED: 'cancelado'
 });
 export const ORDER_STATUS_UI = Object.freeze({
   [ORDER_STATUS.NOT_ACCEPTED]: Object.freeze({
@@ -18,6 +20,20 @@ export const ORDER_STATUS_UI = Object.freeze({
     className: 'production',
     partnerLabel: 'EM PRODUÇÃO',
     partnerClass: ''
+  }),
+  [ORDER_STATUS.REFUSED]: Object.freeze({
+    label: 'Recusado',
+    filterLabel: 'Recusados',
+    className: 'cancelled',
+    partnerLabel: 'Recusado',
+    partnerClass: 'cancelled'
+  }),
+  [ORDER_STATUS.CANCELLED]: Object.freeze({
+    label: 'Cancelado',
+    filterLabel: 'Cancelados',
+    className: 'cancelled',
+    partnerLabel: 'Cancelado',
+    partnerClass: 'cancelled'
   }),
   [ORDER_STATUS.FINISHED]: Object.freeze({
     label: 'Finalizado',

@@ -157,7 +157,10 @@ export async function initPartner() {
         const status = row.querySelector('.history-status');
         status.className =
           'history-status ' + ORDER_STATUS_UI[record.status].partnerClass;
-        status.querySelector('img').src = 'assets/partner-done.svg';
+        status.querySelector('img').src =
+          record.status === ORDER_STATUS.FINISHED
+            ? 'assets/partner-done.svg'
+            : 'assets/partner-cancelled.svg';
         tail(status, ORDER_STATUS_UI[record.status].label);
         text(row, '.history-date', record.completedDate || '');
         return row;
@@ -197,7 +200,9 @@ export async function initPartner() {
     home: 'parceiro-inicio',
     loginEvent: 'conexo:partner-login',
     nameError: 'Informe o nome da instituição.',
-    success: 'Perfil atualizado nesta demonstração.'
+    success: backendEnabled
+      ? 'Perfil atualizado.'
+      : 'Perfil atualizado nesta demonstração.'
   });
   document.addEventListener('conexo:data-changed', renderPartner);
 
@@ -308,7 +313,7 @@ export async function initPartner() {
       });
       await renderPrinters();
       document.getElementById('printer-feedback').textContent =
-        `${record.name}: ${creating ? 'adicionada' : 'atualizada'} nesta demonstração.`;
+        `${record.name}: ${creating ? 'adicionada' : 'atualizada'}${backendEnabled ? '' : ' nesta demonstração'}.`;
       navigate('parceiro-inicio');
     } catch (error) {
       printerForm.querySelector('.form-error').textContent = error.message;
@@ -324,7 +329,7 @@ export async function initPartner() {
         if (!record) return;
         await renderPrinters();
         document.getElementById('printer-feedback').textContent =
-          `${record.name}: removida nesta demonstração.`;
+          `${record.name}: removida${backendEnabled ? '' : ' nesta demonstração'}.`;
         navigate('parceiro-inicio');
       } catch (error) {
         printerForm.querySelector('.form-error').textContent = error.message;
@@ -370,7 +375,7 @@ export async function initPartner() {
       await Promise.all([renderPartnerOrders(), renderHistory()]);
       document.dispatchEvent(new CustomEvent('conexo:data-changed'));
       document.getElementById('orders-feedback').textContent =
-        `Pedido #${order.id} ${action === 'accept' ? 'aceito' : action === 'complete' ? 'concluído' : 'recusado'} nesta demonstração.`;
+        `Pedido #${order.id} ${action === 'accept' ? 'aceito' : action === 'complete' ? 'concluído' : 'recusado'}${backendEnabled ? '' : ' nesta demonstração'}.`;
     });
   document.addEventListener('conexo:session', () => {
     if (sessionUser?.perfil === 'parceiro') renderPartner();

@@ -86,6 +86,20 @@ export function createPrinterService(collection) {
     return serialize(record);
   }
   return {
+    async compatible(request) {
+      return (
+        await collection
+          .find({
+            ativa: true,
+            'capacidade.x': { $gte: Number(request.capacidade_x) },
+            'capacidade.y': { $gte: Number(request.capacidade_y) },
+            'capacidade.z': { $gte: Number(request.capacidade_z) },
+            materiais_compativeis: { $in: request.materials },
+            bicos: { $in: request.nozzles }
+          })
+          .toArray()
+      ).map(serialize);
+    },
     async list(user) {
       return (
         await collection

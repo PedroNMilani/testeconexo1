@@ -1,4 +1,5 @@
 import mysql from 'mysql2/promise';
+import { migrateOrders } from '../src/order-migrations.js';
 import { MongoClient } from 'mongodb';
 import { readFile } from 'node:fs/promises';
 import { loadConfig } from '../src/config.js';
@@ -68,6 +69,7 @@ try {
       '002-auth'
     ]);
   }
+  await migrateOrders(db);
   console.log('MySQL preparado sem apagar registros existentes.');
 } finally {
   await db.end();

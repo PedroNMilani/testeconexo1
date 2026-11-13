@@ -97,7 +97,8 @@ export function canOpen(section) {
 }
 export function renderBackendNotice() {
   const notice = document.getElementById('backend-stage-notice');
-  notice.hidden = !backendEnabled || !sessionUser;
+  // As funções conectadas não usam mais pedidos de demonstração.
+  notice.hidden = true;
 }
 export function profileFromUser(area, user) {
   if (area === 'aacd')

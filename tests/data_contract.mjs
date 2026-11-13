@@ -52,7 +52,9 @@ const { ORDER_STATUS } = await import('../data.js');
 assert.deepEqual(Object.values(ORDER_STATUS), [
   'não aceito',
   'em produção',
-  'finalizado'
+  'finalizado',
+  'recusado',
+  'cancelado'
 ]);
 assert.ok(
   (await second.listOrders()).every((order) =>
@@ -95,7 +97,7 @@ history[0].device = 'alteração externa';
 assert.notEqual((await second.listHistory())[0].device, 'alteração externa');
 await assert.rejects(second.finishOrder(accepted.id), /em produção/);
 await assert.rejects(
-  second.createOrder({ code: '#INVALIDO', status: 'cancelado' }),
+  second.createOrder({ code: '#INVALIDO', status: 'entregue' }),
   /Status/
 );
 await assert.rejects(

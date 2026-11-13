@@ -1,8 +1,10 @@
-# CoNexo — primeira fatia conectada
+# CoNexo — backend conectado: contas, impressoras e pedidos
 
 Implementado: cadastro e login dos dois perfis, bcrypt, sessão persistente em MySQL, homologação de contas AACD e parceiros, perfil próprio, cadastro/edição/soft delete de impressoras no MongoDB, confirmação de localização e geração de código com material e ID numérico.
 
-**Pedidos e match ainda usam o protótipo em memória.** O modo conectado mostra esse aviso na interface. As regras novas de encerramento, cancelamento, histórico e isolamento de pedidos por unidade estão registradas em `../DECISIONS.md`; suas rotas serão a próxima fatia. A geração de código reserva um identificador em `codigo_solicitacao`; ainda não cria uma Solicitação/Pedido. O ID da reserva não é apresentado como ID de Pedido.
+Solicitações e pedidos agora persistem no MySQL; as impressoras continuam no MongoDB. O modo conectado consulta a API para recomendações, pedidos e histórico. A prévia estática continua usando exemplos em memória.
+
+A geração de código reserva um identificador; a solicitação é criada ao encaminhar o pedido. Se o encaminhamento falhar após a criação, a solicitação permanece disponível para nova tentativa. Um código é único dentro da unidade AACD, e uma solicitação pode ter várias tentativas, com apenas um pedido ativo por vez.
 
 ## Rodar no Windows / CMD
 
@@ -53,6 +55,7 @@ O primeiro usuário é entregue pela equipe à AACD. Todos os usuários AACD já
 
 - `db/001-base.sql`: cópia da base MySQL enviada, preservando `aacd` e `parceiro` separados.
 - `db/mongo-base.js`: referência original enviada, não executada automaticamente.
+- `db/003-pedidos.sql`: adiciona código, unidade, observações, origem e encerramento da solicitação, snapshot do pedido e histórico de eventos. A migração confere as colunas existentes e preserva registros.
 - `db/002-auth.sql`: adiciona `aacd.nome_titular` e a tabela de reserva de códigos. Não exclui cadastros nem redefine senhas.
 - `db/impressoras-validator.json`: validator da implementação, com tipos numéricos BSON explícitos e campos compatíveis com a coleção enviada.
 - `db:init` cria as tabelas da base apenas em schema vazio. Se houver base parcial, para sem executar DROP. Em base completa, aplica somente a migração controlada; não sobrescreve o validator de uma coleção já existente. Pode ser repetido após conclusão, preservando registros.
@@ -65,11 +68,11 @@ A etapa final do cadastro parceiro agora é a confirmação de localização. Fo
 
 SQL e Mongo não compartilham transação. Por isso, a interface trata a conta criada como sucesso parcial: se a impressora falhar, informa o ocorrido e permite repetir só a gravação da impressora. Não apaga automaticamente a conta e não tenta cadastrá-la novamente. A senha é limpa do formulário após autenticação.
 
-Compatíveis filtram futuramente o match; disponíveis informam fornecimento. `needsMaterialSupply()` calcula a necessidade pelo **material escolhido**, com resposta também em `necessidade_por_material` no DTO da impressora. O campo legado Mongo `precisa_material` é mantido como resumo de haver algum compatível indisponível; não prevalece sobre a resposta por material e não deve ser usado como filtro de match.
+Compatíveis filtram o match; disponíveis informam fornecimento. `needsMaterialSupply()` calcula a necessidade pelo **material escolhido**, com resposta também em `necessidade_por_material` no DTO da impressora. O campo legado Mongo `precisa_material` é mantido como resumo de haver algum compatível indisponível; não prevalece sobre a resposta por material e não deve ser usado como filtro de match.
 
 Um mesmo email não pode criar novas contas nos dois perfis. Uma curta transação serializada por lock MySQL consulta as duas tabelas; bcrypt é calculado antes do lock. O lock global também cobre equivalências da collation, inclusive acentos. Se já existirem duplicidades criadas manualmente, o login informa ambiguidade, sem escolher perfil pelo botão.
 
-A conta não pode trocar a própria unidade via perfil; isso impediria o futuro isolamento de pedidos por unidade. Uma correção administrativa de unidade ainda precisa de fluxo definido. A homologação de contas AACD é institucional: contas homologadas podem aprovar colegas de outra unidade. A restrição por unidade refere-se aos pedidos, cuja API não faz parte desta fatia.
+A conta não pode trocar a própria unidade via perfil; isso permitiria contornar o isolamento de pedidos por unidade. Uma correção administrativa de unidade ainda precisa de fluxo definido. A homologação de contas AACD é institucional: contas homologadas podem aprovar colegas de outra unidade. Solicitações e pedidos só podem ser lidos e administrados por contas AACD da mesma unidade. Parceiros veem apenas os próprios pedidos e precisam estar homologados.
 
 O backend verifica permissões e homologação a cada chamada protegida; usa SQL parametrizado, filtros Mongo construídos no servidor, cookie HttpOnly/SameSite, CSRF e limite de tentativas. Não usa JWT/localStorage para autenticação. Senhas acima de 72 bytes UTF-8 são rejeitadas para evitar truncamento bcrypt.
 
@@ -79,7 +82,19 @@ As imagens do mapa vêm diretamente de `https://tile.openstreetmap.org`, com atr
 
 Na execução conectada, Express serve apenas os estáticos permitidos, sem publicar `.env`, código do backend ou SQL. `runtime-config.js` liga a autenticação real; falha da API não faz fallback para login fictício. Abrir com `python -m http.server` continua sendo o protótipo explícito, sem persistência.
 
-## API desta fatia
+## Pedidos, recomendações e fila
+
+- As coordenadas das sete unidades fornecidas pela equipe estão em `src/units.js`. Elas definem a origem da distância; o destino é a localização confirmada do parceiro. `AACD_UNIT_LOCATIONS` pode substituir esse mapa por um objeto JSON, sem alterar o código. Coordenadas inválidas impedem a inicialização. Unidades sem coordenadas não podem criar solicitações nem calcular recomendações.
+- Mongo filtra impressoras ativas por dimensões X/Y/Z, sem rotação, e ao menos um material e bico aceitáveis. MySQL restringe os parceiros aos homologados. Haversine ordena as opções pela distância, sem percentual de compatibilidade fictício e sem usar prioridade na recomendação.
+- Cada opção identifica uma impressora, um material e um bico; o botão de conexão envia explicitamente essa seleção. Estoque não elimina opções: informa quando a AACD precisa fornecer o material.
+- Antes de conectar, o servidor revalida propriedade, atividade, homologação e capacidade. Edição/remoção de impressoras e criação de pedidos bloqueiam a mesma linha do parceiro no MySQL para serializar operações da aplicação entre SQL e Mongo. Isso não constitui transação distribuída nem cobre gravações manuais externas.
+- Aceitar: `pendente → em_producao`; recusar: `pendente → recusado`; finalizar: `em_producao → finalizado`. Essas ações são do parceiro dono do pedido. Cancelar: `pendente/em_producao → cancelado`, por uma conta AACD da unidade solicitante.
+- Recusa preserva o pedido e libera nova tentativa na mesma solicitação. Cancelamento e finalização encerram a solicitação. Repetir uma transição ou conectar uma solicitação encerrada retorna conflito.
+- Cada transição grava autor, perfil e horário em `pedido_evento`. O pedido preserva o nome da impressora, laboratório e necessidade de fornecimento no snapshot, além de material/bico/distância nas colunas próprias.
+- A fila pendente do parceiro usa urgente primeiro e, depois, peso da prioridade mais dias de espera desde a criação da solicitação. `QUEUE_MEDIUM_WEIGHT` (7) e `QUEUE_STANDARD_WEIGHT` (0) são configuráveis e ainda representam decisões da equipe.
+- Códigos, link, materiais, bicos, dimensões inteiras em mm e observações são validados no servidor. Por enquanto links HTTP/HTTPS sem credenciais são aceitos; uma lista restrita de provedores ainda depende de definição da equipe. Nenhum arquivo é baixado pelo backend.
+
+## API
 
 | Recurso | Rotas |
 | --- | --- |
@@ -89,6 +104,10 @@ Na execução conectada, Express serve apenas os estáticos permitidos, sem publ
 | Impressoras | `GET/POST /api/impressoras`, `GET/PATCH/DELETE /api/impressoras/:id` — proprietário, soft delete |
 | Localização | `POST /api/localizacoes/geocodificar`, `GET /api/catalogos` |
 | Código | `POST /api/solicitacoes/codigos` com `{material:"PETG"}` — AACD homologada, ID atribuído pelo banco |
+| Solicitações | `GET/POST /api/solicitacoes`, `GET /api/solicitacoes/:id` — AACD homologada da unidade |
+| Recomendações | `POST /api/recomendacoes` (prévia sem persistência), `GET /api/solicitacoes/:id/recomendacoes` |
+| Pedidos | `GET/POST /api/pedidos`, `GET /api/pedidos/:id`, `POST /api/solicitacoes/:id/pedidos` |
+| Estados e auditoria | `POST /api/pedidos/:id/acoes/aceitar|recusar|finalizar|cancelar`, `GET /api/pedidos/:id/eventos` |
 | Diagnóstico | `GET /api/health` — disponibilidade básica da API/MySQL, sem segredos |
 
 ## Verificação e limites
@@ -102,10 +121,21 @@ npm test
 
 O teste de navegador conectado está em `../tests/backend_browser.py`; requer Playwright/Chromium, backend de teste rodando e `SEED_AACD_EMAIL`/`SEED_AACD_PASSWORD` do seed de teste no ambiente. Para iniciá-lo no CMD, carregue essas variáveis no terminal e execute `python ..\tests\backend_browser.py` com `NODE_ENV=test` e `CONEXO_BACKEND_URL=http://localhost:3000/`.
 
-Executado nesta entrega em Linux: 14 testes com MySQL 8.4 e MongoDB 7.0 reais e descartáveis; seed bcrypt real; preparação repetida sem apagar dados; navegador com cadastro/homologação, código gerado/manual, confirmação do mapa, recuperação após falha da impressora, persistência e logout; smoke do protótipo e contrato de dados. Os arquivos `.bat` não foram executados no Windows.
+Validação desta etapa: 31 testes automatizados com MySQL 8.4 e MongoDB 7.0 descartáveis, incluindo concorrência, permissões, revalidação de impressoras, transições e auditoria; contrato de dados da prévia; Chromium conectado com criação, reload, recusa, reencaminhamento, aceite, finalização e histórico. A migração foi executada novamente para verificar repetição sem perda de dados. Nenhum banco de Pedro foi acessado.
 
-Chamadas reais ao Nominatim, tiles OSM e widget UserWay não foram validadas nesta rede. Nos testes, o widget e tiles foram bloqueados explicitamente e a geocodificação externa foi simulada em testes unitários; o fluxo de navegador usou o fallback local. Não há alegação de teste do conteúdo externo.
+Para reproduzir o navegador, com o backend de teste ativo e Playwright/Chromium instalados:
 
-Recuperação de senha por email, pedidos/match reais, coordenadas das unidades solicitantes e implantação HTTPS são próximas etapas. Antes de disponibilizar acesso externo, configurar banco com autenticação, HTTPS/reverse proxy e cookies Secure; o servidor atual escuta só em loopback.
+```bat
+node --env-file=.env.test tests/seed-orders-browser.js
+set NODE_ENV=test
+set CONEXO_BACKEND_URL=http://localhost:3001/
+python ../tests/orders_browser.py
+```
+
+A fixture fica na pasta temporária do sistema. `CONEXO_ORDERS_FIXTURE` pode definir outro caminho tanto na geração quanto no teste. O gerador só aceita `NODE_ENV=test` e bancos terminados em `_test`; as contas e credenciais são exclusivamente de teste.
+
+Serviços externos de geocodificação, tiles e e-mail não fazem parte dessa validação. O teste de pedidos bloqueia os provedores visuais externos e usa as coordenadas informadas pela equipe para calcular o match. Os scripts `.bat` não foram executados no Windows.
+
+**Pendente:** recuperação de senha por e-mail depende de escolher/configurar um provedor. A interface informa que o serviço está indisponível e não simula envio. Implantação HTTPS, credenciais de produção e eventual restrição de hosts dos links precisam de configuração própria; o servidor continua escutando em loopback.
 
 Regressão de visibilidade do mapa, sem banco: `python ../tests/map_visibility.py`. Verifica prévia estática e catálogo do backend pendente, com imagens externas bloqueadas explicitamente. O mapa é montado antes das consultas de inicialização.
