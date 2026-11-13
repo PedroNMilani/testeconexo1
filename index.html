@@ -2911,36 +2911,42 @@
     <!-- TEMPLATE REUTILIZÁVEL: Cartão de impressora do parceiro (#printer-template) -->
     <template id="printer-template">
       <article class="printer-card" data-printer-id="">
-        <div class="printer-art">
-          <img src="assets/partner-bambu.svg" alt="" />
-          <span data-art-label></span>
-        </div>
-        <button
-          class="edit-printer"
-          type="button"
-          data-edit-printer=""
-          aria-label="Editar impressora"
-        >
-          <img src="assets/partner-edit.svg" alt="" />
-        </button>
-        <div class="printer-heading">
-          <h3 data-printer-name></h3>
-          <span class="availability"><span class="dot"></span></span>
-        </div>
-        <p class="printer-id"></p>
-        <dl class="printer-spec">
-          <div>
-            <dt>Material:</dt>
-            <dd data-printer-material></dd>
+        <div class="printer-card-content">
+          <div class="printer-art">
+            <img src="assets/partner-printer-3d-green.svg" alt="" />
+            <span data-art-label></span>
           </div>
-          <div>
-            <dt>Bico:</dt>
-            <dd data-printer-nozzle></dd>
+          <button
+            class="edit-printer"
+            type="button"
+            data-edit-printer=""
+            aria-label="Editar impressora"
+          >
+            <img src="assets/partner-edit.svg" alt="" />
+          </button>
+          <div class="printer-heading">
+            <div class="printer-title">
+              <h3 data-printer-name></h3>
+              <p class="printer-id"></p>
+            </div>
+            <span class="availability"><span class="dot"></span></span>
           </div>
-        </dl>
-        <button type="button" class="manage-printer" data-edit-printer="">
-          <img src="assets/partner-manage.svg" alt="" />Gerenciar</button
-        >
+          <dl class="printer-spec">
+            <div>
+              <dt>Material:</dt>
+              <dd data-printer-material></dd>
+            </div>
+            <div>
+              <dt>Bico:</dt>
+              <dd data-printer-nozzle></dd>
+            </div>
+          </dl>
+        </div>
+        <div class="printer-card-footer">
+          <button type="button" class="manage-printer" data-edit-printer="">
+            <img src="assets/partner-manage.svg" alt="" />Gerenciar</button
+          >
+        </div>
       </article>
     </template>
     <!-- TEMPLATE REUTILIZÁVEL: Item do histórico de produção (#history-template) -->

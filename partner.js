@@ -33,7 +33,9 @@ export async function initPartner() {
     text(card, '[data-printer-name]', record.name);
     text(card, '[data-art-label]', record.label);
     card.querySelector('.printer-art img').src =
-      `assets/partner-${record.asset}.svg`;
+      record.asset === 'creality'
+        ? 'assets/partner-printer-3d-blue.svg'
+        : 'assets/partner-printer-3d-green.svg';
     card
       .querySelector('.printer-art')
       .classList.toggle('blue', record.asset === 'creality');
