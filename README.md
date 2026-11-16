@@ -4,18 +4,16 @@ Aplicação em HTML, CSS, Bootstrap e JavaScript, com backend Node/Express, MySQ
 
 ## Executar
 
-Na pasta `backend`, configure `.env` a partir de `.env.example` e prepare os bancos conforme o [guia do backend](backend/README.md). Com Node.js 24+, MySQL e MongoDB iniciados:
+Configure `backend/.env` a partir de `backend/.env.example` conforme o [guia do backend](backend/README.md). Com Node.js 24+, MySQL e MongoDB iniciados, execute na raiz do projeto:
 
 ```sh
-npm ci
-npm run db:init
-npm run seed:aacd
+npm --prefix backend ci
+npm --prefix backend run db:init
+npm --prefix backend run seed:aacd
 npm start
 ```
 
-O seed é necessário somente para criar a primeira conta AACD. Acesse **http://localhost:3000/**. Use o servidor Express; abrir `index.html` ou usar apenas um servidor estático não oferece a API necessária ao sistema.
-
-A [explicação do fluxo do código](docs/FLUXO-CODIGO.md) mostra como uma ação passa da tela até os bancos e onde está cada responsabilidade.
+O seed é necessário somente para criar a primeira conta AACD. Acesse **http://localhost:3000/**. O comando `npm start` inicia o Node/Express, que atende às telas e à API na mesma origem. Para reiniciar automaticamente após alterações no backend, use `npm run dev`.
 
 ## Navegação e telas
 

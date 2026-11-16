@@ -2,7 +2,7 @@
 
 Implementado: cadastro e login dos dois perfis, bcrypt, sessão persistente em MySQL, homologação de contas AACD e parceiros, perfil próprio, cadastro/edição/soft delete de impressoras no MongoDB, confirmação de localização e geração de código com material e ID numérico.
 
-Solicitações e pedidos agora persistem no MySQL; as impressoras continuam no MongoDB. O modo conectado consulta a API para recomendações, pedidos e histórico. Os exemplos e a prévia em memória foram removidos; use sempre o servidor Express.
+Solicitações e pedidos agora persistem no MySQL; as impressoras continuam no MongoDB. O modo conectado consulta a API para recomendações, pedidos e histórico. A aplicação usa exclusivamente o servidor Node/Express.
 
 A geração de código reserva um identificador; a solicitação é criada ao encaminhar o pedido. Se o encaminhamento falhar após a criação, a solicitação permanece disponível para nova tentativa. Um código é único dentro da unidade AACD, e uma solicitação pode ter várias tentativas, com apenas um pedido ativo por vez.
 
@@ -80,7 +80,7 @@ Nominatim é chamado no backend, com fila global de uma requisição/segundo, ca
 
 As imagens do mapa vêm diretamente de `https://tile.openstreetmap.org`, com atribuição visível. A camada do Leaflet usa `referrerPolicy: 'strict-origin-when-cross-origin'` para enviar a origem do site, exigida pela [política de uso de tiles do OpenStreetMap](https://operations.osmfoundation.org/policies/tiles/), sem enviar caminhos ou parâmetros da página. A política geral do backend continua `same-origin`; a exceção é específica das imagens do mapa. O teste `tests/map_visibility.py` verifica esse cabeçalho sem acessar o serviço externo.
 
-Na execução conectada, Express serve apenas os estáticos permitidos, sem publicar `.env`, código do backend ou SQL. A autenticação é sempre real; falha da API não libera acesso nem ativa dados de exemplo. Um servidor estático isolado não atende às chamadas da API.
+Na execução conectada, Express serve apenas os estáticos permitidos, sem publicar `.env`, código do backend ou SQL. A autenticação e as chamadas à API são obrigatórias; falhas não ativam um modo de demonstração. Na raiz do projeto, `npm start` também inicia esse mesmo servidor.
 
 ## Pedidos, recomendações e fila
 
@@ -138,8 +138,4 @@ Serviços externos de geocodificação, tiles e e-mail não fazem parte dessa va
 
 **Pendente:** recuperação de senha por e-mail depende de escolher/configurar um provedor. A interface informa que o serviço está indisponível e não simula envio. Implantação HTTPS, credenciais de produção e eventual restrição de hosts dos links precisam de configuração própria; o servidor continua escutando em loopback.
 
-Regressão de visibilidade do mapa, sem banco: `python ../tests/map_visibility.py`. Verifica o mapa com catálogo do backend pendente, com imagens externas bloqueadas explicitamente. O mapa é montado antes das consultas de inicialização.
-
-## Organização do fluxo de pedidos
-
-As rotas HTTP ficam em `src/routes/orders.js`; validação, solicitações, recomendações e pedidos ficam respectivamente em `request-validation.js`, `requests.js`, `recommendations.js` e `orders.js`. No frontend, `client-api/` separa as chamadas HTTP da renderização. Veja [Como acompanhar o código](../docs/FLUXO-CODIGO.md). Esta separação não exige nova migração de banco.
+Regressão de visibilidade do mapa, sem banco: `python ../tests/map_visibility.py`. Verifica o mapa com catálogo da API pendente, com imagens externas bloqueadas explicitamente. O mapa é montado antes das consultas de inicialização.
