@@ -9,6 +9,10 @@ import { createAuthService, email, phone, string } from './auth-service.js';
 import { createRepository, publicUser } from './repository.js';
 import { HttpError, check } from './errors.js';
 import { createOrderService } from './orders.js';
+import { createRequestService } from './requests.js';
+import { createRecommendationService } from './recommendations.js';
+import { registerOrderRoutes } from './routes/orders.js';
+import { withTransaction } from './db.js';
 import { generateCode } from './code-service.js';
 import { UFS } from './geo.js';
 import { MATERIALS } from '../../material-catalog.js';
@@ -18,7 +22,14 @@ export function createApp({ pool, config, geo, printers, sessionStore }) {
   const app = express(),
     repo = createRepository(pool),
     auth = createAuthService(repo, config, geo),
-    orders = createOrderService({ pool, printers, config });
+    requests = createRequestService({ pool, config }),
+    recommendations = createRecommendationService({
+      pool,
+      printers,
+      config,
+      requests
+    }),
+    orders = createOrderService({ pool, printers, config, requests });
   const Store = MySQLStoreFactory(session);
   const store =
     sessionStore ||
@@ -330,69 +341,21 @@ export function createApp({ pool, config, geo, printers, sessionStore }) {
         .status(201)
         .json(await generateCode(pool, req.user, req.body?.material))
   );
-  app.post('/api/recomendacoes', signed, approvedAACD, async (req, res) =>
-    res.json({ items: await orders.preview(req.user, req.body || {}) })
-  );
-  app.post('/api/pedidos', signed, approvedAACD, async (req, res) =>
-    res
-      .status(201)
-      .json(await orders.createAndConnect(req.user, req.body || {}))
-  );
-  app.get('/api/solicitacoes', signed, approvedAACD, async (req, res) =>
-    res.json({ items: await orders.listRequests(req.user) })
-  );
-  app.post('/api/solicitacoes', signed, approvedAACD, async (req, res) =>
-    res.status(201).json(await orders.createRequest(req.user, req.body || {}))
-  );
-  app.get('/api/solicitacoes/:id', signed, approvedAACD, async (req, res) =>
-    res.json(await orders.request(req.user, req.params.id))
-  );
-  app.get(
-    '/api/solicitacoes/:id/recomendacoes',
+  registerOrderRoutes(app, {
     signed,
     approvedAACD,
-    async (req, res) =>
-      res.json({ items: await orders.matches(req.user, req.params.id) })
-  );
-  app.post(
-    '/api/solicitacoes/:id/pedidos',
-    signed,
-    approvedAACD,
-    async (req, res) =>
-      res
-        .status(201)
-        .json(await orders.connect(req.user, req.params.id, req.body || {}))
-  );
-  app.get('/api/pedidos', signed, async (req, res) =>
-    res.json({ items: await orders.list(req.user) })
-  );
-  app.get('/api/pedidos/:id', signed, async (req, res) =>
-    res.json((await orders.list(req.user, req.params.id))[0])
-  );
-  app.get('/api/pedidos/:id/eventos', signed, async (req, res) =>
-    res.json({ items: await orders.history(req.user, req.params.id) })
-  );
-  app.post('/api/pedidos/:id/acoes/:action', signed, async (req, res) =>
-    res.json(
-      await orders.transition(req.user, req.params.id, req.params.action)
-    )
-  );
+    requests,
+    recommendations,
+    orders
+  });
   async function writePrinter(user, action) {
-    const db = await pool.getConnection();
-    try {
-      await db.beginTransaction();
+    return withTransaction(pool, async (db) => {
+      // Usa o mesmo bloqueio de parceiro da criação do pedido.
       await db.execute('SELECT id FROM parceiro WHERE id=? FOR UPDATE', [
         user.id
       ]);
-      const result = await action();
-      await db.commit();
-      return result;
-    } catch (error) {
-      await db.rollback();
-      throw error;
-    } finally {
-      db.release();
-    }
+      return action();
+    });
   }
   app.get('/api/impressoras', signed, partner, async (req, res) =>
     res.json({ items: await printers.list(req.user) })

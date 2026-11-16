@@ -6,3 +6,19 @@ export function createPool(options) {
   });
   return pool;
 }
+
+// Confirma todas as alterações juntas; em caso de erro, desfaz e libera a conexão.
+export async function withTransaction(pool, action) {
+  const db = await pool.getConnection();
+  try {
+    await db.beginTransaction();
+    const result = await action(db);
+    await db.commit();
+    return result;
+  } catch (error) {
+    await db.rollback();
+    throw error;
+  } finally {
+    db.release();
+  }
+}
