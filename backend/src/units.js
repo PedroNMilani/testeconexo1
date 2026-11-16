@@ -1,4 +1,3 @@
-// Coordenadas fornecidas pela equipe do projeto em 12/11/2026.
 export const UNIT_LOCATIONS = Object.freeze({
   Ibirapuera: { latitude: -23.597, longitude: -46.65178 },
   Mooca: { latitude: -23.5512, longitude: -46.5977 },
