@@ -15,19 +15,6 @@ export function initAacdRequests({ onOrdersChanged, resetOrderFilters }) {
   // Ignora uma resposta de recomendações se o formulário mudar durante a busca.
   let revision = 0;
 
-  function selectDefaultNozzles() {
-    forms[1]
-      .querySelectorAll('[name=nozzles]')
-      .forEach((input) => (input.checked = true));
-  }
-  for (const axis of ['X', 'Y', 'Z']) {
-    const input = document.getElementById('aacd-volume' + axis);
-    input.min = '1';
-    input.max = '10000';
-    input.step = '1';
-  }
-  selectDefaultNozzles();
-
   function readDraft() {
     return {
       code: document.getElementById('aacd-order-code').value.trim(),
@@ -286,7 +273,6 @@ export function initAacdRequests({ onOrdersChanged, resetOrderFilters }) {
     ]) {
       document.querySelector(selector).textContent = '';
     }
-    selectDefaultNozzles();
     openList.replaceChildren();
     openPanel.hidden = true;
     feedback.textContent = '';

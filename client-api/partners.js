@@ -27,25 +27,8 @@ export async function listReviews() {
     : [];
 }
 
-export async function reviewPartner(id, approved) {
-  if (!approved)
-    throw new Error(
-      'Nesta etapa, registre a homologação após a avaliação externa.'
-    );
-  const records = await listReviews();
-  const candidate = records.find((item) => item.id === id);
-  await api('/parceiros/' + encodeURIComponent(id) + '/homologacao', {
-    method: 'POST',
-    body: { homologado: true }
+export async function approvePartner(id) {
+  return api('/parceiros/' + encodeURIComponent(id) + '/homologacao', {
+    method: 'POST'
   });
-  return candidate;
-}
-
-export async function listHomePartners() {
-  return (await listReviews()).map((record) => ({
-    name: record.name,
-    description: record.description,
-    icon: 'assets/aacd-c6315.svg',
-    approve: true
-  }));
 }

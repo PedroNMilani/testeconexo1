@@ -99,35 +99,55 @@ export function initPartnerOrders() {
     renderPartnerOrders(orders);
     renderHistory(orders);
   }
+  function toggleOrderDetails(button) {
+    const detail = document.getElementById(
+      button.getAttribute('aria-controls')
+    );
+    detail.hidden = !detail.hidden;
+    button.setAttribute('aria-expanded', String(!detail.hidden));
+    button.textContent = detail.hidden
+      ? 'Visualizar Detalhes'
+      : 'Ocultar Detalhes';
+  }
+  async function changeOrderStatus(button) {
+    const action = button.dataset.orderAction;
+    if (!['accept', 'complete', 'refuse'].includes(action)) return;
+    const id = button.closest('[data-order-id]').dataset.orderId;
+    const actor = sessionKey();
+    const feedback = document.getElementById('orders-feedback');
+    feedback.textContent = '';
+    button.disabled = true;
+    try {
+      let message;
+      if (action === 'accept') {
+        await data.acceptOrder(id);
+        message = 'aceito';
+      } else if (action === 'complete') {
+        await data.finishOrder(id);
+        message = 'concluído';
+      } else {
+        await data.refuseOrder(id);
+        message = 'recusado';
+      }
+      if (actor !== sessionKey()) return;
+      await refreshOrders();
+      if (actor !== sessionKey()) return;
+      feedback.textContent = `Pedido #${id} ${message}.`;
+    } catch (error) {
+      if (actor === sessionKey()) feedback.textContent = error.message;
+    } finally {
+      button.disabled = false;
+    }
+  }
+  function handleOrderClick(event) {
+    const button = event.target.closest('[data-order-action]');
+    if (!button) return;
+    if (button.dataset.orderAction === 'details') toggleOrderDetails(button);
+    else changeOrderStatus(button);
+  }
   document
     .getElementById('parceiro-pedidos')
-    .addEventListener('click', async (event) => {
-      const button = event.target.closest('[data-order-action]');
-      if (!button) return;
-      const action = button.dataset.orderAction;
-      if (action === 'details') {
-        const detail = document.getElementById(
-          button.getAttribute('aria-controls')
-        );
-        detail.hidden = !detail.hidden;
-        button.setAttribute('aria-expanded', String(!detail.hidden));
-        button.textContent = detail.hidden
-          ? 'Visualizar Detalhes'
-          : 'Ocultar Detalhes';
-        return;
-      }
-      const order = await data.getOrder(
-        button.closest('[data-order-id]').dataset.orderId
-      );
-      if (!order) return;
-      if (action === 'accept') await data.acceptOrder(order.id);
-      else if (action === 'complete') await data.finishOrder(order.id);
-      else if (action === 'refuse') await data.refuseOrder(order.id);
-      else return;
-      await refreshOrders();
-      document.getElementById('orders-feedback').textContent =
-        `Pedido #${order.id} ${action === 'accept' ? 'aceito' : action === 'complete' ? 'concluído' : 'recusado'}.`;
-    });
+    .addEventListener('click', handleOrderClick);
   function clear() {
     renderPartnerOrders([]);
     renderHistory([]);

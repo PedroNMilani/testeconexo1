@@ -3014,17 +3014,6 @@ footer p {
   padding: 6px 10px;
   color: #4a635b;
 }
-.machine-approved {
-  position: absolute;
-  right: 16px;
-  top: 16px;
-  width: 24px;
-  height: 24px;
-  display: grid;
-  place-items: center;
-  background: #c7ffda;
-  border-radius: 50%;
-}
 .aacd-review-content .editor-actions {
   margin-top: 48px;
 }
