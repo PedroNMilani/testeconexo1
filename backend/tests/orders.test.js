@@ -9,7 +9,8 @@ import { createAuthService } from '../src/auth-service.js';
 import { createGeoService } from '../src/geo.js';
 import { createPrinterService } from '../src/printers.js';
 import { createApp } from '../src/app.js';
-import { haversine, requestPayload } from '../src/orders.js';
+import { haversine } from '../src/recommendations.js';
+import { validateRequest } from '../src/request-validation.js';
 const config = loadConfig();
 assert.equal(process.env.NODE_ENV, 'test');
 assert.ok(
@@ -175,7 +176,7 @@ test('validação rejeita dimensões fracionárias, material, bico e URLs invál
     { url: 'https://user:pass@example.org' },
     { notes: 'x'.repeat(4001) }
   ])
-    assert.throws(() => requestPayload({ ...body(), ...update }));
+    assert.throws(() => validateRequest({ ...body(), ...update }));
   assert.equal(
     haversine(
       { latitude: -23.55, longitude: -46.63 },

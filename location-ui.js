@@ -1,4 +1,4 @@
-import { api, backendEnabled } from './auth-client.js';
+import { api } from './auth-client.js';
 const maps = new Map();
 export function mountLocation(id, fields, initial) {
   const container = document.getElementById(id);
@@ -16,12 +16,7 @@ export function mountLocation(id, fields, initial) {
     confirmation.disabled = true;
     return;
   }
-  if (!backendEnabled) {
-    geocodeButton.disabled = true;
-    geocodeButton.textContent = 'Busca por endereço (requer backend)';
-    feedback.textContent =
-      'Inicie o backend para buscar o endereço e confirmar a localização no mapa.';
-  }
+
   let point = initial
     ? { latitude: initial.latitude, longitude: initial.longitude }
     : null;
@@ -124,7 +119,6 @@ export function mountLocation(id, fields, initial) {
   container
     .querySelector('[data-geocode]')
     .addEventListener('click', async (event) => {
-      if (!backendEnabled) return;
       const button = event.currentTarget;
       button.disabled = true;
       const requestRevision = ++revision;

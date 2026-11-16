@@ -14,7 +14,7 @@ Registro de 10/11/2026. Documentação de execução e limites: [backend/README.
 - Código digitável ou gerado, usando um material escolhido e um ID numérico. Implementado: botão, seleção do material, reserva persistente de ID e gravação da solicitação/pedido ao encaminhar.
 - Necessidade de fornecimento calculada pelo material escolhido, segundo sua presença em disponíveis. Implementado: função compartilhada e DTO por material. O booleano legado é apenas resumo, não autoridade nem filtro.
 - Finalizar encerra a Solicitação, sem tratar entrega. Cancelar retira das listas ativas e mantém o Pedido cancelado no banco, conforme esclarecimento de Pedro.
-- Contas AACD devem ver pedidos da própria unidade. Isolamento por unidade, encerramento, cancelamento e histórico de recusas estão aplicados à API conectada. A prévia estática permanece uma demonstração em memória.
+- Contas AACD devem ver pedidos da própria unidade. Isolamento por unidade, encerramento, cancelamento e histórico de recusas estão aplicados à API conectada. O modo de demonstração foi removido; o acesso exige API e sessão real.
 
 ## Sugestões técnicas aplicadas nesta fatia
 
@@ -24,6 +24,10 @@ Registro de 10/11/2026. Documentação de execução e limites: [backend/README.
 - Unidade bloqueada na edição da própria conta para evitar que alguém amplie o acesso mudando de unidade. Correções administrativas ainda precisam de fluxo definido.
 - Cadastro em três etapas mantido; etapa final passa a confirmar localização. A primeira impressora é persistida no Mongo após criar/autenticar a conta. Falha nessa gravação é informada e pode ser repetida sem duplicar a conta.
 - Mapas e perfis reinicializam dados ao trocar de conta. Polígonos brasileiros validam o país; a consulta estruturada não envia número do endereço ao Nominatim.
+
+## Organização atual do código
+
+A refatoração separa as rotas de pedidos, validações, solicitações e recomendações. O frontend acessa a API por módulos de área em `client-api/`, reexportados por `data.js`. Os arquivos `mock-data.js`, `memory-source.js` e `runtime-config.js` foram removidos a pedido da equipe. Os testes mantêm fixtures isoladas; os cadastros existentes da aplicação não são apagados. A explicação está em `docs/FLUXO-CODIGO.md`.
 
 ## Escopo entregue e pendências
 

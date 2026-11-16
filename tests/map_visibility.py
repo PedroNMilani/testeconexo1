@@ -1,4 +1,4 @@
-"""Regressão de visibilidade do mapa: prévia estática e API de catálogos lenta.
+"""Regressão de visibilidade do mapa com a API de catálogos lenta.
 Não usa banco; imagens externas são bloqueadas para testar também o aviso de falha.
 """
 import functools,http.server,threading,shutil,re
@@ -16,7 +16,7 @@ threading.Thread(target=server.serve_forever,daemon=True).start()
 try:
  with sync_playwright() as p:
   browser=p.chromium.launch(executable_path=shutil.which('chromium'),headless=True,args=['--no-sandbox'])
-  for backend in [False,True]:
+  for backend in [True]:
    context=browser.new_context(viewport={'width':1000,'height':850});held=[];errors=[];tile_headers=[]
    context.route('https://cdn.userway.org/**',lambda route:route.abort('blockedbyclient'))
    def capture_tile(route):
@@ -24,7 +24,8 @@ try:
     route.abort('blockedbyclient')
    context.route('https://tile.openstreetmap.org/**',capture_tile)
    if backend:
-    context.route('**/runtime-config.js',lambda route:route.fulfill(content_type='application/javascript',body='globalThis.CONEXO_CONFIG={backend:true};'))
+    context.route('**/api/auth/csrf',lambda route:route.fulfill(json={'csrfToken':'teste'}))
+    context.route('**/api/localizacoes/geocodificar',lambda route:route.fulfill(json={'latitude':-23.55,'longitude':-46.63,'nivel':'rua'}))
     context.route('**/api/catalogos',lambda route:held.append(route))
     context.route('**/api/auth/me',lambda route:route.fulfill(status=401,content_type='application/json',body='{"error":{"message":"Entre na conta"}}'))
    page=context.new_page();page.on('pageerror',lambda error:errors.append(str(error)))
@@ -44,6 +45,8 @@ try:
    expect(box.locator('[data-geocode]')).to_be_visible()
    if not backend:expect(box.locator('[data-geocode]')).to_be_disabled()
    else:assert held,'O catálogo deve continuar pendente enquanto o mapa já está visível.'
+   box.locator('[data-geocode]').click()
+   expect(box.locator('[data-confirm-location]')).to_be_enabled()
    canvas.click(position={'x':canvas.bounding_box()['width']/2+35,'y':canvas.bounding_box()['height']/2+20})
    box.locator('[data-confirm-location]').check()
    assert page.evaluate("async()=> (await import('./location-ui.js')).locationValue('registration-location').locationConfirmed")
