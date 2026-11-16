@@ -446,6 +446,8 @@ test('segredos e arquivos do backend não são publicados como estáticos', asyn
     'aacd-matches.js',
     'aacd-profile.js',
     'partner-profile.js',
+    'partner-printers.js',
+    'partner-orders.js',
     'partner-registration.js'
   ]) {
     assert.equal((await client.request('GET', '/ui/' + file)).status, 200);

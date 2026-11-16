@@ -363,6 +363,8 @@ export function createApp({ pool, config, geo, printers, sessionStore }) {
     'aacd-matches.js',
     'aacd-profile.js',
     'partner-profile.js',
+    'partner-printers.js',
+    'partner-orders.js',
     'partner-registration.js'
   ]);
   app.get('/ui/:file', (req, res, next) =>

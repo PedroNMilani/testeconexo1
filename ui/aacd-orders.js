@@ -10,6 +10,7 @@ export function initAacdOrders({ onOrdersChanged }) {
   const aacdPriorityFilter = document.getElementById('aacd-filter-priority');
   let aacdStatusFilter = 'all';
   let aacdCurrentPage = 1;
+  const pageSize = 4;
   let orders = [];
   const expandedOrders = new Set();
   function aacdFilteredOrders() {
@@ -33,14 +34,13 @@ export function initAacdOrders({ onOrdersChanged }) {
           order.priority === aacdPriorityFilter.value)
     );
   }
-  function renderAacdOrder(order, visible) {
+  function renderAacdOrder(order) {
     const row = instance('aacd-order-template');
     row.dataset.aacdOrder = order.id;
     row.dataset.status = order.status;
     row.dataset.lab = order.lab;
     row.dataset.material = order.material;
     row.dataset.priority = order.priority;
-    row.hidden = !visible;
     row.querySelector('.aacd-device-icon img').src =
       order.icon || 'assets/aacd-6a97c.svg';
     text(row, '[data-order-code]', order.code + ' •');
@@ -123,19 +123,16 @@ export function initAacdOrders({ onOrdersChanged }) {
   function renderAacdOrders({ resetPage = false } = {}) {
     if (resetPage) aacdCurrentPage = 1;
     const filtered = aacdFilteredOrders();
-    const maxPage = Math.max(1, Math.ceil(filtered.length / 4));
+    const maxPage = Math.max(1, Math.ceil(filtered.length / pageSize));
     aacdCurrentPage = Math.min(aacdCurrentPage, maxPage);
-    const visible = new Set(
-      filtered
-        .slice((aacdCurrentPage - 1) * 4, aacdCurrentPage * 4)
-        .map((order) => order.id)
+    const pageOrders = filtered.slice(
+      (aacdCurrentPage - 1) * pageSize,
+      aacdCurrentPage * pageSize
     );
-    aacdOrderList.replaceChildren(
-      ...orders.map((order) => renderAacdOrder(order, visible.has(order.id)))
-    );
+    aacdOrderList.replaceChildren(...pageOrders.map(renderAacdOrder));
     document.getElementById('aacd-order-empty').hidden = filtered.length !== 0;
     document.getElementById('aacd-order-count').textContent =
-      `Exibindo ${visible.size} de ${filtered.length} pedidos encontrados`;
+      `Exibindo ${pageOrders.length} de ${filtered.length} pedidos encontrados`;
     document.querySelectorAll('[data-aacd-page]').forEach((button) => {
       const page = button.dataset.aacdPage;
       button.disabled =
