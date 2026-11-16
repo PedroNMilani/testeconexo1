@@ -20,8 +20,7 @@ export function printerView(record) {
       X: Number(record.capacidade.x),
       Y: Number(record.capacidade.y),
       Z: Number(record.capacidade.z)
-    },
-    needsMaterial: record.precisa_material ? 'Sim' : 'Não'
+    }
   };
 }
 export function candidateView(record) {

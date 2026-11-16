@@ -2,7 +2,7 @@ import { initPartnerProfile } from './ui/partner-profile.js';
 import { sessionUser, sessionKey } from './auth-client.js';
 import * as data from './data.js';
 import { ORDER_STATUS, ORDER_STATUS_UI } from './data.js';
-import { activeSection, navigate } from './router.js';
+import { navigate } from './router.js';
 import {
   instance,
   text,
@@ -112,8 +112,7 @@ export async function initPartner() {
       .setAttribute('aria-controls', detail.id);
     return card;
   }
-  async function renderPartnerOrders() {
-    const orders = await data.listOrders();
+  function renderPartnerOrders(orders) {
     for (const [type, state] of [
       ['active', ORDER_STATUS.IN_PRODUCTION],
       ['pending', ORDER_STATUS.NOT_ACCEPTED]
@@ -130,8 +129,14 @@ export async function initPartner() {
       ).textContent = records.length;
     }
   }
-  async function renderHistory() {
-    const history = await data.listHistory();
+  function renderHistory(orders) {
+    const history = orders.filter((order) =>
+      [
+        ORDER_STATUS.FINISHED,
+        ORDER_STATUS.CANCELLED,
+        ORDER_STATUS.REFUSED
+      ].includes(order.status)
+    );
     document.getElementById('production-history').replaceChildren(
       ...history.map((record) => {
         const row = instance('history-template');
@@ -151,13 +156,18 @@ export async function initPartner() {
       })
     );
   }
+  // Uma consulta alimenta as listas de pedidos e o histórico.
+  async function refreshOrders() {
+    const actor = sessionKey();
+    const orders =
+      sessionUser?.perfil === 'parceiro' ? await data.listOrders() : [];
+    if (actor !== sessionKey()) return;
+    renderPartnerOrders(orders);
+    renderHistory(orders);
+  }
   async function renderPartner() {
     try {
-      await Promise.all([
-        renderPrinters(),
-        renderPartnerOrders(),
-        renderHistory()
-      ]);
+      await Promise.all([renderPrinters(), refreshOrders()]);
     } catch (error) {
       document.getElementById('printer-feedback').textContent = error.message;
     }
@@ -208,13 +218,6 @@ export async function initPartner() {
         record?.nozzles || ['0.2', '0.4', '0.6', '0.8']
       ).includes(input.value);
     });
-    document.getElementById('edit-needs-material').value =
-      record?.needsMaterial || '';
-    {
-      document.getElementById('edit-needs-material').closest('.field').hidden =
-        true;
-      document.getElementById('edit-needs-material').required = false;
-    }
     printerForm
       .querySelectorAll('[name="materialsAvailable"]')
       .forEach((input) => {
@@ -336,17 +339,10 @@ export async function initPartner() {
       else if (action === 'complete') await data.finishOrder(order.id);
       else if (action === 'refuse') await data.refuseOrder(order.id);
       else return;
-      await Promise.all([renderPartnerOrders(), renderHistory()]);
-      document.dispatchEvent(new CustomEvent('conexo:data-changed'));
+      await refreshOrders();
       document.getElementById('orders-feedback').textContent =
         `Pedido #${order.id} ${action === 'accept' ? 'aceito' : action === 'complete' ? 'concluído' : 'recusado'}.`;
     });
-  document.addEventListener('conexo:session', () => {
-    if (sessionUser?.perfil === 'parceiro') renderPartner();
-    else {
-      printerGrid.replaceChildren();
-      document.getElementById('printer-count').textContent = '0';
-    }
-  });
+  document.addEventListener('conexo:session', renderPartner);
   await Promise.all([renderPartner(), renderPartnerProfile()]);
 }

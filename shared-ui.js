@@ -1,4 +1,4 @@
-import { logout, renderBackendNotice } from './auth-client.js';
+import { logout } from './auth-client.js';
 import { activeSection, navigate } from './router.js';
 
 export const instance = (id) =>
@@ -37,7 +37,6 @@ export function bindLogout(selector, mode) {
   document.querySelector(selector).addEventListener('click', async () => {
     try {
       await logout();
-      renderBackendNotice();
     } catch (error) {
       document.getElementById('login-feedback').textContent = error.message;
       return;

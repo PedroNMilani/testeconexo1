@@ -92,11 +92,6 @@ export function canOpen(section) {
   }
   return true;
 }
-export function renderBackendNotice() {
-  const notice = document.getElementById('backend-stage-notice');
-  // As funções conectadas não usam mais pedidos de demonstração.
-  notice.hidden = true;
-}
 export function profileFromUser(area, user) {
   if (area === 'aacd')
     return {

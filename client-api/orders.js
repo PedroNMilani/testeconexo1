@@ -1,5 +1,4 @@
 import { api, sessionUser, sessionKey } from '../auth-client.js';
-import { ORDER_STATUS } from '../order-status.js';
 import { orderView, requestBody } from './views.js';
 
 export async function listOrders() {
@@ -19,18 +18,6 @@ export async function createOrder(record) {
     body: { request: requestBody(record), selection: record.selection }
   });
   return getOrder(created.id);
-}
-
-export async function listHistory() {
-  return sessionUser?.perfil === 'parceiro'
-    ? (await listOrders()).filter((o) =>
-        [
-          ORDER_STATUS.FINISHED,
-          ORDER_STATUS.CANCELLED,
-          ORDER_STATUS.REFUSED
-        ].includes(o.status)
-      )
-    : [];
 }
 
 export async function listMatches(draft) {

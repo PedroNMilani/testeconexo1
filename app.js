@@ -5,8 +5,7 @@ import {
   api,
   restoreSession,
   canOpen,
-  internalDestination,
-  renderBackendNotice
+  internalDestination
 } from './auth-client.js';
 import { mountLocation, resetLocation } from './location-ui.js';
 import * as data from './data.js';
@@ -194,8 +193,6 @@ app.addEventListener('submit', async (event) => {
           password: form.elements.namedItem('password').value
         });
         form.elements.namedItem('password').value = '';
-        renderBackendNotice();
-        document.dispatchEvent(new CustomEvent('conexo:data-changed'));
         if (partnerPending()) {
           showPendingPartner();
         } else if (user.perfil === 'aacd' && !user.homologado) {
@@ -292,8 +289,6 @@ await Promise.all([initPartner(), initAacd()]);
   }
   try {
     await restoreSession();
-    renderBackendNotice();
-    document.dispatchEvent(new CustomEvent('conexo:data-changed'));
   } catch (error) {
     document.getElementById('login-feedback').textContent = error.message;
   }
@@ -385,9 +380,6 @@ document
           'Seu cadastro ainda está aguardando homologação pela AACD.';
         return;
       }
-
-      renderBackendNotice();
-      document.dispatchEvent(new CustomEvent('conexo:data-changed'));
 
       evaluationDialog.hide();
       navigate(internalDestination(user), { replace: true });
