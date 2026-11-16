@@ -156,101 +156,110 @@ app.addEventListener('input', (event) => {
   if (error) error.textContent = '';
 });
 
-app.addEventListener('submit', async (event) => {
+async function submitLogin(form) {
+  const button = form.querySelector('[type=submit]');
+  button.disabled = true;
+  try {
+    const user = await login({
+      email: form.elements.namedItem('email').value,
+      password: form.elements.namedItem('password').value
+    });
+    form.elements.namedItem('password').value = '';
+    if (partnerPending()) {
+      showPendingPartner();
+    } else if (user.perfil === 'aacd' && !user.homologado) {
+      document.getElementById('login-feedback').textContent =
+        'Sua conta AACD aguarda homologação por um integrante já homologado.';
+    } else {
+      navigate(internalDestination(user));
+    }
+  } catch (error) {
+    document.getElementById('login-feedback').textContent = error.message;
+  } finally {
+    button.disabled = false;
+  }
+}
+
+async function submitAacdRegistration(form) {
+  const button = form.querySelector('[type=submit]');
+  button.disabled = true;
+  try {
+    await api('/auth/cadastros/aacd', {
+      method: 'POST',
+      body: {
+        email: form.elements.namedItem('email').value,
+        password: form.elements.namedItem('password').value,
+        phone: form.elements.namedItem('phone').value,
+        unit: form.elements.namedItem('unit').value,
+        holder: form.elements.namedItem('holder').value
+      }
+    });
+    form.elements.namedItem('password').value = '';
+    form.elements.namedItem('confirmation').value = '';
+    evaluationDialog.show();
+  } catch (error) {
+    form.querySelector('.form-error').textContent = error.message;
+  } finally {
+    button.disabled = false;
+  }
+}
+
+function submitTerms() {
+  if (!termsReachedEnd) return;
+  termsAccepted = true;
+  navigate('parceiro-dados');
+}
+function advancePartnerEquipment(form) {
+  const hasMaterials = form.querySelector('[name="materials"]:checked');
+  const hasNozzles = form.querySelector('[name="nozzles"]:checked');
+  if (!hasMaterials || !hasNozzles) {
+    form.querySelector('.form-error').textContent =
+      'Selecione pelo menos um material e um bico disponível.';
+    return;
+  }
+  navigate('parceiro-logistica');
+}
+function validatePasswordConfirmation(form) {
+  const confirmation = form.elements.namedItem('confirmation');
+  if (!confirmation) return true;
+  const matches =
+    form.elements.namedItem('password').value === confirmation.value;
+  confirmation.setCustomValidity(
+    matches ? '' : 'As senhas precisam ser iguais.'
+  );
+  if (!matches) confirmation.reportValidity();
+  return matches;
+}
+async function handleFormSubmit(event) {
   event.preventDefault();
   const form = event.target;
   // Um envio disparado por script de uma seção inativa não avança o fluxo.
   if (form.closest('[data-page]')?.id !== activeSection) return;
   if (!form.reportValidity()) return;
-
   if (form.dataset.form === 'terms') {
-    if (!termsReachedEnd) return;
-    termsAccepted = true;
-    navigate('parceiro-dados');
+    submitTerms();
     return;
   }
-
-  const confirmation = form.elements.namedItem('confirmation');
-  if (confirmation) {
-    const matches =
-      form.elements.namedItem('password').value === confirmation.value;
-    confirmation.setCustomValidity(
-      matches ? '' : 'As senhas precisam ser iguais.'
-    );
-    if (!matches) {
-      confirmation.reportValidity();
-      return;
-    }
-  }
-
+  if (!validatePasswordConfirmation(form)) return;
   switch (activeSection) {
-    case 'login': {
-      const button = form.querySelector('[type=submit]');
-      button.disabled = true;
-      try {
-        const user = await login({
-          email: form.elements.namedItem('email').value,
-          password: form.elements.namedItem('password').value
-        });
-        form.elements.namedItem('password').value = '';
-        if (partnerPending()) {
-          showPendingPartner();
-        } else if (user.perfil === 'aacd' && !user.homologado) {
-          document.getElementById('login-feedback').textContent =
-            'Sua conta AACD aguarda homologação por um integrante já homologado.';
-        } else {
-          navigate(internalDestination(user));
-        }
-      } catch (error) {
-        document.getElementById('login-feedback').textContent = error.message;
-      } finally {
-        button.disabled = false;
-      }
+    case 'login':
+      await submitLogin(form);
       break;
-    }
     case 'parceiro-dados':
       navigate('parceiro-equipamentos');
       break;
-    case 'parceiro-equipamentos': {
-      const hasMaterials = form.querySelector('[name="materials"]:checked');
-      const hasNozzles = form.querySelector('[name="nozzles"]:checked');
-      if (!hasMaterials || !hasNozzles) {
-        form.querySelector('.form-error').textContent =
-          'Selecione pelo menos um material e um bico disponível.';
-        return;
-      }
-      navigate('parceiro-logistica');
+    case 'parceiro-equipamentos':
+      advancePartnerEquipment(form);
       break;
-    }
     case 'parceiro-logistica':
       await partnerRegistration.submit(form, termsAccepted);
       break;
-    case 'cadastro-aacd': {
-      const button = form.querySelector('[type=submit]');
-      button.disabled = true;
-      try {
-        await api('/auth/cadastros/aacd', {
-          method: 'POST',
-          body: {
-            email: form.elements.namedItem('email').value,
-            password: form.elements.namedItem('password').value,
-            phone: form.elements.namedItem('phone').value,
-            unit: form.elements.namedItem('unit').value,
-            holder: form.elements.namedItem('holder').value
-          }
-        });
-        form.elements.namedItem('password').value = '';
-        form.elements.namedItem('confirmation').value = '';
-        evaluationDialog.show();
-      } catch (error) {
-        form.querySelector('.form-error').textContent = error.message;
-      } finally {
-        button.disabled = false;
-      }
+    case 'cadastro-aacd':
+      await submitAacdRegistration(form);
       break;
-    }
   }
-});
+}
+app.addEventListener('submit', handleFormSubmit);
 
 document.getElementById('reset-form').addEventListener('submit', (event) => {
   event.preventDefault();

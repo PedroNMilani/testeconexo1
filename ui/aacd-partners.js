@@ -5,6 +5,7 @@ import { instance, text, tail, normalizeText } from '../shared-ui.js';
 export function initAacdPartners() {
   const aacdNetwork = document.getElementById('aacd-network-grid');
   let partners = [];
+  let reviews = [];
   function renderNetwork() {
     const search = normalizeText(
       document.getElementById('aacd-partner-search').value.trim()
@@ -56,7 +57,6 @@ export function initAacdPartners() {
   function renderReview(candidate) {
     const review = instance('review-template');
     review.dataset.candidate = candidate.id;
-    review.querySelector('[data-review-action=reject]').hidden = true;
     text(review, 'h2', candidate.name);
     text(review, 'summary p', candidate.description);
     candidate.info.forEach((info) => {
@@ -74,7 +74,6 @@ export function initAacdPartners() {
     review.querySelector('.review-machine-grid').replaceChildren(
       ...candidate.machines.map((machine) => {
         const card = instance('machine-template');
-        card.querySelector('.machine-approved').hidden = true;
         text(card, 'h4', machine.name);
         text(card, 'p', machine.kind);
         text(card, '[data-machine-volume]', machine.volumeLabel);
@@ -85,10 +84,7 @@ export function initAacdPartners() {
     );
     return review;
   }
-  async function renderReviews() {
-    const actor = sessionKey();
-    const reviews = await data.listReviews();
-    if (actor !== sessionKey()) return;
+  function renderReviews() {
     document
       .getElementById('aacd-review-list')
       .replaceChildren(...reviews.map(renderReview));
@@ -111,50 +107,38 @@ export function initAacdPartners() {
   document
     .getElementById('aacd-review-list')
     .addEventListener('click', async (event) => {
-      const button = event.target.closest('[data-review-action]');
+      const button = event.target.closest('[data-review-action="approve"]');
       if (!button) return;
-      const approved = button.dataset.reviewAction === 'approve';
+      const id = button.closest('[data-candidate]').dataset.candidate;
+      const candidate = reviews.find((record) => record.id === id);
+      if (!candidate) return;
+      const actor = sessionKey();
       button.disabled = true;
       try {
-        const candidate = await data.reviewPartner(
-          button.closest('[data-candidate]').dataset.candidate,
-          approved
-        );
-        if (!candidate) return;
-        partners = await data.listPartners();
-        await renderReviews();
-        renderNetwork();
+        await data.approvePartner(id);
+        if (actor !== sessionKey()) return;
+        await refreshPartners();
+        if (actor !== sessionKey()) return;
         document.getElementById('aacd-review-feedback').textContent =
-          `${candidate.name}: cadastro ${approved ? 'homologado' : 'rejeitado'}.`;
+          `${candidate.name}: cadastro homologado.`;
       } catch (error) {
-        document.getElementById('aacd-review-feedback').textContent =
-          error.message;
+        if (actor === sessionKey())
+          document.getElementById('aacd-review-feedback').textContent =
+            error.message;
       } finally {
         button.disabled = false;
       }
     });
-  async function renderHomePartners() {
-    const actor = sessionKey();
-    const suggestions = await data.listHomePartners();
-    if (actor !== sessionKey()) return;
+  function renderHomePartners() {
     const container = document.querySelector('[data-home-partners]');
     container
       .querySelectorAll('.home-partner-line')
       .forEach((line) => line.remove());
     const link = container.querySelector('.aacd-action-link');
-    for (const suggestion of suggestions) {
+    for (const candidate of reviews) {
       const line = instance('home-partner-template');
-      text(line, 'strong', suggestion.name);
-      text(line, 'small', suggestion.description);
-      line.querySelector('.round-icon img').src = suggestion.icon;
-      if (suggestion.approve) {
-        const anchor = document.createElement('a');
-        anchor.href = '#aacd-homologacao';
-        anchor.dataset.section = 'aacd-homologacao';
-        anchor.className = 'home-approve';
-        anchor.textContent = 'Aprovar';
-        line.lastElementChild.replaceWith(anchor);
-      }
+      text(line, 'strong', candidate.name);
+      text(line, 'small', candidate.description);
       link.before(line);
     }
   }
@@ -212,28 +196,31 @@ export function initAacdPartners() {
     if (event.detail.section === 'aacd-homologacao') renderAacdUsers();
   });
 
-  async function refresh() {
+  async function refreshPartners() {
     const actor = sessionKey();
-    const records = await data.listPartners();
-    if (actor !== sessionKey()) return;
-    partners = records;
-    renderNetwork();
-    await Promise.all([
-      renderReviews(),
-      renderHomePartners(),
-      renderAacdUsers()
+    const [approved, pending] = await Promise.all([
+      data.listPartners(),
+      data.listReviews()
     ]);
+    if (actor !== sessionKey()) return;
+    partners = approved;
+    reviews = pending;
+    renderNetwork();
+    renderReviews();
+    renderHomePartners();
+  }
+  async function refresh() {
+    await Promise.all([refreshPartners(), renderAacdUsers()]);
   }
   function clear() {
     partners = [];
+    reviews = [];
     renderNetwork();
-    document.getElementById('aacd-review-list').replaceChildren();
+    renderReviews();
+    renderHomePartners();
     document.getElementById('aacd-users-list').replaceChildren();
     document.getElementById('aacd-users-panel').hidden = true;
-    document.getElementById('aacd-review-count').textContent = '0';
-    document
-      .querySelectorAll('.home-partner-line')
-      .forEach((line) => line.remove());
+    document.getElementById('aacd-review-feedback').textContent = '';
   }
   return { refresh, clear };
 }

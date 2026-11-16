@@ -21,8 +21,7 @@ export {
 export {
   listPartners,
   listReviews,
-  reviewPartner,
-  listHomePartners
+  approvePartner
 } from './client-api/partners.js';
 export {
   getProfile,

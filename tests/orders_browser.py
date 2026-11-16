@@ -59,6 +59,10 @@ with sync_playwright() as p:
     a.evaluate("location.hash='aacd-pedido-1'")
     a.locator("#aacd-order-code").fill(f["code"])
     a.locator("#aacd-order-step-1 button[type=submit]").click()
+    expect(a.locator("#aacd-order-step-2 [name=nozzles]:checked")).to_have_count(4)
+    a.locator('#aacd-order-step-2 [name=nozzles][value="0.2"]').uncheck()
+    a.locator("#aacd-order-step-2").evaluate("(form)=>form.reset()")
+    expect(a.locator("#aacd-order-step-2 [name=nozzles]:checked")).to_have_count(4)
     for axis in "XYZ":
         a.locator("#aacd-volume" + axis).fill("50")
     a.locator("#aacd-order-step-2 [name=materials][value=PLA]").check()
@@ -118,6 +122,20 @@ with sync_playwright() as p:
     expect(order.locator("[data-order-detail-code]")).to_contain_text(f["code"])
     expect(order.locator("[data-order-detail-material]")).to_contain_text("PLA")
     reads_before = order_reads[partner]
+    partner.route(
+        "**/api/pedidos/*/acoes/recusar",
+        lambda route: route.fulfill(
+            status=503, json={"error": {"message": "Falha temporária ao recusar"}}
+        ),
+    )
+    order.locator("[data-order-action=refuse]").click()
+    expect(partner.locator("#orders-feedback")).to_have_text(
+        "Falha temporária ao recusar"
+    )
+    expect(order.locator("[data-order-action=refuse]")).to_be_enabled()
+    expect(order).to_be_visible()
+    assert order_reads[partner] == reads_before
+    partner.unroute("**/api/pedidos/*/acoes/recusar")
     order.locator("[data-order-action=refuse]").click()
     expect(order).to_have_count(0)
     expect(partner.locator("#orders-feedback")).to_contain_text("recusado")
@@ -155,6 +173,11 @@ with sync_playwright() as p:
     expect(partner.locator("#production-history .history-row")).to_have_count(0)
     expect(partner.locator("#pending-orders-count")).to_have_text("0")
     expect(partner.locator("#active-orders-count")).to_have_text("0")
+    a.locator('#aacd-order-step-2 [name=nozzles][value="0.2"]').evaluate(
+        "(input)=>input.checked=false"
+    )
+    a.evaluate("async()=>await (await import('./auth-client.js')).logout()")
+    expect(a.locator("#aacd-order-step-2 [name=nozzles]:checked")).to_have_count(4)
     assert not errors, errors
     print(
         "PASS: Chromium conectado; criação, persistência após reload, recusa, reencaminhamento, aceite, finalização e histórico sem erros JS."

@@ -2403,6 +2403,9 @@
                     <input
                       class="form-control"
                       id="aacd-volumeX"
+                      min="1"
+                      max="10000"
+                      step="1"
                       name="aacd-volumeX"
                       type="number"
                       placeholder=""
@@ -2417,6 +2420,9 @@
                     <input
                       class="form-control"
                       id="aacd-volumeY"
+                      min="1"
+                      max="10000"
+                      step="1"
                       name="aacd-volumeY"
                       type="number"
                       placeholder=""
@@ -2431,6 +2437,9 @@
                     <input
                       class="form-control"
                       id="aacd-volumeZ"
+                      min="1"
+                      max="10000"
+                      step="1"
                       name="aacd-volumeZ"
                       type="number"
                       placeholder=""
@@ -2469,20 +2478,36 @@
                 </div>
                 <div class="choices">
                   <label class="choice">
-                    <input type="checkbox" name="nozzles" value="0.2" />Bico 0,2
-                    mm</label
+                    <input
+                      type="checkbox"
+                      checked
+                      name="nozzles"
+                      value="0.2"
+                    />Bico 0,2 mm</label
                   >
                   <label class="choice">
-                    <input type="checkbox" name="nozzles" value="0.4" />Bico 0,4
-                    mm</label
+                    <input
+                      type="checkbox"
+                      checked
+                      name="nozzles"
+                      value="0.4"
+                    />Bico 0,4 mm</label
                   >
                   <label class="choice">
-                    <input type="checkbox" name="nozzles" value="0.6" />Bico 0,6
-                    mm</label
+                    <input
+                      type="checkbox"
+                      checked
+                      name="nozzles"
+                      value="0.6"
+                    />Bico 0,6 mm</label
                   >
                   <label class="choice">
-                    <input type="checkbox" name="nozzles" value="0.8" />Bico 0,8
-                    mm</label
+                    <input
+                      type="checkbox"
+                      checked
+                      name="nozzles"
+                      value="0.8"
+                    />Bico 0,8 mm</label
                   >
                 </div>
                 <p class="form-error" role="alert"> </p>
@@ -3124,9 +3149,6 @@
       <article>
         <h4></h4>
         <p></p>
-        <span class="machine-approved">
-          <img src="assets/aacd-05c0e.svg" alt="" />
-        </span>
         <div
           ><span data-machine-volume></span><span data-machine-nozzles></span
           ><span data-machine-materials></span
@@ -3178,10 +3200,6 @@
           </h3>
           <div class="review-machine-grid"></div>
           <div class="editor-actions">
-            <button type="button" class="btn-back" data-review-action="reject">
-              <img src="assets/aacd-d8a8f.svg" alt="" />Rejeitar
-              Cadastro</button
-            >
             <button
               type="button"
               class="btn btn-conexo"
@@ -3277,7 +3295,12 @@
           <strong></strong>
           <small></small>
         </div>
-        <img src="assets/aacd-cb673.svg" alt="" />
+        <a
+          href="#aacd-homologacao"
+          data-section="aacd-homologacao"
+          class="home-approve"
+          >Aprovar</a
+        >
       </div>
     </template>
     <!-- SCRIPTS: bibliotecas, configuração, aplicação e widget de acessibilidade -->
