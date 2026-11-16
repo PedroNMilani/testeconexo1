@@ -5,7 +5,6 @@ import MySQLStoreFactory from 'express-mysql-session';
 import { rateLimit } from 'express-rate-limit';
 import { randomBytes, timingSafeEqual } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
-import path from 'node:path';
 import { createAuthService } from './auth-service.js';
 import { createRepository, publicUser } from './repository.js';
 import { HttpError, check } from './errors.js';
@@ -16,8 +15,8 @@ import { registerOrderRoutes } from './routes/orders.js';
 import { withTransaction } from './db.js';
 import { generateCode } from './code-service.js';
 import { UFS } from './geo.js';
-import { MATERIALS } from '../../material-catalog.js';
-const root = fileURLToPath(new URL('../../', import.meta.url));
+import { MATERIALS } from './material-catalog.js';
+const frontendRoot = fileURLToPath(new URL('../../frontend/', import.meta.url));
 const token = () => randomBytes(32).toString('hex');
 export function createApp({ pool, config, geo, printers, sessionStore }) {
   const app = express(),
@@ -326,62 +325,7 @@ export function createApp({ pool, config, geo, printers, sessionStore }) {
       error: { code: 'NOT_FOUND', message: 'Recurso não disponível.' }
     })
   );
-  app.get('/', (req, res) => res.sendFile(path.join(root, 'index.html')));
-  app.use(
-    '/assets',
-    express.static(path.join(root, 'assets'), { dotfiles: 'deny' })
-  );
-  app.use(
-    '/vendor',
-    express.static(path.join(root, 'vendor'), { dotfiles: 'deny' })
-  );
-  const files = new Set([
-    'index.html',
-    'styles.css',
-    'app.js',
-    'router.js',
-    'partner.js',
-    'aacd.js',
-    'shared-ui.js',
-    'data.js',
-    'order-status.js',
-    'auth-client.js',
-    'location-ui.js',
-    'material-catalog.js'
-  ]);
-  const clientModules = new Set([
-    'orders.js',
-    'printers.js',
-    'partners.js',
-    'profiles.js',
-    'views.js'
-  ]);
-  const uiModules = new Set([
-    'aacd-orders.js',
-    'aacd-partners.js',
-    'aacd-requests.js',
-    'aacd-matches.js',
-    'aacd-profile.js',
-    'partner-profile.js',
-    'partner-printers.js',
-    'partner-orders.js',
-    'partner-registration.js'
-  ]);
-  app.get('/ui/:file', (req, res, next) =>
-    uiModules.has(req.params.file)
-      ? res.sendFile(path.join(root, 'ui', req.params.file))
-      : next()
-  );
-  app.get('/client-api/:file', (req, res, next) =>
-    clientModules.has(req.params.file)
-      ? res.sendFile(path.join(root, 'client-api', req.params.file))
-      : next()
-  );
-  app.get('/:file', (req, res, next) =>
-    files.has(req.params.file)
-      ? res.sendFile(path.join(root, req.params.file))
-      : next()
-  );
+  app.use(express.static(frontendRoot, { dotfiles: 'deny' }));
   app.use((req, res) => res.sendStatus(404));
   app.use((error, req, res, next) => {
     if (res.headersSent) return next(error);

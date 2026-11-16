@@ -1,4 +1,4 @@
-import { MATERIALS } from '../../material-catalog.js';
+import { MATERIALS } from './material-catalog.js';
 import { check } from './errors.js';
 export async function generateCode(pool, user, material) {
   check(MATERIALS.includes(material), 'Escolha um material válido.');

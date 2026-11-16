@@ -79,7 +79,7 @@ with sync_playwright() as p:
     page.reload()
     expect(created).to_have_count(0)
     expect(card).to_be_visible()
-    page.evaluate("async()=>await (await import('./auth-client.js')).logout()")
+    page.evaluate("async()=>await (await import('./js/auth-client.js')).logout()")
     expect(page.locator("#printer-grid .printer-card")).to_have_count(0)
     expect(page.locator("#new-printer-name")).to_have_value("")
     assert not errors, errors

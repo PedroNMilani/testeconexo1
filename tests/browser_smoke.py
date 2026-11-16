@@ -10,7 +10,7 @@ import threading
 from pathlib import Path
 from playwright.sync_api import sync_playwright, expect
 
-root = Path(__file__).resolve().parents[1]
+root = Path(__file__).resolve().parents[1] / "frontend"
 
 
 class Handler(http.server.SimpleHTTPRequestHandler):
@@ -54,6 +54,10 @@ try:
         url = f"http://127.0.0.1:{server.server_port}/"
         page.goto(url)
         expect(page.locator("#sobre-nos")).to_be_visible()
+        assert page.evaluate("""async () => {
+            const fonts = await document.fonts.load('16px Jakarta');
+            return fonts.length > 0 && fonts.every(font => font.status === 'loaded');
+        }"""), "A fonte deve carregar a partir de frontend/assets."
         assert page.locator("[data-page]").count() == 20
         assert page.evaluate(
             """()=>{const ids=[...document.querySelectorAll('[id]')].map(e=>e.id);return ids.length===new Set(ids).size}"""

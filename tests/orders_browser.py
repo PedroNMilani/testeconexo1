@@ -169,14 +169,14 @@ with sync_playwright() as p:
     expect(partner.locator("#production-history")).to_contain_text(f["code"])
     a.reload()
     expect(a.locator("#aacd-order-list")).to_contain_text("Finalizado")
-    partner.evaluate("async()=>await (await import('./auth-client.js')).logout()")
+    partner.evaluate("async()=>await (await import('./js/auth-client.js')).logout()")
     expect(partner.locator("#production-history .history-row")).to_have_count(0)
     expect(partner.locator("#pending-orders-count")).to_have_text("0")
     expect(partner.locator("#active-orders-count")).to_have_text("0")
     a.locator('#aacd-order-step-2 [name=nozzles][value="0.2"]').evaluate(
         "(input)=>input.checked=false"
     )
-    a.evaluate("async()=>await (await import('./auth-client.js')).logout()")
+    a.evaluate("async()=>await (await import('./js/auth-client.js')).logout()")
     expect(a.locator("#aacd-order-step-2 [name=nozzles]:checked")).to_have_count(4)
     assert not errors, errors
     print(

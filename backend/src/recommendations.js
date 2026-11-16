@@ -1,5 +1,5 @@
 import { check } from './errors.js';
-import { needsMaterialSupply } from '../../material-catalog.js';
+import { needsMaterialSupply } from './material-catalog.js';
 import { insideBrazil } from './geo.js';
 import { validateRequest, requireApprovedUser } from './request-validation.js';
 

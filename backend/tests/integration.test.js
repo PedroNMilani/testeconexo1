@@ -423,22 +423,39 @@ test('segredos e arquivos do backend não são publicados como estáticos', asyn
     '/backend/.env',
     '/.env',
     '/backend/package.json',
-    '/docs/backend/mysql-proposta.sql'
+    '/docs/database/mysql-proposta.sql',
+    '/package.json',
+    '/backend/src/material-catalog.js',
+    '/material-catalog.js'
   ])
     assert.equal((await client.request('GET', path)).status, 404);
   for (const path of [
     '/runtime-config.js',
     '/mock-data.js',
     '/memory-source.js',
-    '/client-api/secret.js',
-    '/ui/secret.js',
-    '/ui/profiles.js'
+    '/js/client-api/secret.js',
+    '/js/ui/secret.js',
+    '/js/ui/profiles.js'
   ]) {
     assert.equal((await client.request('GET', path)).status, 404);
   }
-  const module = await client.request('GET', '/client-api/orders.js');
+  const module = await client.request('GET', '/js/client-api/orders.js');
   assert.equal(module.status, 200);
   assert.ok(!module.value.includes(config.secret));
+  for (const file of [
+    '/',
+    '/index.html',
+    '/css/styles.css',
+    '/js/app.js',
+    '/assets/logo.png',
+    '/assets/jakarta.woff2',
+    '/vendor/bootstrap.min.css',
+    '/vendor/bootstrap.bundle.min.js',
+    '/vendor/leaflet/leaflet.js',
+    '/vendor/leaflet/images/marker-icon.png'
+  ]) {
+    assert.equal((await client.request('GET', file)).status, 200, file);
+  }
   for (const file of [
     'aacd-orders.js',
     'aacd-partners.js',
@@ -450,7 +467,7 @@ test('segredos e arquivos do backend não são publicados como estáticos', asyn
     'partner-orders.js',
     'partner-registration.js'
   ]) {
-    assert.equal((await client.request('GET', '/ui/' + file)).status, 200);
+    assert.equal((await client.request('GET', '/js/ui/' + file)).status, 200);
   }
 });
 test('sessão persiste no MySQL após reconstruir a aplicação', async () => {

@@ -63,8 +63,8 @@ globalThis.fetch = async (path, options = {}) => {
   if (path === '/api/solicitacoes') return Response.json({ items: [] });
   throw new Error('Requisição inesperada: ' + path);
 };
-const auth = await import('../auth-client.js');
-const data = await import('../data.js');
+const auth = await import('../frontend/js/auth-client.js');
+const data = await import('../frontend/js/data.js');
 assert.equal(await data.getCurrentUser(), null);
 assert.equal(await data.getProfile('aacd'), null);
 assert.deepEqual(await data.listOrders(), []);

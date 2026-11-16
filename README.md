@@ -54,15 +54,34 @@ O histórico permite busca, filtros por estado/material/prioridade, detalhes e e
 
 ## Estrutura
 
-- `index.html` e `styles.css`: telas, templates e apresentação.
-- `app.js`, `aacd.js`, `partner.js`, `shared-ui.js`, `router.js`: interações, renderização e navegação.
-- `data.js`: interface de funções usada pelas telas.
-- `client-api/`: chamadas HTTP por área e conversão das respostas.
-- `auth-client.js`: sessão, transporte HTTP e CSRF.
-- `location-ui.js`: mapa, busca e confirmação do pino.
-- `backend/src/`: rotas, validações, serviços e acesso aos bancos.
-- `backend/db/`: esquema e migrações.
-- `tests/` e `backend/tests/`: verificações e fixtures exclusivas de teste.
+```text
+frontend/
+  index.html          Telas e templates HTML
+  css/
+    styles.css        Estilos da aplicação
+  js/
+    app.js            Inicialização, login e cadastros
+    aacd.js           Inicialização da área AACD
+    partner.js        Inicialização da área do parceiro
+    ui/               Formulários, cards e ações de cada tela
+    client-api/       Chamadas HTTP e conversão das respostas
+    auth-client.js    Sessão, transporte HTTP e CSRF
+    router.js         Navegação entre as telas
+    location-ui.js    Mapa, busca e confirmação do pino
+    shared-ui.js      Funções pequenas usadas pelas telas
+    data.js           Interface de dados usada pelas telas
+    order-status.js   Estados, prioridades e rótulos dos pedidos
+  assets/             Imagens, ícones e fonte
+  vendor/             Bootstrap e Leaflet
+backend/
+  src/                Rotas, validações, serviços e catálogo de materiais
+  db/                 Esquema e migrações
+  tests/              Testes do backend
+  scripts/            Preparação dos bancos e primeira conta AACD
+tests/                Testes de interface e contrato de dados
+```
+
+O Express atende somente a pasta `frontend/` como conteúdo estático. O endereço de entrada continua sendo `http://localhost:3000/`, e a API continua em `/api`. O comando `npm start` permanece o mesmo.
 
 ## Verificação
 

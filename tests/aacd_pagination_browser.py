@@ -39,7 +39,7 @@ with sync_playwright() as p:
     prefix = "PAGINACAO-" + uuid.uuid4().hex
     page.evaluate(
         """async ({prefix, partnerId, printerId}) => {
-        const {api} = await import('./auth-client.js');
+        const {api} = await import('./js/auth-client.js');
         for (let index = 1; index <= 5; index++) {
             await api('/pedidos', {method:'POST', body: {
                 request: {

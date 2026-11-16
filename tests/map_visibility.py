@@ -10,7 +10,7 @@ import threading
 from pathlib import Path
 from playwright.sync_api import sync_playwright, expect
 
-root = Path(__file__).resolve().parents[1]
+root = Path(__file__).resolve().parents[1] / "frontend"
 
 
 class Handler(http.server.SimpleHTTPRequestHandler):
@@ -91,7 +91,7 @@ try:
         )
         box.locator("[data-confirm-location]").check()
         assert page.evaluate(
-            "async()=> (await import('./location-ui.js')).locationValue('registration-location').locationConfirmed"
+            "async()=> (await import('./js/location-ui.js')).locationValue('registration-location').locationConfirmed"
         )
         page.set_viewport_size({"width": 390, "height": 844})
         expect(box.locator(".leaflet-marker-icon")).to_be_visible()

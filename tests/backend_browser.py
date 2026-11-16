@@ -13,12 +13,18 @@ with sync_playwright() as p:
  browser=p.chromium.launch(executable_path=os.environ.get('CHROMIUM_PATH') or '/usr/bin/chromium',headless=True,args=['--no-sandbox'])
  def context():
   ctx=browser.new_context(viewport={'width':1440,'height':1000})
+  # Espera o fim da animação do Bootstrap antes de fechar o modal.
+  ctx.add_init_script("document.addEventListener('shown.bs.modal',event=>event.target.dataset.testModalReady='true');document.addEventListener('hide.bs.modal',event=>delete event.target.dataset.testModalReady)")
   # Provedores externos não são validados nesta suíte: não contorna a política de rede.
   ctx.route('https://cdn.userway.org/**',lambda route:route.abort('blockedbyclient'))
   ctx.route('https://tile.openstreetmap.org/**',lambda route:route.abort('blockedbyclient'))
   ctx.route('**/api/localizacoes/geocodificar',lambda route:route.fulfill(json={'latitude':-23.55,'longitude':-46.63,'nivel':'cidade'}))
   ctx.on('page',lambda page:page.on('pageerror',lambda e:errors.append(str(e))))
   return ctx
+ def close_evaluation(page):
+  expect(page.locator('#evaluation-dialog')).to_have_attribute('data-test-modal-ready','true')
+  page.locator('#evaluation-dialog [data-bs-dismiss=modal]').click()
+  expect(page.locator('#evaluation-dialog')).to_be_hidden()
  def login(page,email,password):
   page.goto(URL+'#login');expect(page.locator('#login')).to_be_visible()
   page.locator('#login [name=email]').fill(email);page.locator('#login [name=password]').fill(password)
@@ -53,7 +59,7 @@ with sync_playwright() as p:
  pending.locator('#cadastro-aacd [name=unit]').select_option('Ibirapuera')
  pending.locator('#cadastro-aacd').get_by_role('button',name='Avançar',exact=True).click()
  expect(pending.locator('#evaluation-dialog')).to_be_visible()
- pending.locator('#evaluation-dialog [data-bs-dismiss=modal]').click()
+ close_evaluation(pending)
  login(pending,pending_email,ADMIN_PASSWORD)
  expect(pending.locator('#login-feedback')).to_contain_text('aguarda homologação')
  pending.evaluate("location.hash='aacd-inicio'");expect(pending.locator('#login')).to_be_visible()
@@ -93,7 +99,7 @@ with sync_playwright() as p:
  expect(partner.locator('#parceiro-logistica .form-error')).to_contain_text('A conta foi criada.',timeout=15000)
  partner.locator('#parceiro-logistica').get_by_role('button',name='Avançar',exact=True).click()
  expect(partner.locator('#evaluation-dialog')).to_be_visible(timeout=15000)
- partner.locator('#evaluation-dialog [data-bs-dismiss=modal]').click();expect(partner.locator('#sobre-nos')).to_be_visible()
+ close_evaluation(partner);expect(partner.locator('#sobre-nos')).to_be_visible()
  admin.reload();expect(admin.locator('#aacd-homologacao')).to_be_visible()
  review=admin.locator('.aacd-review').filter(has_text='Laboratório Browser '+suffix)
  expect(admin.locator('[data-home-partners] .home-partner-line').filter(has_text='Laboratório Browser '+suffix)).to_have_count(1)
@@ -120,24 +126,24 @@ with sync_playwright() as p:
  partner.evaluate("location.hash='parceiro-inicio'");expect(partner.locator('#login')).to_be_visible()
  second_email='browser-second-'+suffix+'@example.org'
  body={'email':second_email,'password':ADMIN_PASSWORD,'phone':'61988887777','institution':'Segundo laboratório '+suffix,'responsible':'Outro responsável','street':'Via N2','number':'','city':'Brasília','state':'DF','latitude':-15.7939,'longitude':-47.8828,'locationConfirmed':True,'termsAccepted':True}
- created=partner.evaluate('''async(body)=>await (await import('./auth-client.js')).api('/auth/cadastros/parceiros',{method:'POST',body})''',body)
- admin.evaluate('''async(id)=>await (await import('./auth-client.js')).api('/parceiros/'+id+'/homologacao',{method:'POST'})''',created['user']['id'])
+ created=partner.evaluate('''async(body)=>await (await import('./js/auth-client.js')).api('/auth/cadastros/parceiros',{method:'POST',body})''',body)
+ admin.evaluate('''async(id)=>await (await import('./js/auth-client.js')).api('/parceiros/'+id+'/homologacao',{method:'POST'})''',created['user']['id'])
  partner.locator('#login [name=email]').fill(second_email);partner.locator('#login [name=password]').fill(ADMIN_PASSWORD)
  partner.get_by_role('button',name='Entrar no Sistema',exact=True).click();expect(partner.locator('#parceiro-inicio')).to_be_visible()
  partner.get_by_role('button',name='Segundo laboratório '+suffix,exact=True).click();partner.get_by_role('link',name='Editar a Conta',exact=True).click()
  expect(partner.locator('#parceiro-perfil')).to_be_visible();expect(partner.locator('#profile-institution')).to_have_value('Segundo laboratório '+suffix)
- location=partner.evaluate('''async()=> (await import('./location-ui.js')).locationValue('profile-location')''')
+ location=partner.evaluate('''async()=> (await import('./js/location-ui.js')).locationValue('profile-location')''')
  assert abs(location['latitude']-body['latitude'])<0.000001 and abs(location['longitude']-body['longitude'])<0.000001
  partner.locator('#profile-phone').fill('61977776666');partner.get_by_role('button',name='Atualizar',exact=True).click()
  expect(partner.locator('#profile-feedback')).to_contain_text('atualizado')
- saved=partner.evaluate('''async()=> (await (await import('./auth-client.js')).api('/auth/me')).user''')
+ saved=partner.evaluate('''async()=> (await (await import('./js/auth-client.js')).api('/auth/me')).user''')
  assert saved['latitude']==body['latitude'] and saved['longitude']==body['longitude']
  partner.locator('#profile-institution').fill('Alteração que será cancelada')
  marker=partner.locator('#profile-location .leaflet-marker-icon');marker.focus();marker.press('ArrowRight')
  partner.locator('#cancel-profile').click();expect(partner.locator('#parceiro-inicio')).to_be_visible()
  partner.evaluate("location.hash='parceiro-perfil'");expect(partner.locator('#parceiro-perfil')).to_be_visible()
  expect(partner.locator('#profile-institution')).to_have_value(body['institution'])
- restored=partner.evaluate('''async()=> (await import('./location-ui.js')).locationValue('profile-location')''')
+ restored=partner.evaluate('''async()=> (await import('./js/location-ui.js')).locationValue('profile-location')''')
  assert restored['latitude']==body['latitude'] and restored['longitude']==body['longitude']
  assert not errors,errors
  browser.close()

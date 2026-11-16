@@ -1,5 +1,5 @@
 import { check } from './errors.js';
-import { MATERIALS } from '../../material-catalog.js';
+import { MATERIALS } from './material-catalog.js';
 
 export function validateRequest(body) {
   check(
