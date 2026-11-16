@@ -54,7 +54,7 @@
           aria-expanded="false"
         >
           <img src="assets/partner-user.svg" alt="" />
-          <span data-account-name>Laboratório Mauá</span>
+          <span data-account-name>Conta do parceiro</span>
           <img src="assets/partner-chevron.svg" alt="" />
         </button>
         <div class="dropdown-menu dropdown-menu-end account-menu">
@@ -92,7 +92,7 @@
           aria-expanded="false"
         >
           <img src="assets/partner-user.svg" alt="" />
-          <span data-aacd-account>Pedro - AACD</span>
+          <span data-aacd-account>Conta AACD</span>
           <img src="assets/partner-chevron.svg" alt="" />
         </button>
         <div class="dropdown-menu dropdown-menu-end account-menu">
@@ -1455,7 +1455,7 @@
       >
         <div class="partner-page partner-home">
           <h1 id="parceiro-inicio-titulo" class="screen-heading" tabindex="-1"
-            >Laboratório Mauá 3D FabLab</h1
+            >Conta do parceiro</h1
           >
           <!-- Resumo do parceiro: impressoras, atendimentos e pedidos pendentes -->
           <div class="partner-summary">
@@ -1614,10 +1614,10 @@
           <div class="printer-preview">
             <div class="printer-art" id="editor-art">
               <img src="assets/partner-bambu.svg" alt="" />
-              <span>BAMBU LAB COREXY</span>
+              <span>IMPRESSORA FDM</span>
             </div>
-            <h3 id="editor-name">Bambu Lab X1-Carbon</h3>
-            <p id="editor-id">ID: IMP-01 • FDM Industrial</p>
+            <h3 id="editor-name">Impressora</h3>
+            <p id="editor-id"></p>
           </div>
           <h2 class="editor-subtitle"
             >Materiais compatíveis com a impressora</h2
@@ -1809,7 +1809,7 @@
                 id="parceiro-perfil-titulo"
                 class="screen-heading"
                 tabindex="-1"
-                >Laboratorio Maua</h1
+                >Conta do parceiro</h1
               >
               <img src="assets/partner-avatar.svg" alt="" />
             </div>
@@ -2622,35 +2622,30 @@
             </span>
             <div>
               <h2
-                >Órtese Dinâmica AFO
-                <span id="aacd-demand-code">#PED-2024-089</span>
+                >Resumo da solicitação
+                <span id="aacd-demand-code"></span>
                 <small
-                  ><img src="assets/aacd-59c6f.svg" alt="" />AACD Mooca</small
-                >
+                  ><img src="assets/aacd-59c6f.svg" alt="" /><span
+                    data-demand-unit
+                  ></span
+                ></small>
               </h2>
-              <p
-                >Dispositivo prescrito para estabilização de marcha em paciente
-                neuropediátrico.<br />
-                Necessita alta tenacidade e acabamento superficial sem rebarbas
-                para contato dérmico direto.</p
-              >
+              <p>Confira os requisitos antes de selecionar o parceiro.</p>
             </div>
             <dl>
               <div>
                 <dt>Material Requerido</dt>
-                <dd id="aacd-demand-material">PETG Médico</dd>
+                <dd id="aacd-demand-material"></dd>
               </div>
               <div>
                 <dt>Volume de Impressão</dt>
                 <dd id="aacd-demand-volume"
-                  ><img src="assets/aacd-8a609.svg" alt="" /><span
-                    >220×180×260 mm</span
-                  ></dd
-                >
+                  ><img src="assets/aacd-8a609.svg" alt="" /><span></span
+                ></dd>
               </div>
               <div>
-                <dt>Prazo Desejado</dt>
-                <dd><img src="assets/aacd-1e956.svg" alt="" />5 dias úteis</dd>
+                <dt>Prioridade</dt>
+                <dd data-demand-priority></dd>
               </div>
             </dl>
           </article>
@@ -2683,7 +2678,7 @@
             <!-- Identificação da conta em edição -->
             <div class="profile-heading">
               <h1 id="aacd-perfil-titulo" class="screen-heading" tabindex="-1"
-                >Pedro - AACD</h1
+                >Conta AACD</h1
               >
               <img src="assets/partner-avatar.svg" alt="" />
             </div>
@@ -3235,10 +3230,8 @@
           </div>
           <div class="match-score">
             <strong
-              ><img src="assets/aacd-8da20.svg" alt="" /><span
-                >98%</span
-              ></strong
-            >
+              ><img src="assets/aacd-8da20.svg" alt="" /><span></span
+            ></strong>
             <div>
               <b></b>
               <small></small>
@@ -3308,7 +3301,6 @@
     </template>
     <!-- SCRIPTS: bibliotecas, configuração, aplicação e widget de acessibilidade -->
     <script src="vendor/bootstrap.bundle.min.js"></script>
-    <script src="runtime-config.js"></script>
     <script src="vendor/leaflet/leaflet.js"></script>
     <script type="module" src="app.js"></script>
     <script

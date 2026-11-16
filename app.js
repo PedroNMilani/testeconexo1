@@ -1,5 +1,4 @@
 import {
-  backendEnabled,
   sessionUser,
   login,
   api,
@@ -46,11 +45,7 @@ let partnerAccountCreated = false,
   previousSession = null;
 
 function partnerPending() {
-  return (
-    backendEnabled &&
-    sessionUser?.perfil === 'parceiro' &&
-    sessionUser.homologado !== true
-  );
+  return sessionUser?.perfil === 'parceiro' && sessionUser.homologado !== true;
 }
 
 function showPendingPartner() {
@@ -189,49 +184,32 @@ app.addEventListener('submit', async (event) => {
   }
 
   switch (activeSection) {
-    case 'login':
-      if (backendEnabled) {
-        const button = form.querySelector('[type=submit]');
-        button.disabled = true;
-        try {
-          const user = await login({
-            email: form.elements.namedItem('email').value,
-            password: form.elements.namedItem('password').value
-          });
-          form.elements.namedItem('password').value = '';
-          renderBackendNotice();
-          document.dispatchEvent(new CustomEvent('conexo:data-changed'));
-          if (partnerPending()) {
-            showPendingPartner();
-          } else if (user.perfil === 'aacd' && !user.homologado) {
-            document.getElementById('login-feedback').textContent =
-              'Sua conta AACD aguarda homologação por um integrante já homologado.';
-          } else {
-            navigate(internalDestination(user));
-          }
-        } catch (error) {
-          document.getElementById('login-feedback').textContent = error.message;
-        } finally {
-          button.disabled = false;
+    case 'login': {
+      const button = form.querySelector('[type=submit]');
+      button.disabled = true;
+      try {
+        const user = await login({
+          email: form.elements.namedItem('email').value,
+          password: form.elements.namedItem('password').value
+        });
+        form.elements.namedItem('password').value = '';
+        renderBackendNotice();
+        document.dispatchEvent(new CustomEvent('conexo:data-changed'));
+        if (partnerPending()) {
+          showPendingPartner();
+        } else if (user.perfil === 'aacd' && !user.homologado) {
+          document.getElementById('login-feedback').textContent =
+            'Sua conta AACD aguarda homologação por um integrante já homologado.';
+        } else {
+          navigate(internalDestination(user));
         }
-        break;
+      } catch (error) {
+        document.getElementById('login-feedback').textContent = error.message;
+      } finally {
+        button.disabled = false;
       }
-      if (loginMode === 'parceiro') {
-        document.dispatchEvent(
-          new CustomEvent('conexo:partner-login', {
-            detail: { email: form.elements.namedItem('email').value }
-          })
-        );
-        navigate('parceiro-inicio');
-        break;
-      }
-      document.dispatchEvent(
-        new CustomEvent('conexo:aacd-login', {
-          detail: { email: form.elements.namedItem('email').value }
-        })
-      );
-      navigate('aacd-inicio');
       break;
+    }
     case 'parceiro-dados':
       navigate('parceiro-equipamentos');
       break;
@@ -247,39 +225,32 @@ app.addEventListener('submit', async (event) => {
       break;
     }
     case 'parceiro-logistica':
-      if (backendEnabled) {
-        await registerPartner(form);
-        break;
-      }
-      evaluationDialog.show();
+      await registerPartner(form);
       break;
-    case 'cadastro-aacd':
-      if (backendEnabled) {
-        const button = form.querySelector('[type=submit]');
-        button.disabled = true;
-        try {
-          await api('/auth/cadastros/aacd', {
-            method: 'POST',
-            body: {
-              email: form.elements.namedItem('email').value,
-              password: form.elements.namedItem('password').value,
-              phone: form.elements.namedItem('phone').value,
-              unit: form.elements.namedItem('unit').value,
-              holder: form.elements.namedItem('holder').value
-            }
-          });
-          form.elements.namedItem('password').value = '';
-          form.elements.namedItem('confirmation').value = '';
-          evaluationDialog.show();
-        } catch (error) {
-          form.querySelector('.form-error').textContent = error.message;
-        } finally {
-          button.disabled = false;
-        }
-        break;
+    case 'cadastro-aacd': {
+      const button = form.querySelector('[type=submit]');
+      button.disabled = true;
+      try {
+        await api('/auth/cadastros/aacd', {
+          method: 'POST',
+          body: {
+            email: form.elements.namedItem('email').value,
+            password: form.elements.namedItem('password').value,
+            phone: form.elements.namedItem('phone').value,
+            unit: form.elements.namedItem('unit').value,
+            holder: form.elements.namedItem('holder').value
+          }
+        });
+        form.elements.namedItem('password').value = '';
+        form.elements.namedItem('confirmation').value = '';
+        evaluationDialog.show();
+      } catch (error) {
+        form.querySelector('.form-error').textContent = error.message;
+      } finally {
+        button.disabled = false;
       }
-      evaluationDialog.show();
       break;
+    }
   }
 });
 
@@ -290,8 +261,7 @@ document.getElementById('reset-form').addEventListener('submit', (event) => {
     'A recuperação de senha por e-mail ainda não está disponível. Entre em contato com a equipe.';
 });
 
-// Senhas e dados permanecem apenas nos campos desta aba. Não há persistência
-// em cookies, localStorage ou sessionStorage, nem envio a um backend.
+// A sessão vem do servidor; senhas não são gravadas no armazenamento do navegador.
 // O mapa é parte da tela, inclusive na prévia. Não aguarda catálogos ou sessão.
 mountLocation('registration-location', {
   street: '#parceiro-dados-street',
@@ -300,7 +270,7 @@ mountLocation('registration-location', {
   number: '#parceiro-dados-number'
 });
 await Promise.all([initPartner(), initAacd()]);
-if (backendEnabled) {
+{
   try {
     const catalog = await api('/catalogos');
     for (const id of ['cadastro-aacd-unit', 'aacd-profile-unit']) {

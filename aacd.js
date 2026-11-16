@@ -1,4 +1,4 @@
-import { backendEnabled, sessionUser, api, sessionKey } from './auth-client.js';
+import { sessionUser, api, sessionKey } from './auth-client.js';
 import * as data from './data.js';
 import { ORDER_STATUS, ORDER_STATUS_UI } from './data.js';
 import { activeSection, navigate } from './router.js';
@@ -64,11 +64,8 @@ export async function initAacd() {
     feedbackId: 'aacd-profile-feedback',
     cancelId: 'aacd-profile-cancel',
     home: 'aacd-inicio',
-    loginEvent: 'conexo:aacd-login',
     nameError: 'Informe o nome do responsável.',
-    success: backendEnabled
-      ? 'Perfil AACD atualizado.'
-      : 'Perfil AACD atualizado nesta demonstração.'
+    success: 'Perfil AACD atualizado.'
   });
   function aacdNormalize(value) {
     return String(value)
@@ -175,7 +172,6 @@ export async function initAacd() {
     trigger.setAttribute('aria-expanded', String(!detail.hidden));
     trigger.setAttribute('aria-label', `Detalhes do pedido ${order.code}`);
     if (
-      backendEnabled &&
       [ORDER_STATUS.NOT_ACCEPTED, ORDER_STATUS.IN_PRODUCTION].includes(
         order.status
       )
@@ -204,7 +200,7 @@ export async function initAacd() {
     );
     document.getElementById('aacd-order-empty').hidden = filtered.length !== 0;
     document.getElementById('aacd-order-count').textContent =
-      `Exibindo ${visible.size} de ${filtered.length} pedidos encontrados${backendEnabled ? '' : ' nesta demonstração'}`;
+      `Exibindo ${visible.size} de ${filtered.length} pedidos encontrados${''}`;
     document.querySelectorAll('[data-aacd-page]').forEach((button) => {
       const page = button.dataset.aacdPage;
       button.disabled =
@@ -389,8 +385,7 @@ export async function initAacd() {
   function renderReview(candidate) {
     const review = instance('review-template');
     review.dataset.candidate = candidate.id;
-    if (backendEnabled)
-      review.querySelector('[data-review-action=reject]').hidden = true;
+    review.querySelector('[data-review-action=reject]').hidden = true;
     text(review, 'h2', candidate.name);
     text(review, 'summary p', candidate.description);
     review.querySelectorAll('.review-info-grid>div').forEach((cell, i) => {
@@ -403,13 +398,12 @@ export async function initAacd() {
     text(
       review,
       '.aacd-review-content h3:nth-of-type(2) small',
-      `${candidate.machines.length} Máquinas ${backendEnabled ? 'Cadastradas' : 'Habilitadas'}`
+      `${candidate.machines.length} Máquinas ${'Cadastradas'}`
     );
     review.querySelector('.review-machine-grid').replaceChildren(
       ...candidate.machines.map((machine) => {
         const card = instance('machine-template');
-        if (backendEnabled)
-          card.querySelector('.machine-approved').hidden = true;
+        card.querySelector('.machine-approved').hidden = true;
         text(card, 'h4', machine.name);
         text(card, 'p', machine.kind);
         card.querySelectorAll('div>span').forEach((span, i) => {
@@ -458,7 +452,7 @@ export async function initAacd() {
         await renderReviews();
         renderNetwork();
         document.getElementById('aacd-review-feedback').textContent =
-          `${candidate.name}: cadastro ${approved ? 'homologado' : 'rejeitado'}${backendEnabled ? '' : ' nesta demonstração'}.`;
+          `${candidate.name}: cadastro ${approved ? 'homologado' : 'rejeitado'}${''}.`;
       } catch (error) {
         document.getElementById('aacd-review-feedback').textContent =
           error.message;
@@ -484,9 +478,8 @@ export async function initAacd() {
         card.querySelector('.match-score img').src = match.scoreIcon;
         text(card, '.match-score b', match.scoreLabel);
         text(card, '.match-score small', match.scoreNote);
-        if (backendEnabled)
-          card.querySelectorAll('.match-specs small')[2].textContent =
-            'Fornecimento de material';
+        card.querySelectorAll('.match-specs small')[2].textContent =
+          'Fornecimento de material';
         card.querySelectorAll('.match-specs strong').forEach((value, i) => {
           value.textContent = match.specs[i];
         });
@@ -560,10 +553,7 @@ export async function initAacd() {
   }
   async function renderOpenRequests() {
     const panel = document.getElementById('aacd-open-requests');
-    if (!backendEnabled) {
-      panel.hidden = true;
-      return;
-    }
+
     const actor = sessionKey();
     const requests = await data.listRequests();
     if (actor !== sessionKey()) return;
@@ -623,12 +613,7 @@ export async function initAacd() {
             const aacdDraft = readAacdDraft();
             matches = await data.listMatches({ requestId: s.id });
             renderMatches();
-            document.getElementById('aacd-demand-code').textContent =
-              aacdDraft.code;
-            document.getElementById('aacd-demand-material').textContent =
-              aacdDraft.materials.join(', ');
-            document.querySelector('#aacd-demand-volume span').textContent =
-              aacdDraft.volumes.join('×') + ' mm';
+            renderDemandSummary(aacdDraft);
             document.getElementById('aacd-connect-feedback').textContent =
               matches.length
                 ? ''
@@ -654,7 +639,7 @@ export async function initAacd() {
         data.listPartners(),
         data.listMatches()
       ]);
-      if (backendEnabled && actor !== sessionKey()) return;
+      if (actor !== sessionKey()) return;
       // Os exemplos mantêm a ordem original; novos registros aparecem primeiro.
       orders.sort((a, b) => Number(b.id) - Number(a.id));
       renderAacdOrders();
@@ -678,7 +663,7 @@ export async function initAacd() {
     const input = document.getElementById('aacd-volume' + axis);
     input.min = '1';
     input.max = '10000';
-    input.step = backendEnabled ? '1' : '0.1';
+    input.step = '1';
   }
   aacdOrderForms[1].querySelectorAll('[name="nozzles"]').forEach((input) => {
     input.checked = true;
@@ -721,6 +706,17 @@ export async function initAacd() {
     return true;
   }
 
+  function renderDemandSummary(draft) {
+    document.getElementById('aacd-demand-code').textContent = draft.code;
+    document.getElementById('aacd-demand-material').textContent =
+      draft.materials.join(', ');
+    document.querySelector('#aacd-demand-volume span').textContent =
+      draft.volumes.join('×') + ' mm';
+    document.querySelector('[data-demand-unit]').textContent =
+      sessionUser?.unidade || '';
+    document.querySelector('[data-demand-priority]').textContent =
+      draft.priority;
+  }
   function readAacdDraft() {
     const technical = aacdOrderForms[1];
     return {
@@ -755,18 +751,13 @@ export async function initAacd() {
       else {
         if (!validateAacdStep(1) || !validateAacdStep(2)) return;
         const aacdDraft = readAacdDraft();
-        document.getElementById('aacd-demand-code').textContent =
-          aacdDraft.code;
-        document.getElementById('aacd-demand-material').textContent =
-          aacdDraft.materials.join(', ');
-        document.querySelector('#aacd-demand-volume span').textContent =
-          aacdDraft.volumes.join('×') + ' mm';
+        renderDemandSummary(aacdDraft);
         const button = form.querySelector('[type=submit]');
         button.disabled = true;
         try {
           const actor = sessionKey();
           matches = await data.listMatches(aacdDraft);
-          if (backendEnabled && actor !== sessionKey()) return;
+          if (actor !== sessionKey()) return;
           renderMatches();
           document.getElementById('aacd-connect-feedback').textContent =
             matches.length
@@ -809,14 +800,12 @@ export async function initAacd() {
       try {
         await data.createOrder({
           ...draft,
-          selection: backendEnabled
-            ? {
-                partnerId: match.partnerId,
-                printerId: match.printerId,
-                material: match.material,
-                nozzle: match.nozzle
-              }
-            : undefined,
+          selection: {
+            partnerId: match.partnerId,
+            printerId: match.printerId,
+            material: match.material,
+            nozzle: match.nozzle
+          },
           volumes: Object.fromEntries(
             ['X', 'Y', 'Z'].map((axis, i) => [axis, draft.volumes[i]])
           ),
@@ -853,17 +842,12 @@ export async function initAacd() {
       await renderAacd();
       document.dispatchEvent(new CustomEvent('conexo:data-changed'));
       document.getElementById('aacd-orders-feedback').textContent =
-        backendEnabled
-          ? `${draft.code} conectado a ${match.name}. Pedido salvo e disponível para o parceiro.`
-          : `${draft.code} conectado a ${match.name} nesta demonstração. Nenhum envio real foi realizado.`;
+        `${draft.code} conectado a ${match.name}. Pedido salvo e disponível para o parceiro.`;
       navigate('aacd-pedidos');
     });
   async function renderAacdUsers() {
     const panel = document.getElementById('aacd-users-panel');
-    panel.hidden =
-      !backendEnabled ||
-      sessionUser?.perfil !== 'aacd' ||
-      !sessionUser.homologado;
+    panel.hidden = sessionUser?.perfil !== 'aacd' || !sessionUser.homologado;
     if (panel.hidden) {
       document.getElementById('aacd-users-list').replaceChildren();
       return;
@@ -916,7 +900,7 @@ export async function initAacd() {
   });
   document.addEventListener('conexo:session', () => {
     if (sessionUser?.perfil === 'aacd' && sessionUser.homologado) renderAacd();
-    else if (backendEnabled) {
+    else {
       document.getElementById('aacd-network-grid').replaceChildren();
       document.getElementById('aacd-review-list').replaceChildren();
       partners = [];

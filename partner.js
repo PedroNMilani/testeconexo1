@@ -1,4 +1,4 @@
-import { backendEnabled, sessionUser, sessionKey } from './auth-client.js';
+import { sessionUser, sessionKey } from './auth-client.js';
 import * as data from './data.js';
 import { ORDER_STATUS, ORDER_STATUS_UI } from './data.js';
 import { activeSection, navigate } from './router.js';
@@ -64,7 +64,7 @@ export async function initPartner() {
   async function renderPrinters() {
     const actor = sessionKey();
     const printers = await data.listPrinters();
-    if (backendEnabled && actor !== sessionKey()) return;
+    if (actor !== sessionKey()) return;
     printerGrid.replaceChildren(...printers.map(renderPrinter));
     document.getElementById('printer-count').textContent = printers.length;
     document.getElementById('connected-count').textContent =
@@ -198,11 +198,8 @@ export async function initPartner() {
     feedbackId: 'profile-feedback',
     cancelId: 'cancel-profile',
     home: 'parceiro-inicio',
-    loginEvent: 'conexo:partner-login',
     nameError: 'Informe o nome da instituição.',
-    success: backendEnabled
-      ? 'Perfil atualizado.'
-      : 'Perfil atualizado nesta demonstração.'
+    success: 'Perfil atualizado.'
   });
   document.addEventListener('conexo:data-changed', renderPartner);
 
@@ -244,7 +241,7 @@ export async function initPartner() {
     });
     document.getElementById('edit-needs-material').value =
       record?.needsMaterial || '';
-    if (backendEnabled) {
+    {
       document.getElementById('edit-needs-material').closest('.field').hidden =
         true;
       document.getElementById('edit-needs-material').required = false;
@@ -313,7 +310,7 @@ export async function initPartner() {
       });
       await renderPrinters();
       document.getElementById('printer-feedback').textContent =
-        `${record.name}: ${creating ? 'adicionada' : 'atualizada'}${backendEnabled ? '' : ' nesta demonstração'}.`;
+        `${record.name}: ${creating ? 'adicionada' : 'atualizada'}${''}.`;
       navigate('parceiro-inicio');
     } catch (error) {
       printerForm.querySelector('.form-error').textContent = error.message;
@@ -329,7 +326,7 @@ export async function initPartner() {
         if (!record) return;
         await renderPrinters();
         document.getElementById('printer-feedback').textContent =
-          `${record.name}: removida${backendEnabled ? '' : ' nesta demonstração'}.`;
+          `${record.name}: removida${''}.`;
         navigate('parceiro-inicio');
       } catch (error) {
         printerForm.querySelector('.form-error').textContent = error.message;
@@ -375,11 +372,11 @@ export async function initPartner() {
       await Promise.all([renderPartnerOrders(), renderHistory()]);
       document.dispatchEvent(new CustomEvent('conexo:data-changed'));
       document.getElementById('orders-feedback').textContent =
-        `Pedido #${order.id} ${action === 'accept' ? 'aceito' : action === 'complete' ? 'concluído' : 'recusado'}${backendEnabled ? '' : ' nesta demonstração'}.`;
+        `Pedido #${order.id} ${action === 'accept' ? 'aceito' : action === 'complete' ? 'concluído' : 'recusado'}${''}.`;
     });
   document.addEventListener('conexo:session', () => {
     if (sessionUser?.perfil === 'parceiro') renderPartner();
-    else if (backendEnabled) {
+    else {
       printerGrid.replaceChildren();
       document.getElementById('printer-count').textContent = '0';
     }

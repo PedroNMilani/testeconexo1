@@ -1,123 +1,102 @@
+// Fixtures apenas de teste: a aplicação não importa dados de demonstração.
 import assert from 'node:assert/strict';
-import { createDataService } from '../data.js';
-import { createMockData } from '../mock-data.js';
-import { createMemorySource } from '../memory-source.js';
-const seed = createMockData();
-const data = createDataService(createMemorySource(seed));
-seed.printers[0].name = 'Alterado fora da fonte';
-const printers = await data.listPrinters();
-assert.equal(printers.length, 3);
-for (const printer of printers) {
-  assert.ok(printer.materials.length && printer.nozzles.length);
-  for (const axis of ['X', 'Y', 'Z'])
-    assert.ok(Number(printer.volumes[axis]) > 0);
-  assert.ok(['Sim', 'Não'].includes(printer.needsMaterial));
-}
-const original = await data.getPrinter('1');
-printers[0].materials.push('alteração externa');
-assert.deepEqual(await data.getPrinter('1'), original);
-const input = { ...original, volumes: { X: '210', Y: '200', Z: '200' } };
-const output = await data.savePrinter(input);
-input.volumes.X = '999';
-output.volumes.Y = '999';
-assert.equal((await data.getPrinter('1')).volumes.X, '210');
-assert.equal((await data.getPrinter('1')).volumes.Y, '200');
-const profile = await data.getProfile('partner');
-const savedProfile = await data.saveProfile('partner', profile);
-profile['profile-institution'] = 'externo';
-savedProfile['profile-institution'] = 'externo';
-assert.notEqual(
-  (await data.getProfile('partner'))['profile-institution'],
-  'externo'
+globalThis.document = { dispatchEvent() {} };
+const calls = [];
+let signedUser = null,
+  failOrders = false;
+const user = {
+  id: '9',
+  perfil: 'aacd',
+  homologado: true,
+  unidade: 'Mooca',
+  nome: 'Conta de teste',
+  email: 'conta@example.org',
+  telefone: '11999999999'
+};
+const order = {
+  id: '5',
+  id_solicitacao: '3',
+  id_parceiro: '2',
+  codigo: 'TEST-5',
+  status: 'pendente',
+  prioridade: 'padrao',
+  capacidade_x: 20,
+  capacidade_y: 30,
+  capacidade_z: 40,
+  material: 'PLA',
+  bico_mm: 0.4,
+  unidade: 'Mooca',
+  link: 'https://example.org/molde',
+  snapshot: { lab: 'Laboratório de teste' },
+  atualizado_em: '2026-11-16T10:00:00.000Z'
+};
+globalThis.fetch = async (path, options = {}) => {
+  calls.push({ path, method: options.method || 'GET', body: options.body });
+  if (path === '/api/auth/csrf') return Response.json({ csrfToken: 'teste' });
+  if (path === '/api/auth/login') {
+    signedUser = user;
+    return Response.json({ user, csrfToken: 'teste' });
+  }
+  if (path === '/api/auth/me')
+    return signedUser
+      ? Response.json({ user: signedUser })
+      : Response.json(
+          { error: { message: 'Entre na conta' } },
+          { status: 401 }
+        );
+  if (path === '/api/auth/logout') {
+    signedUser = null;
+    return new Response(null, { status: 204 });
+  }
+  if (path === '/api/pedidos')
+    return failOrders
+      ? Response.json(
+          { error: { code: 'TEST_FAILURE', message: 'Falha de teste' } },
+          { status: 503 }
+        )
+      : Response.json({ items: [order] });
+  if (path === '/api/pedidos/5') return Response.json(order);
+  if (path === '/api/pedidos/5/acoes/aceitar') {
+    order.status = 'em_producao';
+    return Response.json({ id: '5', status: 'em_producao' });
+  }
+  if (path === '/api/solicitacoes') return Response.json({ items: [] });
+  throw new Error('Requisição inesperada: ' + path);
+};
+const auth = await import('../auth-client.js');
+const data = await import('../data.js');
+assert.equal(await data.getCurrentUser(), null);
+assert.equal(await data.getProfile('aacd'), null);
+assert.deepEqual(await data.listOrders(), []);
+assert.equal(auth.canOpen('parceiro-inicio'), false);
+assert.equal(auth.canOpen('aacd-inicio'), false);
+await auth.login({ email: user.email, password: 'Somente teste' });
+const orders = await data.listOrders();
+assert.equal(orders.length, 1);
+assert.equal(orders[0].code, 'TEST-5');
+assert.equal(orders[0].status, data.ORDER_STATUS.NOT_ACCEPTED);
+assert.equal(orders[0].lab, 'Laboratório de teste');
+assert.equal(await data.getProfile('partner'), null);
+assert.equal((await data.getProfile('aacd'))['aacd-profile-name'], user.nome);
+assert.deepEqual(await data.listRequests(), []);
+assert.equal(
+  (await data.acceptOrder('5')).status,
+  data.ORDER_STATUS.IN_PRODUCTION
 );
-const partners = await data.listPartners();
-const reviews = await data.listReviews();
-await data.reviewPartner(reviews[0].id, true);
-assert.equal((await data.listPartners()).length, partners.length + 1);
-assert.equal((await data.listReviews()).length, reviews.length - 1);
-const draft = { code: '#CONTRATO', scope: 'aacd', materials: ['PLA'] };
-const order = await data.createOrder(draft);
-draft.materials.push('externo');
-order.materials.push('externo');
-assert.deepEqual((await data.getOrder(order.id)).materials, ['PLA']);
-await assert.rejects(data.createOrder(draft), /já foi conectado/);
-// Outra instância com o mesmo contrato: não depende do singleton nem do DOM.
-const second = createDataService(createMemorySource(createMockData()));
-assert.deepEqual(await second.getPrinter('1'), original);
-console.log(
-  'PASS: contrato assíncrono, registros completos, isolamento de leitura/escrita e instâncias independentes.'
-);
-
-const { ORDER_STATUS } = await import('../data.js');
-assert.deepEqual(Object.values(ORDER_STATUS), [
-  'não aceito',
-  'em produção',
-  'finalizado',
-  'recusado',
-  'cancelado'
-]);
 assert.ok(
-  (await second.listOrders()).every((order) =>
-    Object.values(ORDER_STATUS).includes(order.status)
+  calls.some(
+    (c) => c.path === '/api/pedidos/5/acoes/aceitar' && c.method === 'POST'
   )
 );
-const beforeHistory = await second.listHistory();
-assert.ok(
-  beforeHistory.every((order) => order.status === ORDER_STATUS.FINISHED)
-);
-const pending = await second.listOrders({
-  partnerId: 'current-partner',
-  status: ORDER_STATUS.NOT_ACCEPTED
-});
-const refused = await second.refuseOrder(pending[0].id);
-assert.equal(refused.status, ORDER_STATUS.NOT_ACCEPTED);
-assert.equal(refused.partnerId, null);
-assert.equal(refused.lab, '');
-assert.ok(
-  !(await second.listOrders({ partnerId: 'current-partner' })).some(
-    (order) => order.id === refused.id
-  )
-);
-assert.ok((await second.listOrders()).some((order) => order.id === refused.id));
-assert.deepEqual(
-  await second.listHistory(),
-  beforeHistory,
-  'Recusa não registra histórico.'
-);
-await assert.rejects(second.acceptOrder(refused.id), /indisponível/);
-const accepted = await second.acceptOrder(pending[1].id);
-assert.equal(accepted.status, ORDER_STATUS.IN_PRODUCTION);
-await assert.rejects(second.refuseOrder(accepted.id), /indisponível/);
-const finished = await second.finishOrder(accepted.id);
-assert.equal(finished.status, ORDER_STATUS.FINISHED);
-const history = await second.listHistory();
-assert.equal(history.length, beforeHistory.length + 1);
-assert.ok(history.every((order) => order.status === ORDER_STATUS.FINISHED));
-history[0].device = 'alteração externa';
-assert.notEqual((await second.listHistory())[0].device, 'alteração externa');
-await assert.rejects(second.finishOrder(accepted.id), /em produção/);
+failOrders = true;
 await assert.rejects(
-  second.createOrder({ code: '#INVALIDO', status: 'entregue' }),
-  /Status/
+  data.listOrders(),
+  (error) => error.code === 'TEST_FAILURE' && error.status === 503
 );
-await assert.rejects(
-  second.savePrinter({ ...original, volumes: { X: '0', Y: '200', Z: '200' } }),
-  /obrigatórios/
-);
-assert.deepEqual(await second.getPrinter(original.id), original);
-for (const method of [
-  'listPartners',
-  'listReviews',
-  'listMatches',
-  'listHomePartners'
-]) {
-  const snapshot = await second[method]();
-  snapshot[0].name = 'alteração externa';
-  assert.notEqual((await second[method]())[0].name, 'alteração externa');
-}
-const user = await second.getCurrentUser();
-user.role = 'alteração externa';
-assert.notEqual((await second.getCurrentUser()).role, 'alteração externa');
+await auth.logout();
+assert.deepEqual(await data.listOrders(), []);
+assert.equal(await data.getProfile('aacd'), null);
+assert.equal(auth.canOpen('aacd-inicio'), false);
 console.log(
-  'PASS: enum único, transições, recusa sem associação/histórico, somente finalizados no histórico e rejeição de dados inválidos.'
+  'PASS: dados vêm da API; sem autenticação não há acesso/perfis de exemplo; falhas não ativam dados fictícios; estados e rotas preservados.'
 );

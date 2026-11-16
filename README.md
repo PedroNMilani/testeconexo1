@@ -1,19 +1,19 @@
-# CoNexo — SPA por seções
+# CoNexo — aplicação local
 
-A primeira fatia de backend está em [`backend/README.md`](backend/README.md), com cadastro/login bcrypt, homologação, MongoDB e instruções para Windows/CMD. Execute o Express para usar autenticação real. O servidor Python abaixo mantém o protótipo em memória. Pedidos, solicitações e recomendações também usam o backend no modo conectado. A prévia estática continua com dados fictícios.
-
-
-Implementação em HTML, CSS, Bootstrap 5.3.3 e JavaScript do protótipo CoNexo. A estrutura da antiga versão 2 foi consolidada na raiz. A primeira implementação, que recriava as telas via JavaScript, foi removida.
+Aplicação em HTML, CSS, Bootstrap e JavaScript, com backend Node/Express, MySQL e MongoDB. As telas carregam exclusivamente a API. Os dados de demonstração e o login fictício foram removidos.
 
 ## Executar
 
-Baixe o repositório completo e execute nesta pasta:
+Configure `backend/.env` a partir de `backend/.env.example` conforme o [guia do backend](backend/README.md). Com Node.js 24+, MySQL e MongoDB iniciados, execute na raiz do projeto:
 
 ```sh
-python3 -m http.server 8000
+npm --prefix backend ci
+npm --prefix backend run db:init
+npm --prefix backend run seed:aacd
+npm start
 ```
 
-Acesse **http://localhost:8000/**. Os módulos ES exigem um servidor HTTP: abrir `index.html` por `file://` não funciona. Bootstrap, fonte Plus Jakarta Sans e recursos visuais estão incluídos localmente.
+O seed é necessário somente para criar a primeira conta AACD. Acesse **http://localhost:3000/**. O comando `npm start` inicia o Node/Express, que atende às telas e à API na mesma origem. Para reiniciar automaticamente após alterações no backend, use `npm run dev`.
 
 ## Navegação e telas
 
@@ -26,7 +26,7 @@ Todas as telas estão declaradas como `<section data-page>` dentro de um único 
 | `#termos-uso` | Termos completos do cadastro do parceiro |
 | `#parceiro-dados` | Dados do Parceiro — etapa 1 |
 | `#parceiro-equipamentos` | Capacidade Técnica e Equipamentos — etapa 2 |
-| `#parceiro-logistica` | Disponibilidade e Logística — etapa 3 |
+| `#parceiro-logistica` | Confirmação da localização — etapa 3 |
 | `#cadastro-aacd` | Cadastro AACD |
 | `#parceiro-inicio` | Início do parceiro, impressoras e histórico de produção |
 | `#parceiro-pedidos` | Pedidos ativos e pendentes |
@@ -42,67 +42,39 @@ Todas as telas estão declaradas como `<section data-page>` dentro de um único 
 | `#aacd-conectar` | Recomendações e conexão do pedido a um laboratório |
 | `#aacd-perfil` | Edição do perfil AACD |
 
-Para acessar uma área, selecione **Equipe AACD** ou **Parceiro** no Login. Use, por exemplo, `teste@exemplo.com` e `Teste1234`. Nesta demonstração frontend, campos válidos abrem o painel correspondente sem autenticação real. Também é possível acessar as seções diretamente pelo endereço, como `index.html#aacd-inicio`.
+O acesso requer conta cadastrada e homologada. A seleção AACD/Parceiro organiza a interface de login; o servidor identifica o perfil pelas credenciais.
 
-O menu da conta permite editar o perfil e sair. O lápis de edição aparece em todos os cards de impressoras ao passar o cursor e ao focar o card pelo teclado; em dispositivos sem hover permanece acessível. A regra também se aplica às impressoras adicionadas durante a sessão. As impressoras podem ser adicionadas, alteradas e removidas durante a sessão. No celular, a lista de impressoras é um carrossel horizontal. Os pedidos permitem expandir/recolher grupos, visualizar detalhes, aceitar, recusar e concluir; as ações passam pela camada de dados e redesenham cartões e contadores. O histórico contém apenas finalizados. Recusar devolve o pedido como “não aceito”, sem parceiro associado e sem registro no histórico.
+As impressoras usam cadastro, edição e soft delete no MongoDB. Os cards são atualizados com os registros reais. No celular, a lista funciona como carrossel horizontal.
 
-## Área AACD
+## Solicitações e pedidos
 
-O painel liga as seções de parceiros, pedidos e criação de demanda. O histórico permite pesquisar os quatro registros do protótipo, filtrar pelos três status do enum, material e prioridade, expandir detalhes e exportar os resultados filtrados em CSV. A paginação usa os registros realmente disponíveis na demonstração; páginas adicionais são habilitadas quando novos pedidos são criados.
+A AACD preenche código, prioridade, materiais, bicos, dimensões e link. O servidor calcula as opções de fabricação e a distância a partir da unidade solicitante. O parceiro pode aceitar, recusar e finalizar; a AACD pode cancelar um pedido da própria unidade. Recusa mantém a tentativa no histórico e permite reencaminhar a solicitação. Cancelamento e finalização encerram a solicitação.
 
-A rede permite pesquisar laboratórios por nome e localização. Na homologação, cada candidato pode ser expandido para conferir informações gerais e as quatro máquinas dos exemplos, ajustadas ao escopo somente FDM. O estado expandido mostra somente o candidato selecionado; recolher restaura a fila. Homologar adiciona o laboratório à rede local e rejeitar o remove da fila, atualizando os indicadores da demonstração.
+O histórico permite busca, filtros por estado/material/prioridade, detalhes e exportação CSV. Contadores e listas usam os dados retornados pelo banco. Quando não houver registros, a interface mostra o estado vazio.
 
-O novo pedido usa as três etapas conectadas no protótipo (`376:788`, `376:894`, `96:1783`). Os valores permanecem preenchidos ao voltar. A conexão valida todas as etapas, aceita apenas links HTTP/HTTPS e adiciona o pedido ao histórico com o laboratório escolhido. O mesmo código não pode ser enviado duas vezes nesta sessão. Os percentuais de compatibilidade e as recomendações reproduzem os exemplos do Figma; não há cálculo real de compatibilidade nem envio para laboratórios externos.
+## Estrutura
 
-## Regras dos cadastros
-
-O botão Confirmar só é habilitado após atingir o fim do scroll interno dos termos. O cadastro do parceiro exige essa confirmação na aba atual. O texto completo enviado pelo usuário, com seções 1 a 14, usa `<br>` nas quebras de linha. O campo de email de contato foi mantido em branco conforme o documento recebido.
-
-A barra do cadastro mantém a linha verde sobre a cinza nos comprimentos do Figma: aproximadamente 34,5%, 68% e 98%. Permanecem as validações de campos obrigatórios, emails, senhas iguais com pelo menos oito caracteres, dimensões positivas e seleção de materiais e bicos. Os pop-ups de redefinição de senha e homologação foram preservados.
-
-## Arquivos
-
-- `index.html`: todas as seções, cabeçalhos, rodapé e modais estáticos.
-- `app.js`: entrada ES module, inicialização das áreas, Login e cadastros.
-- `router.js`: navegação por seções e History API.
-- `shared-ui.js`: cabeçalhos, perfis, logout e utilitários de templates compartilhados.
-- `data.js`: única interface assíncrona de leitura/escrita; recebe e devolve cópias.
-- `order-status.js`: enum único, rótulos e classes dos pedidos.
-- `DECISIONS.md`: decisões aplicadas e pendências de validação.
-- `memory-source.js`: adaptador privado em memória, substituível por outra fonte com o mesmo contrato.
-- `mock-data.js`: exemplos fictícios, incluindo registros completos das três impressoras.
-- `partner.js`: renderização e interações da área do parceiro, consumindo `data.js`.
-- `aacd.js`: histórico, filtros, CSV, rede, homologação, criação de pedidos e perfil AACD.
-- `tests/browser_smoke.py`: teste de navegador reproduzível dos fluxos AACD e do lápis das impressoras.
-- `styles.css`: tokens visuais, estilos das telas e adaptação para celular.
-- `assets/`: logos, imagens, fonte e ícones originais exportados do Figma.
-- `vendor/`: Bootstrap local.
-
-## Limites da demonstração
-
-Não há backend. Login, redefinição de senha, cadastros, perfil, impressoras e pedidos não fazem chamadas a um servidor. As alterações duram enquanto a página estiver aberta e são reiniciadas ao recarregar. Senhas e dados de formulário não são gravados em cookies, localStorage ou sessionStorage.
-
-Os pedidos e suas datas são exemplos fictícios baseados no protótipo. Contadores, paginação e totais são calculados a partir dos registros disponíveis; não representam uma base real da AACD. Os únicos status de pedido são “não aceito”, “em produção” e “finalizado”; entrega e cancelamento não são representados no modelo. O email `xxxxxx@aacd.org.br` é um placeholder do Figma. As opções de unidade e disponibilidade são demonstrativas, porque o protótipo não apresenta os menus abertos.
-
-O Figma conecta “Adicionar impressora” à tela de edição existente. A criação reutiliza essa mesma seção e exibe um campo de modelo. As ações de pedidos que não têm outra tela desenhada atualizam os dados em memória; os detalhes são expandidos no próprio cartão. As telas internas da AACD foram adicionadas nesta atualização, mantendo a navegação por seções.
+- `index.html` e `styles.css`: telas, templates e apresentação.
+- `app.js`, `aacd.js`, `partner.js`, `shared-ui.js`, `router.js`: interações, renderização e navegação.
+- `data.js`: interface de funções usada pelas telas.
+- `client-api/`: chamadas HTTP por área e conversão das respostas.
+- `auth-client.js`: sessão, transporte HTTP e CSRF.
+- `location-ui.js`: mapa, busca e confirmação do pino.
+- `backend/src/`: rotas, validações, serviços e acesso aos bancos.
+- `backend/db/`: esquema e migrações.
+- `tests/` e `backend/tests/`: verificações e fixtures exclusivas de teste.
 
 ## Verificação
 
-Verificado no Chromium via HTTP em larguras de 1440 e 390 pixels: vinte seções com IDs únicos e labels associados, apenas uma seção visível por vez, Login do parceiro, navegação, adição/edição/remoção de impressoras, atualização e cancelamento de perfil, menu da conta, saída, detalhes/aceite/recusa/conclusão de pedidos e atualização do histórico. Também foram conferidos os termos completos com `<br>`, o bloqueio antes do fim do scroll, as imagens carregadas e a ausência de rolagem horizontal na página.
-
-
-Também foram verificados o Login AACD, as nove seções internas, busca e filtros do histórico, exportação CSV, pesquisa de parceiros, aprovação e rejeição de candidatos, o pedido em três etapas, validação de URL, preservação dos campos, conexão sem duplicação, paginação com novo pedido e edição/cancelamento de perfil. O lápis foi conferido com mouse, foco de teclado, tela de toque e impressoras recém-adicionadas.
-
-Para repetir o teste, instale o pacote Python `playwright`, disponibilize o Chromium e mantenha o servidor local aberto. Em outro terminal, execute:
+Sem banco, com Node.js e Playwright/Chromium instalados:
 
 ```sh
-python3 tests/browser_smoke.py
+node tests/data_contract.mjs
+python tests/browser_smoke.py
+python tests/location_browser.py
+python tests/map_visibility.py
 ```
 
-Use `CONEXO_TEST_URL` para mudar a URL de teste e `CHROMIUM_PATH` para indicar o executável do navegador. Use HTTP para executar a SPA: os módulos ES não funcionam por `file://`.
+Os testes simulam respostas HTTP para conferir a interface sem criar um modo de demonstração. A integração com MySQL/MongoDB e o fluxo conectado de pedidos estão descritos no [guia do backend](backend/README.md).
 
-Para validar o contrato assíncrono e o isolamento das cópias, execute `node tests/data_contract.mjs`. As telas importam apenas `data.js`; para mudar a origem dos dados, forneça outro adaptador com os métodos do contrato e altere a composição em `data.js`, sem modificar as telas. Nenhuma fonte vazia foi criada.
-
-O contrato de dados cobre isolamento de cópias, registros completos, transições e recusa sem histórico. O smoke cobre o salvamento sem alterações das três impressoras iniciais, os filtros do enum e os fluxos de aceite, conclusão e recusa. As pendências estão em [DECISIONS.md](DECISIONS.md).
-
-O mapa do cadastro também aparece na prévia estática (por exemplo, Live Server na porta 5500), com ajuste manual do pino. A busca automática de endereço e a gravação do cadastro exigem o backend.
+A recuperação de senha por e-mail continua indisponível até a escolha e configuração de um provedor. O projeto permanece destinado ao servidor local.

@@ -16,6 +16,7 @@ with sync_playwright() as p:
   # Provedores externos não são validados nesta suíte: não contorna a política de rede.
   ctx.route('https://cdn.userway.org/**',lambda route:route.abort('blockedbyclient'))
   ctx.route('https://tile.openstreetmap.org/**',lambda route:route.abort('blockedbyclient'))
+  ctx.route('**/api/localizacoes/geocodificar',lambda route:route.fulfill(json={'latitude':-23.55,'longitude':-46.63,'nivel':'cidade'}))
   ctx.on('page',lambda page:page.on('pageerror',lambda e:errors.append(str(e))))
   return ctx
  def login(page,email,password):
@@ -70,9 +71,10 @@ with sync_playwright() as p:
  partner.locator('#parceiro-logistica').get_by_role('button',name='Avançar',exact=True).click()
  expect(partner.locator('#parceiro-logistica .form-error')).to_contain_text('confirme')
  partner.get_by_role('button',name='Localizar no mapa',exact=True).click()
- expect(partner.locator('#registration-location [data-location-feedback]')).to_contain_text('aproximado')
+ expect(partner.locator('#registration-location [data-location-feedback]')).to_contain_text('apenas a cidade')
  marker=partner.locator('#registration-location .leaflet-marker-icon');expect(marker).to_be_visible();assert marker.evaluate('(el)=>el.complete&&el.naturalWidth>0')
  partner.set_viewport_size({'width':390,'height':844});assert partner.evaluate('document.documentElement.scrollWidth<=innerWidth');partner.set_viewport_size({'width':1440,'height':1000})
+ marker.focus();marker.press('ArrowRight')
  partner.locator('#registration-location [data-confirm-location]').check()
  failures={'count':0}
  def fail_first_printer(route):
@@ -84,7 +86,11 @@ with sync_playwright() as p:
  expect(partner.locator('#parceiro-logistica .form-error')).to_contain_text('A conta foi criada.',timeout=15000)
  partner.locator('#parceiro-logistica').get_by_role('button',name='Avançar',exact=True).click()
  expect(partner.locator('#evaluation-dialog')).to_be_visible(timeout=15000)
- partner.locator('#evaluation-dialog [data-bs-dismiss=modal]').click();expect(partner.locator('#parceiro-inicio')).to_be_visible()
+ partner.locator('#evaluation-dialog [data-bs-dismiss=modal]').click();expect(partner.locator('#sobre-nos')).to_be_visible()
+ admin.reload();expect(admin.locator('#aacd-homologacao')).to_be_visible()
+ review=admin.locator('.aacd-review').filter(has_text='Laboratório Browser '+suffix)
+ review.locator('summary').click();review.locator('[data-review-action=approve]').click();expect(review).to_have_count(0)
+ login(partner,partner_email,ADMIN_PASSWORD);expect(partner.locator('#parceiro-inicio')).to_be_visible()
  card=partner.locator('#printer-grid .printer-card').filter(has_text='FDM Browser '+suffix);expect(card).to_be_visible()
  before=card.inner_text();card.get_by_role('button',name='Gerenciar',exact=True).click()
  expect(partner.locator('#parceiro-impressora')).to_be_visible()
@@ -100,7 +106,8 @@ with sync_playwright() as p:
  partner.evaluate("location.hash='parceiro-inicio'");expect(partner.locator('#login')).to_be_visible()
  second_email='browser-second-'+suffix+'@example.org'
  body={'email':second_email,'password':ADMIN_PASSWORD,'phone':'61988887777','institution':'Segundo laboratório '+suffix,'responsible':'Outro responsável','street':'Via N2','number':'','city':'Brasília','state':'DF','latitude':-15.7939,'longitude':-47.8828,'locationConfirmed':True,'termsAccepted':True}
- partner.evaluate('''async(body)=>await (await import('./auth-client.js')).api('/auth/cadastros/parceiros',{method:'POST',body})''',body)
+ created=partner.evaluate('''async(body)=>await (await import('./auth-client.js')).api('/auth/cadastros/parceiros',{method:'POST',body})''',body)
+ admin.evaluate('''async(id)=>await (await import('./auth-client.js')).api('/parceiros/'+id+'/homologacao',{method:'POST'})''',created['user']['id'])
  partner.locator('#login [name=email]').fill(second_email);partner.locator('#login [name=password]').fill(ADMIN_PASSWORD)
  partner.get_by_role('button',name='Entrar no Sistema',exact=True).click();expect(partner.locator('#parceiro-inicio')).to_be_visible()
  partner.get_by_role('button',name='Segundo laboratório '+suffix,exact=True).click();partner.get_by_role('link',name='Editar a Conta',exact=True).click()
