@@ -1,9 +1,4 @@
-import {
-  api,
-  login,
-  sessionUser,
-  renderBackendNotice
-} from '../auth-client.js';
+import { api, login, sessionUser } from '../auth-client.js';
 import { locationValue } from '../location-ui.js';
 import { savePrinter } from '../data.js';
 import { navigate } from '../router.js';
@@ -104,7 +99,6 @@ export function initPartnerRegistration(onRegistered) {
       await createAccount(fields, location, termsAccepted);
       await signIn(fields);
       await savePrinter(printer);
-      renderBackendNotice();
       document.dispatchEvent(new CustomEvent('conexo:data-changed'));
       onRegistered();
     } catch (error) {

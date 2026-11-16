@@ -24,9 +24,17 @@ with sync_playwright() as p:
         args=["--no-sandbox"],
     )
     errors = []
+    order_reads = {}
 
     def page_for(user):
         page = b.new_context().new_page()
+        order_reads[page] = 0
+
+        def count_orders(request):
+            if request.method == "GET" and request.url == URL + "/api/pedidos":
+                order_reads[page] += 1
+
+        page.on("request", count_orders)
         page.on("pageerror", lambda e: errors.append(str(e)))
         page.route("https://cdn.userway.org/**", lambda r: r.abort())
         page.route("https://tile.openstreetmap.org/**", lambda r: r.abort())
@@ -85,6 +93,12 @@ with sync_playwright() as p:
     a.reload()
     expect(a.locator("#aacd-order-list")).to_contain_text(f["code"])
     partner = page_for(f["partner"])
+    expect(
+        partner.locator("#pending-orders .order-card").filter(has_text=f["code"])
+    ).to_have_count(1)
+    assert (
+        order_reads[partner] == 1
+    ), "O login deve carregar a lista de pedidos uma vez."
     partner.evaluate("""() => {
         for (const id of ['pending-order-template', 'active-order-template']) {
             const template = document.getElementById(id).content;
@@ -103,8 +117,12 @@ with sync_playwright() as p:
     order.locator("[data-order-action=details]").click()
     expect(order.locator("[data-order-detail-code]")).to_contain_text(f["code"])
     expect(order.locator("[data-order-detail-material]")).to_contain_text("PLA")
+    reads_before = order_reads[partner]
     order.locator("[data-order-action=refuse]").click()
     expect(order).to_have_count(0)
+    expect(partner.locator("#orders-feedback")).to_contain_text("recusado")
+    expect(partner.locator("#production-history")).to_contain_text(f["code"])
+    assert order_reads[partner] == reads_before + 1
     a.reload()
     expect(a.locator("#aacd-open-requests")).to_be_visible()
     request = a.locator("#aacd-open-requests article").filter(has_text=f["code"])
@@ -117,16 +135,26 @@ with sync_playwright() as p:
     partner.reload()
     order = partner.locator("#pending-orders .order-card").filter(has_text=f["code"])
     expect(order).to_be_visible()
+    reads_before = order_reads[partner]
     order.locator("[data-order-action=accept]").click()
     active = partner.locator("#active-orders .order-card").filter(has_text=f["code"])
     expect(active).to_be_visible()
+    expect(partner.locator("#orders-feedback")).to_contain_text("aceito")
+    assert order_reads[partner] == reads_before + 1
+    reads_before = order_reads[partner]
     active.locator("[data-order-action=complete]").click()
     expect(active).to_have_count(0)
+    expect(partner.locator("#orders-feedback")).to_contain_text("concluído")
+    assert order_reads[partner] == reads_before + 1
     partner.reload()
     partner.evaluate("location.hash='parceiro-inicio'")
     expect(partner.locator("#production-history")).to_contain_text(f["code"])
     a.reload()
     expect(a.locator("#aacd-order-list")).to_contain_text("Finalizado")
+    partner.evaluate("async()=>await (await import('./auth-client.js')).logout()")
+    expect(partner.locator("#production-history .history-row")).to_have_count(0)
+    expect(partner.locator("#pending-orders-count")).to_have_text("0")
+    expect(partner.locator("#active-orders-count")).to_have_text("0")
     assert not errors, errors
     print(
         "PASS: Chromium conectado; criação, persistência após reload, recusa, reencaminhamento, aceite, finalização e histórico sem erros JS."

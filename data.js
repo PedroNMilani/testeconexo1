@@ -13,7 +13,6 @@ export {
   finishOrder,
   refuseOrder,
   cancelOrder,
-  listHistory,
   listMatches,
   generateRequestCode,
   listRequests,
