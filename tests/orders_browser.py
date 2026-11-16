@@ -42,6 +42,12 @@ with sync_playwright() as p:
         return page
 
     a = page_for(f["aacd"])
+    # Alterar a ordem visual não pode trocar os valores preenchidos no card.
+    a.evaluate("""() => {
+        const template = document.getElementById('match-template').content;
+        const specs = template.querySelector('.match-specs');
+        specs.prepend(specs.lastElementChild);
+    }""")
     a.evaluate("location.hash='aacd-pedido-1'")
     a.locator("#aacd-order-code").fill(f["code"])
     a.locator("#aacd-order-step-1 button[type=submit]").click()
@@ -51,19 +57,52 @@ with sync_playwright() as p:
     a.locator("#aacd-order-step-2 button[type=submit]").click()
     a.locator("#aacd-order-url").fill("https://example.org/modelo.stl")
     a.locator("#aacd-order-notes").fill("Instruções de teste")
+    a.route(
+        "**/api/recomendacoes",
+        lambda route: route.fulfill(
+            status=503, json={"error": {"message": "Falha de recomendações para teste"}}
+        ),
+    )
+    a.locator("#aacd-order-step-3 button[type=submit]").click()
+    expect(a.locator("#aacd-order-step-3 .form-error")).to_have_text(
+        "Falha de recomendações para teste"
+    )
+    a.unroute("**/api/recomendacoes")
     a.locator("#aacd-order-step-3 button[type=submit]").click()
     expect(a.locator("#aacd-conectar")).to_be_visible()
     card = a.locator(".aacd-match-card").filter(has_text=f["partner"]["nome"]).first
     expect(card).to_contain_text("km")
+    expect(card.locator("[data-match-printer]")).to_have_text(f["printer"]["modelo"])
+    expect(card.locator("[data-match-material]")).to_have_text("PLA • bico 0.4 mm")
+    expect(card.locator("[data-match-supply]")).to_have_text("Material disponível")
+    card.locator("[data-match-detail]").click()
+    expect(card.locator("[data-match-detail-printer]")).to_contain_text(
+        f["printer"]["modelo"]
+    )
     card.locator("[data-connect-order]").click()
     expect(a.locator("#aacd-pedidos")).to_be_visible()
     expect(a.locator("#aacd-orders-feedback")).to_contain_text("salvo")
     a.reload()
     expect(a.locator("#aacd-order-list")).to_contain_text(f["code"])
     partner = page_for(f["partner"])
+    partner.evaluate("""() => {
+        for (const id of ['pending-order-template', 'active-order-template']) {
+            const template = document.getElementById(id).content;
+            const fields = template.querySelector('.order-data');
+            fields.prepend(fields.lastElementChild);
+            const details = template.querySelector('.order-extra');
+            details.prepend(details.lastElementChild);
+        }
+        document.dispatchEvent(new CustomEvent('conexo:data-changed'));
+    }""")
     partner.evaluate("location.hash='parceiro-pedidos'")
     order = partner.locator("#pending-orders .order-card").filter(has_text=f["code"])
     expect(order).to_be_visible()
+    expect(order.locator("[data-order-device]")).to_have_text(f["code"])
+    expect(order.locator("[data-order-material]")).to_have_text("PLA")
+    order.locator("[data-order-action=details]").click()
+    expect(order.locator("[data-order-detail-code]")).to_contain_text(f["code"])
+    expect(order.locator("[data-order-detail-material]")).to_contain_text("PLA")
     order.locator("[data-order-action=refuse]").click()
     expect(order).to_have_count(0)
     a.reload()

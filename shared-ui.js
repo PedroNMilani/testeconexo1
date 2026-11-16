@@ -1,11 +1,4 @@
-import {
-  sessionUser,
-  logout,
-  renderBackendNotice,
-  sessionKey
-} from './auth-client.js';
-import { mountLocation, locationValue, resetLocation } from './location-ui.js';
-import * as data from './data.js';
+import { logout, renderBackendNotice } from './auth-client.js';
 import { activeSection, navigate } from './router.js';
 
 export const instance = (id) =>
@@ -42,118 +35,37 @@ export function bindAreaHeader({
 }
 export function bindLogout(selector, mode) {
   document.querySelector(selector).addEventListener('click', async () => {
-    {
-      try {
-        await logout();
-        renderBackendNotice();
-      } catch (error) {
-        document.getElementById('login-feedback').textContent = error.message;
-        return;
-      }
+    try {
+      await logout();
+      renderBackendNotice();
+    } catch (error) {
+      document.getElementById('login-feedback').textContent = error.message;
+      return;
     }
     document.querySelector('#login [name="password"]').value = '';
     navigate('login', { mode });
   });
 }
-export function bindProfile({
-  area,
-  formId,
-  nameField,
-  emailField,
-  titles,
-  feedbackId,
-  cancelId,
-  home,
-  nameError,
-  success
-}) {
-  const form = document.getElementById(formId);
-  const name = form.elements.namedItem(nameField);
-  const feedback = document.getElementById(feedbackId);
-  function renderTitles(profile) {
-    titles.forEach((selector, index) => {
-      document.querySelector(selector).textContent =
-        profile.displayNames[index];
-    });
+// Operações pequenas usadas pelos dois formulários de perfil.
+export function fillProfileFields(form, profile) {
+  for (const [key, value] of Object.entries(profile)) {
+    const control = form.elements.namedItem(key);
+    if (control) control.value = value;
   }
-  let mapMounted = false,
-    mapActor = null;
-  async function renderProfile() {
-    try {
-      const actor = sessionKey();
-      const profile = await data.getProfile(area);
-      if (!profile) return;
-      if (actor !== sessionKey()) return;
-      for (const [key, value] of Object.entries(profile)) {
-        const control = form.elements.namedItem(key);
-        if (control) control.value = value;
-      }
-      renderTitles(profile);
-      if (area === 'aacd') form.elements.namedItem('unit').disabled = true;
-      if (area === 'partner' && sessionUser?.perfil === 'parceiro') {
-        if (!mapMounted) {
-          mountLocation(
-            'profile-location',
-            {
-              street: '#profile-street',
-              city: '#profile-city',
-              state: '#profile-state',
-              number: '#profile-number'
-            },
-            sessionUser
-          );
-          mapMounted = true;
-        } else if (mapActor !== sessionKey())
-          resetLocation('profile-location', sessionUser);
-        mapActor = sessionKey();
-      }
-    } catch (error) {
-      feedback.textContent = error.message;
-    }
-  }
-  form.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    if (!form.reportValidity()) return;
-    if (!name.value.trim()) {
-      name.setCustomValidity(nameError);
-      name.reportValidity();
-      return;
-    }
-    const values = Object.fromEntries(new FormData(form));
-    if (area === 'aacd') values.unit = sessionUser.unidade;
-    try {
-      const profile = await data.saveProfile(area, {
-        ...values,
-        displayNames: titles.map(() => name.value),
-        _location: locationValue('profile-location')
-      });
-      renderTitles(profile);
-      feedback.textContent = success;
-    } catch (error) {
-      feedback.textContent = error.message;
-    }
-  });
-  form.addEventListener('input', () => name.setCustomValidity(''));
-  document.getElementById(cancelId).addEventListener('click', async () => {
-    await renderProfile();
-    feedback.textContent = '';
-    navigate(home);
-  });
-  document.addEventListener('conexo:session', () => {
-    if (
-      (area === 'aacd' && sessionUser?.perfil === 'aacd') ||
-      (area === 'partner' && sessionUser?.perfil === 'parceiro')
-    )
-      renderProfile();
-    else {
-      form.reset();
-      mapActor = null;
-      if (area === 'partner') resetLocation('profile-location', null);
-      titles.forEach((selector) => {
-        document.querySelector(selector).textContent =
-          area === 'aacd' ? 'Conta AACD' : 'Conta do parceiro';
-      });
-    }
-  });
-  return renderProfile;
+}
+export function setProfileTitles(selectors, name) {
+  selectors.forEach(
+    (selector) => (document.querySelector(selector).textContent = name)
+  );
+}
+export function validateProfileForm(form, fieldName, message) {
+  const name = form.elements.namedItem(fieldName);
+  name.setCustomValidity(name.value.trim() ? '' : message);
+  return form.reportValidity();
+}
+export function normalizeText(value) {
+  return String(value)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLocaleLowerCase('pt-BR');
 }

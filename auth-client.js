@@ -103,8 +103,7 @@ export function profileFromUser(area, user) {
       unit: user.unidade,
       'aacd-profile-name': user.nome,
       'aacd-profile-email': user.email,
-      'aacd-profile-phone': user.telefone,
-      displayNames: [user.nome, user.nome]
+      'aacd-profile-phone': user.telefone
     };
   return {
     'profile-institution': user.nome,
@@ -115,8 +114,7 @@ export function profileFromUser(area, user) {
     'profile-number': user.numero,
     'profile-city': user.cidade,
     'profile-state': user.uf,
-    'profile-district': '',
-    displayNames: [user.nome, user.nome, user.nome]
+    'profile-district': ''
   };
 }
 export async function saveProfileToApi(area, record, location) {

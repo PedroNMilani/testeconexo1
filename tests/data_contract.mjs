@@ -76,6 +76,7 @@ assert.equal(orders.length, 1);
 assert.equal(orders[0].code, 'TEST-5');
 assert.equal(orders[0].status, data.ORDER_STATUS.NOT_ACCEPTED);
 assert.equal(orders[0].lab, 'Laboratório de teste');
+assert.deepEqual(orders[0].volumes, { X: 20, Y: 30, Z: 40 });
 assert.equal(await data.getProfile('partner'), null);
 assert.equal((await data.getProfile('aacd'))['aacd-profile-name'], user.nome);
 assert.deepEqual(await data.listRequests(), []);

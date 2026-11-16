@@ -1,3 +1,4 @@
+import { createProfileService } from './profiles.js';
 import express from 'express';
 import session from 'express-session';
 import MySQLStoreFactory from 'express-mysql-session';
@@ -5,7 +6,7 @@ import { rateLimit } from 'express-rate-limit';
 import { randomBytes, timingSafeEqual } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import { createAuthService, email, phone, string } from './auth-service.js';
+import { createAuthService } from './auth-service.js';
 import { createRepository, publicUser } from './repository.js';
 import { HttpError, check } from './errors.js';
 import { createOrderService } from './orders.js';
@@ -22,6 +23,7 @@ export function createApp({ pool, config, geo, printers, sessionStore }) {
   const app = express(),
     repo = createRepository(pool),
     auth = createAuthService(repo, config, geo),
+    profiles = createProfileService(repo, geo),
     requests = createRequestService({ pool, config }),
     recommendations = createRecommendationService({
       pool,
@@ -221,76 +223,9 @@ export function createApp({ pool, config, geo, printers, sessionStore }) {
       res.json({ homologado: true });
     }
   );
-  app.patch('/api/me', signed, async (req, res) => {
-    check(
-      req.user.perfil !== 'aacd' || req.user.homologado,
-      'Aguarde a homologação da conta AACD.',
-      403
-    );
-    const body = req.body || {},
-      normalized = email(body.email),
-      telephone = phone(body.phone);
-    check(
-      !['homologado', 'perfil', 'id', 'senha_hash'].some((key) => key in body),
-      'Campos de perfil não permitidos.'
-    );
-    let values;
-    if (req.user.perfil === 'aacd') {
-      check(
-        body.unit === req.user.unidade,
-        'A unidade não pode ser alterada pela própria conta. Solicite a correção à equipe AACD.',
-        409
-      );
-      values = { name: string(body.holder, 'o nome do titular') };
-    } else {
-      geo.validateConfirmed(body);
-      values = {
-        name: string(body.institution, 'a instituição'),
-        responsible: string(body.responsible, 'o responsável', 100),
-        street: string(body.street, 'a rua'),
-        number: typeof body.number === 'string' ? body.number.trim() : '',
-        city: string(body.city, 'a cidade', 100)
-      };
-      check(values.number.length <= 10, 'Número de endereço muito longo.');
-    }
-    const user = await repo.withEmailLock(normalized, async (db) => {
-      const matches = await repo.byEmail(normalized, db);
-      check(
-        matches.every(
-          (row) =>
-            String(row.id) === req.user.id && row.perfil === req.user.perfil
-        ),
-        'Este email já está cadastrado.',
-        409
-      );
-      if (req.user.perfil === 'aacd')
-        await db.execute(
-          'UPDATE aacd SET email=?,telefone=?,nome_titular=? WHERE id=?',
-          [normalized, telephone, values.name, req.user.id]
-        );
-      else
-        await db.execute(
-          'UPDATE parceiro SET email=?,telefone=?,nome_instituicao=?,responsavel=?,rua=?,numero=?,cidade=?,uf=?,latitude=?,longitude=? WHERE id=?',
-          [
-            normalized,
-            telephone,
-            values.name,
-            values.responsible,
-            values.street,
-            values.number || null,
-            values.city,
-            body.state,
-            body.latitude,
-            body.longitude,
-            req.user.id
-          ]
-        );
-      return publicUser(
-        await repo.byIdentity({ id: req.user.id, perfil: req.user.perfil }, db)
-      );
-    });
-    res.json({ user });
-  });
+  app.patch('/api/me', signed, async (req, res) =>
+    res.json({ user: await profiles.update(req.user, req.body || {}) })
+  );
   app.get('/api/parceiros', signed, approvedAACD, async (req, res) => {
     check(
       ['true', 'false', undefined].includes(req.query.homologado),
@@ -421,6 +356,20 @@ export function createApp({ pool, config, geo, printers, sessionStore }) {
     'profiles.js',
     'views.js'
   ]);
+  const uiModules = new Set([
+    'aacd-orders.js',
+    'aacd-partners.js',
+    'aacd-requests.js',
+    'aacd-matches.js',
+    'aacd-profile.js',
+    'partner-profile.js',
+    'partner-registration.js'
+  ]);
+  app.get('/ui/:file', (req, res, next) =>
+    uiModules.has(req.params.file)
+      ? res.sendFile(path.join(root, 'ui', req.params.file))
+      : next()
+  );
   app.get('/client-api/:file', (req, res, next) =>
     clientModules.has(req.params.file)
       ? res.sendFile(path.join(root, 'client-api', req.params.file))

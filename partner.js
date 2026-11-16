@@ -1,3 +1,4 @@
+import { initPartnerProfile } from './ui/partner-profile.js';
 import { sessionUser, sessionKey } from './auth-client.js';
 import * as data from './data.js';
 import { ORDER_STATUS, ORDER_STATUS_UI } from './data.js';
@@ -7,7 +8,6 @@ import {
   text,
   tail,
   bindAreaHeader,
-  bindProfile,
   bindLogout
 } from './shared-ui.js';
 
@@ -88,15 +88,10 @@ export async function initPartner() {
       '.order-heading p',
       `Solicitado por: ${order.requester || 'AACD'}`
     );
-    const values = card.querySelectorAll('.order-data strong');
-    [
-      order.device,
-      order.material,
-      active ? order.started : order.deadline,
-      order.deadline
-    ].forEach((value, i) => {
-      if (values[i]) values[i].textContent = value || '';
-    });
+    text(card, '[data-order-device]', order.device);
+    text(card, '[data-order-material]', order.material);
+    text(card, '[data-order-deadline]', order.deadline);
+    if (active) text(card, '[data-order-started]', order.started);
     if (!active) {
       const priority = card.querySelector('.order-status.urgent');
       priority.className = `order-status ${order.priority === 'Urgente' ? 'urgent' : 'standard'}`;
@@ -104,32 +99,21 @@ export async function initPartner() {
     }
     const detail = card.querySelector('.order-extra');
     detail.id = `order-details-${order.id}`;
-    detail.querySelectorAll('p').forEach((paragraph, i) => {
-      paragraph.querySelector('strong').textContent = [
-        'Pedido: ',
-        'Solicitante: ',
-        'Dispositivo: ',
-        'Material: ',
-        'Prazo: '
-      ][i];
-      tail(
-        paragraph,
-        [
-          order.code,
-          order.requester || 'AACD',
-          order.device,
-          order.material,
-          order.deadline
-        ][i]
-      );
-    });
+    tail(detail.querySelector('[data-order-detail-code]'), order.code);
+    tail(
+      detail.querySelector('[data-order-detail-requester]'),
+      order.requester || 'AACD'
+    );
+    tail(detail.querySelector('[data-order-detail-device]'), order.device);
+    tail(detail.querySelector('[data-order-detail-material]'), order.material);
+    tail(detail.querySelector('[data-order-detail-deadline]'), order.deadline);
     card
       .querySelector('[data-order-action="details"]')
       .setAttribute('aria-controls', detail.id);
     return card;
   }
   async function renderPartnerOrders() {
-    const orders = await data.listOrders({ partnerId: 'current-partner' });
+    const orders = await data.listOrders();
     for (const [type, state] of [
       ['active', ORDER_STATUS.IN_PRODUCTION],
       ['pending', ORDER_STATUS.NOT_ACCEPTED]
@@ -185,22 +169,7 @@ export async function initPartner() {
     accountButtonId: 'account-button'
   });
   bindLogout('[data-logout]', 'parceiro');
-  const renderPartnerProfile = bindProfile({
-    area: 'partner',
-    formId: 'partner-profile-form',
-    nameField: 'profile-institution',
-    emailField: 'profile-email',
-    titles: [
-      '[data-account-name]',
-      '#parceiro-perfil-titulo',
-      '#parceiro-inicio-titulo'
-    ],
-    feedbackId: 'profile-feedback',
-    cancelId: 'cancel-profile',
-    home: 'parceiro-inicio',
-    nameError: 'Informe o nome da instituição.',
-    success: 'Perfil atualizado.'
-  });
+  const renderPartnerProfile = initPartnerProfile();
   document.addEventListener('conexo:data-changed', renderPartner);
 
   async function openPrinter(id) {
@@ -300,17 +269,15 @@ export async function initPartner() {
         materialsAvailable: [
           ...printerForm.querySelectorAll('[name="materialsAvailable"]:checked')
         ].map((input) => input.value),
-        volumes: Object.fromEntries(
-          ['X', 'Y', 'Z'].map((axis) => [
-            axis,
-            printerForm.elements.namedItem('edit-volume' + axis).value
-          ])
-        ),
-        needsMaterial: document.getElementById('edit-needs-material').value
+        volumes: {
+          X: Number(printerForm.elements.namedItem('edit-volumeX').value),
+          Y: Number(printerForm.elements.namedItem('edit-volumeY').value),
+          Z: Number(printerForm.elements.namedItem('edit-volumeZ').value)
+        }
       });
       await renderPrinters();
       document.getElementById('printer-feedback').textContent =
-        `${record.name}: ${creating ? 'adicionada' : 'atualizada'}${''}.`;
+        `${record.name}: ${creating ? 'adicionada' : 'atualizada'}.`;
       navigate('parceiro-inicio');
     } catch (error) {
       printerForm.querySelector('.form-error').textContent = error.message;
@@ -326,7 +293,7 @@ export async function initPartner() {
         if (!record) return;
         await renderPrinters();
         document.getElementById('printer-feedback').textContent =
-          `${record.name}: removida${''}.`;
+          `${record.name}: removida.`;
         navigate('parceiro-inicio');
       } catch (error) {
         printerForm.querySelector('.form-error').textContent = error.message;
@@ -372,7 +339,7 @@ export async function initPartner() {
       await Promise.all([renderPartnerOrders(), renderHistory()]);
       document.dispatchEvent(new CustomEvent('conexo:data-changed'));
       document.getElementById('orders-feedback').textContent =
-        `Pedido #${order.id} ${action === 'accept' ? 'aceito' : action === 'complete' ? 'concluído' : 'recusado'}${''}.`;
+        `Pedido #${order.id} ${action === 'accept' ? 'aceito' : action === 'complete' ? 'concluído' : 'recusado'}.`;
     });
   document.addEventListener('conexo:session', () => {
     if (sessionUser?.perfil === 'parceiro') renderPartner();

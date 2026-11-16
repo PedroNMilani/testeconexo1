@@ -430,13 +430,26 @@ test('segredos e arquivos do backend não são publicados como estáticos', asyn
     '/runtime-config.js',
     '/mock-data.js',
     '/memory-source.js',
-    '/client-api/secret.js'
+    '/client-api/secret.js',
+    '/ui/secret.js',
+    '/ui/profiles.js'
   ]) {
     assert.equal((await client.request('GET', path)).status, 404);
   }
   const module = await client.request('GET', '/client-api/orders.js');
   assert.equal(module.status, 200);
   assert.ok(!module.value.includes(config.secret));
+  for (const file of [
+    'aacd-orders.js',
+    'aacd-partners.js',
+    'aacd-requests.js',
+    'aacd-matches.js',
+    'aacd-profile.js',
+    'partner-profile.js',
+    'partner-registration.js'
+  ]) {
+    assert.equal((await client.request('GET', '/ui/' + file)).status, 200);
+  }
 });
 test('sessão persiste no MySQL após reconstruir a aplicação', async () => {
   const client = new Client();

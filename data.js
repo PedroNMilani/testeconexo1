@@ -30,4 +30,8 @@ export {
   saveProfile,
   getCurrentUser
 } from './client-api/profiles.js';
-export { ORDER_STATUS, ORDER_STATUS_UI } from './order-status.js';
+export {
+  ORDER_STATUS,
+  ORDER_STATUS_UI,
+  PRIORITY_LABELS
+} from './order-status.js';

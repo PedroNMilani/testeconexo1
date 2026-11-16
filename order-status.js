@@ -47,3 +47,10 @@ export function assertOrderStatus(status) {
   if (!Object.values(ORDER_STATUS).includes(status))
     throw new TypeError('Status de pedido inválido.');
 }
+
+// A API guarda a chave; os formulários mostram o rótulo em português.
+export const PRIORITY_LABELS = Object.freeze({
+  padrao: 'Padrão',
+  medio: 'Médio',
+  urgente: 'Urgente'
+});

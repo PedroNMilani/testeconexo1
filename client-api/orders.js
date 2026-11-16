@@ -56,11 +56,10 @@ export async function listMatches(draft) {
     scoreIcon: 'assets/aacd-8da20.svg',
     scoreLabel: 'Distância em linha reta',
     scoreNote: 'Origem: unidade AACD',
-    specs: [
-      m.printerName,
-      m.material + ' • bico ' + m.nozzle + ' mm',
-      m.needsMaterial ? 'AACD fornece material' : 'Material disponível'
-    ],
+    materialLabel: m.material + ' • bico ' + m.nozzle + ' mm',
+    supplyLabel: m.needsMaterial
+      ? 'AACD fornece material'
+      : 'Material disponível',
     note: m.needsMaterial
       ? 'A AACD deverá fornecer o material escolhido.'
       : 'O parceiro dispõe do material escolhido.'

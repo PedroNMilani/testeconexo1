@@ -7,6 +7,26 @@ import {
   requireApprovedUser
 } from './request-validation.js';
 
+// As seleções não dependem da ordem dos materiais e bicos. A validação remove duplicatas.
+function sameItems(first, second) {
+  return (
+    first.length === second.length &&
+    first.every((value) => second.includes(value))
+  );
+}
+function hasSameRequirements(request, values) {
+  return (
+    request.link === values.url &&
+    (request.observacoes || '') === values.notes &&
+    request.prioridade === values.priority &&
+    Number(request.capacidade_x) === values.volumes.X &&
+    Number(request.capacidade_y) === values.volumes.Y &&
+    Number(request.capacidade_z) === values.volumes.Z &&
+    sameItems(request.materials, values.materials) &&
+    sameItems(request.nozzles, values.nozzles)
+  );
+}
+
 // Consulta e gravação da demanda da AACD, antes de escolher um parceiro.
 export function createRequestService({ pool, config }) {
   async function getRequest(user, id, db = pool, lock = false) {
@@ -98,18 +118,7 @@ export function createRequestService({ pool, config }) {
       check(rows.length, 'Código já utilizado.', 409);
       request = await getRequest(user, String(rows[0].id));
       check(
-        request.link === values.url &&
-          (request.observacoes || '') === values.notes &&
-          request.prioridade === values.priority &&
-          ['X', 'Y', 'Z'].every(
-            (axis) =>
-              Number(request['capacidade_' + axis.toLowerCase()]) ===
-              values.volumes[axis]
-          ) &&
-          JSON.stringify([...request.materials].sort()) ===
-            JSON.stringify([...values.materials].sort()) &&
-          JSON.stringify([...request.nozzles].sort()) ===
-            JSON.stringify([...values.nozzles].sort()),
+        hasSameRequirements(request, values),
         'O código já pertence a uma solicitação com outros requisitos. Use outro código.',
         409
       );

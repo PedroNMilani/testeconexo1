@@ -2070,7 +2070,7 @@
                 Técnica</a
               >
             </article>
-            <article class="aacd-action-card">
+            <article class="aacd-action-card" data-home-partners>
               <h2>Homologar Parceiro</h2>
 
               <a
@@ -2581,6 +2581,7 @@
                 >
                 <span>Opcional</span>
               </div>
+              <p class="form-error" role="alert"></p>
             </div>
             <!-- Navegação entre as etapas de criação do pedido -->
             <div class="aacd-advance">
@@ -2973,15 +2974,15 @@
         <div class="order-data">
           <div>
             <small>DISPOSITIVO</small>
-            <strong></strong>
+            <strong data-order-device></strong>
             <small>MATERIAL</small>
-            <strong></strong>
+            <strong data-order-material></strong>
           </div>
           <div>
             <small>INÍCIO DA PRODUÇÃO</small>
-            <strong></strong>
+            <strong data-order-started></strong>
             <small>PREVISÃO DE CONCLUSÃO</small>
-            <strong></strong>
+            <strong data-order-deadline></strong>
           </div>
         </div>
         <div class="order-actions">
@@ -3001,11 +3002,11 @@
           >
         </div>
         <div class="order-extra" hidden>
-          <p><strong></strong></p>
-          <p><strong></strong></p>
-          <p><strong></strong></p>
-          <p><strong></strong></p>
-          <p><strong></strong></p>
+          <p data-order-detail-code><strong>Pedido: </strong></p>
+          <p data-order-detail-requester><strong>Solicitante: </strong></p>
+          <p data-order-detail-device><strong>Dispositivo: </strong></p>
+          <p data-order-detail-material><strong>Material: </strong></p>
+          <p data-order-detail-deadline><strong>Prazo: </strong></p>
         </div>
       </article>
     </template>
@@ -3025,15 +3026,15 @@
         <div class="order-data">
           <div>
             <small>Dispositivo</small>
-            <strong></strong>
+            <strong data-order-device></strong>
           </div>
           <div>
             <small>Material</small>
-            <strong></strong>
+            <strong data-order-material></strong>
           </div>
           <div>
             <small>Prazo</small>
-            <strong></strong>
+            <strong data-order-deadline></strong>
           </div>
         </div>
         <div class="order-actions">
@@ -3061,11 +3062,11 @@
           </span>
         </div>
         <div class="order-extra" hidden>
-          <p><strong></strong></p>
-          <p><strong></strong></p>
-          <p><strong></strong></p>
-          <p><strong></strong></p>
-          <p><strong></strong></p>
+          <p data-order-detail-code><strong>Pedido: </strong></p>
+          <p data-order-detail-requester><strong>Solicitante: </strong></p>
+          <p data-order-detail-device><strong>Dispositivo: </strong></p>
+          <p data-order-detail-material><strong>Material: </strong></p>
+          <p data-order-detail-deadline><strong>Prazo: </strong></p>
         </div>
       </article>
     </template>
@@ -3083,11 +3084,11 @@
           <img src="assets/aacd-f6ed4.svg" alt="" />
         </span>
         <div class="aacd-order-info">
-          <small></small>
+          <small data-order-code></small>
           <h2></h2>
           <span class="urgent-tag">Urgente</span>
           <p><img src="assets/aacd-5e5d9.svg" alt="" /></p>
-          <small></small>
+          <small data-order-material></small>
         </div>
         <div class="aacd-order-state">
           <span class="aacd-status production"><span class="dot"></span></span>
@@ -3128,11 +3129,11 @@
         <div class="network-info">
           <div>
             <small>PARQUE FABRIL</small>
-            <strong></strong>
+            <strong data-network-fleet></strong>
           </div>
           <div>
-            <small>CAPACIDADE TÉCNICA</small>
-            <strong></strong>
+            <small data-network-technical-label>CAPACIDADE TÉCNICA</small>
+            <strong data-network-technical></strong>
           </div>
           <div class="network-materials">
             <small>MATERIAIS HOMOLOGADOS AACD</small>
@@ -3149,7 +3150,10 @@
         <span class="machine-approved">
           <img src="assets/aacd-05c0e.svg" alt="" />
         </span>
-        <div><span></span><span></span><span></span></div>
+        <div
+          ><span data-machine-volume></span><span data-machine-nozzles></span
+          ><span data-machine-materials></span
+        ></div>
       </article>
     </template>
     <!-- TEMPLATE REUTILIZÁVEL: Ficha de avaliação e homologação de parceiro (#review-template) -->
@@ -3170,22 +3174,22 @@
         <div class="aacd-review-content">
           <h3> <span class="step">1</span>Informações Gerais do Candidato </h3>
           <div class="review-info-grid">
-            <div
+            <div data-review-info="responsible"
               ><small></small
               ><strong><img src="assets/aacd-1ff05.svg" alt="" /></strong>
               <p></p>
             </div>
-            <div
+            <div data-review-info="contact"
               ><small></small
               ><strong><img src="assets/aacd-b8992.svg" alt="" /></strong>
               <p></p>
             </div>
-            <div
+            <div data-review-info="location"
               ><small></small
               ><strong><img src="assets/aacd-ebe27.svg" alt="" /></strong>
               <p></p>
             </div>
-            <div
+            <div data-review-info="printers"
               ><small></small
               ><strong><img src="assets/aacd-da6d7.svg" alt="" /></strong>
               <p></p>
@@ -3193,7 +3197,7 @@
           </div>
           <h3>
             <span class="step">2</span>Parque Fabril e Impressoras 3D
-            Cadastradas <small>4 Máquinas Habilitadas</small>
+            Cadastradas <small data-review-machine-count></small>
           </h3>
           <div class="review-machine-grid"></div>
           <div class="editor-actions">
@@ -3243,21 +3247,21 @@
             <img src="assets/aacd-195bf.svg" alt="" />
             <div>
               <small>Impressora 3D</small>
-              <strong></strong>
+              <strong data-match-printer></strong>
             </div>
           </div>
           <div>
             <img src="assets/aacd-7206e.svg" alt="" />
             <div>
               <small>Matéria-Prima</small>
-              <strong></strong>
+              <strong data-match-material></strong>
             </div>
           </div>
           <div>
             <img src="assets/aacd-1b4db.svg" alt="" />
             <div>
-              <small>Fila Atual</small>
-              <strong></strong>
+              <small>Fornecimento de material</small>
+              <strong data-match-supply></strong>
             </div>
           </div>
         </div>
@@ -3279,10 +3283,10 @@
           </div>
         </div>
         <div class="aacd-order-detail" hidden>
-          <p><strong></strong></p>
-          <p><strong></strong></p>
-          <p><strong></strong></p>
-          <p></p>
+          <p data-match-detail-lab><strong>Laboratório: </strong></p>
+          <p data-match-detail-printer><strong>Impressora: </strong></p>
+          <p data-match-detail-material><strong>Matéria-prima: </strong></p>
+          <p data-match-detail-note></p>
         </div>
       </article>
     </template>

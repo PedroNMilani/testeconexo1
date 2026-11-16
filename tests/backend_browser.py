@@ -40,6 +40,11 @@ with sync_playwright() as p:
  first_code=admin.locator('#aacd-order-code').input_value()
  admin.locator('#aacd-order-code').fill('CODIGO-MANUAL')
  assert admin.locator('#aacd-order-code').input_value()=='CODIGO-MANUAL'
+ admin.evaluate("location.hash='aacd-perfil'");expect(admin.locator('#aacd-perfil')).to_be_visible()
+ expect(admin.locator('#aacd-profile-unit')).to_be_disabled()
+ admin.locator('#aacd-profile-phone').fill('11966665555')
+ admin.locator('#aacd-profile-form [type=submit]').click()
+ expect(admin.locator('#aacd-profile-feedback')).to_contain_text('atualizado')
  pending_context=context();pending=pending_context.new_page();pending_email='browser-pending-'+suffix+'@example.org'
  pending.goto(URL+'#cadastro-aacd');expect(pending.locator('#cadastro-aacd')).to_be_visible()
  for name,value in {'holder':'Conta pendente '+suffix,'email':pending_email,'password':ADMIN_PASSWORD,'confirmation':ADMIN_PASSWORD,'phone':'11966665555'}.items():pending.locator(f'#cadastro-aacd [name="{name}"]').fill(value)
@@ -118,6 +123,13 @@ with sync_playwright() as p:
  expect(partner.locator('#profile-feedback')).to_contain_text('atualizado')
  saved=partner.evaluate('''async()=> (await (await import('./auth-client.js')).api('/auth/me')).user''')
  assert saved['latitude']==body['latitude'] and saved['longitude']==body['longitude']
+ partner.locator('#profile-institution').fill('Alteração que será cancelada')
+ marker=partner.locator('#profile-location .leaflet-marker-icon');marker.focus();marker.press('ArrowRight')
+ partner.locator('#cancel-profile').click();expect(partner.locator('#parceiro-inicio')).to_be_visible()
+ partner.evaluate("location.hash='parceiro-perfil'");expect(partner.locator('#parceiro-perfil')).to_be_visible()
+ expect(partner.locator('#profile-institution')).to_have_value(body['institution'])
+ restored=partner.evaluate('''async()=> (await import('./location-ui.js')).locationValue('profile-location')''')
+ assert restored['latitude']==body['latitude'] and restored['longitude']==body['longitude']
  assert not errors,errors
  browser.close()
  print('PASS: perfil do servidor, código gerado/manual, cadastro e homologação AACD, cadastro parceiro com mapa, Mongo persistente, edição sem alterações, logout e responsividade.')
