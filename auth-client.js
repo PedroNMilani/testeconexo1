@@ -1,4 +1,3 @@
-export const backendEnabled = globalThis.CONEXO_CONFIG?.backend === true;
 export let sessionUser = null;
 let csrf = null;
 let csrfRequest = null;
@@ -49,7 +48,6 @@ function changed() {
   );
 }
 export async function restoreSession() {
-  if (!backendEnabled) return null;
   try {
     sessionUser = (await api('/auth/me')).user;
   } catch (error) {
@@ -78,7 +76,6 @@ export function internalDestination(user = sessionUser) {
   return user?.perfil === 'parceiro' ? 'parceiro-inicio' : 'aacd-inicio';
 }
 export function canOpen(section) {
-  if (!backendEnabled) return true;
   if (section.startsWith('aacd-'))
     return sessionUser?.perfil === 'aacd' && sessionUser.homologado;
   if (

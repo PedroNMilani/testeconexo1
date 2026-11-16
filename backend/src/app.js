@@ -428,11 +428,6 @@ export function createApp({ pool, config, geo, printers, sessionStore }) {
       error: { code: 'NOT_FOUND', message: 'Recurso não disponível.' }
     })
   );
-  app.get('/runtime-config.js', (req, res) => {
-    res.type('application/javascript');
-    res.setHeader('Cache-Control', 'no-store');
-    res.send('globalThis.CONEXO_CONFIG=Object.freeze({backend:true});');
-  });
   app.get('/', (req, res) => res.sendFile(path.join(root, 'index.html')));
   app.use(
     '/assets',
@@ -451,14 +446,23 @@ export function createApp({ pool, config, geo, printers, sessionStore }) {
     'aacd.js',
     'shared-ui.js',
     'data.js',
-    'mock-data.js',
-    'memory-source.js',
     'order-status.js',
     'auth-client.js',
     'location-ui.js',
-    'material-catalog.js',
-    'runtime-config.js'
+    'material-catalog.js'
   ]);
+  const clientModules = new Set([
+    'orders.js',
+    'printers.js',
+    'partners.js',
+    'profiles.js',
+    'views.js'
+  ]);
+  app.get('/client-api/:file', (req, res, next) =>
+    clientModules.has(req.params.file)
+      ? res.sendFile(path.join(root, 'client-api', req.params.file))
+      : next()
+  );
   app.get('/:file', (req, res, next) =>
     files.has(req.params.file)
       ? res.sendFile(path.join(root, req.params.file))

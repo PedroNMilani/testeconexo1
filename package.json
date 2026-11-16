@@ -1,5 +1,9 @@
 {
   "name": "conexo",
   "private": true,
-  "type": "module"
+  "type": "module",
+  "scripts": {
+    "start": "npm --prefix backend start",
+    "dev": "npm --prefix backend run dev"
+  }
 }

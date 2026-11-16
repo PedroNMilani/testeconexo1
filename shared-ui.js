@@ -1,5 +1,4 @@
 import {
-  backendEnabled,
   sessionUser,
   logout,
   renderBackendNotice,
@@ -43,7 +42,7 @@ export function bindAreaHeader({
 }
 export function bindLogout(selector, mode) {
   document.querySelector(selector).addEventListener('click', async () => {
-    if (backendEnabled) {
+    {
       try {
         await logout();
         renderBackendNotice();
@@ -65,7 +64,6 @@ export function bindProfile({
   feedbackId,
   cancelId,
   home,
-  loginEvent,
   nameError,
   success
 }) {
@@ -84,19 +82,15 @@ export function bindProfile({
     try {
       const actor = sessionKey();
       const profile = await data.getProfile(area);
-      if (backendEnabled && actor !== sessionKey()) return;
+      if (!profile) return;
+      if (actor !== sessionKey()) return;
       for (const [key, value] of Object.entries(profile)) {
         const control = form.elements.namedItem(key);
         if (control) control.value = value;
       }
       renderTitles(profile);
-      if (backendEnabled && area === 'aacd')
-        form.elements.namedItem('unit').disabled = true;
-      if (
-        backendEnabled &&
-        area === 'partner' &&
-        sessionUser?.perfil === 'parceiro'
-      ) {
+      if (area === 'aacd') form.elements.namedItem('unit').disabled = true;
+      if (area === 'partner' && sessionUser?.perfil === 'parceiro') {
         if (!mapMounted) {
           mountLocation(
             'profile-location',
@@ -126,7 +120,7 @@ export function bindProfile({
       return;
     }
     const values = Object.fromEntries(new FormData(form));
-    if (backendEnabled && area === 'aacd') values.unit = sessionUser.unidade;
+    if (area === 'aacd') values.unit = sessionUser.unidade;
     try {
       const profile = await data.saveProfile(area, {
         ...values,
@@ -145,25 +139,13 @@ export function bindProfile({
     feedback.textContent = '';
     navigate(home);
   });
-  document.addEventListener(loginEvent, async (event) => {
-    const actor = sessionKey();
-    const profile = await data.getProfile(area);
-    if (backendEnabled && actor !== sessionKey()) return;
-    if (!profile[emailField]) {
-      await data.saveProfile(area, {
-        ...profile,
-        [emailField]: event.detail.email
-      });
-      form.elements.namedItem(emailField).value = event.detail.email;
-    }
-  });
   document.addEventListener('conexo:session', () => {
     if (
       (area === 'aacd' && sessionUser?.perfil === 'aacd') ||
       (area === 'partner' && sessionUser?.perfil === 'parceiro')
     )
       renderProfile();
-    else if (backendEnabled) {
+    else {
       form.reset();
       mapActor = null;
       if (area === 'partner') resetLocation('profile-location', null);
