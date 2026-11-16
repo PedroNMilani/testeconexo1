@@ -1,8 +1,3 @@
--- PROPOSTA HISTÓRICA, NÃO APLICAR NO BACKEND ATUAL. Base vigente: backend/db/001-base.sql + 002-auth.sql.
--- PROPOSTA PARA REVISÃO. Não executada. MySQL 8.0.16+ / 8.4, InnoDB.
--- Workbench é o cliente; é necessário um MySQL Server local ou remoto.
--- Nenhuma senha nem coordenada fictícia é inserida por este DDL.
--- IDs BIGINT são serializados como strings na API.
 CREATE DATABASE IF NOT EXISTS conexo CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
 USE conexo;
 SET SESSION time_zone = '+00:00';
@@ -21,7 +16,6 @@ CREATE TABLE usuario (
 ) ENGINE=InnoDB;
 
 -- SUGESTÃO adicional: origens conhecidas para o cálculo de distância.
--- Popular somente após escolher unidade solicitante x AACD Central e confirmar coordenadas.
 CREATE TABLE unidade_aacd (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   nome VARCHAR(100) NOT NULL,
@@ -122,9 +116,3 @@ CREATE TABLE pedido (
   CONSTRAINT ck_pedido_objectid CHECK (REGEXP_LIKE(id_impressora, '^[0-9a-f]{24}$', 'c'))
 ) ENGINE=InnoDB;
 
--- Restrições que permanecem no serviço:
--- perfil correto ao criar a tabela filha; pelo menos um material e um bico;
--- URL permitida; coordenada dentro do polígono do Brasil; autorização e transições;
--- existência/atividade/propriedade da impressora no Mongo; política após finalização/cancelamento.
--- Não há FK entre MySQL e MongoDB, nem status gravado na Solicitação.
--- A tabela técnica de sessões será criada por migração conforme o store escolhido.
