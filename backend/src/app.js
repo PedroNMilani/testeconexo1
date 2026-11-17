@@ -3,7 +3,7 @@ import express from 'express';
 import session from 'express-session';
 import MySQLStoreFactory from 'express-mysql-session';
 import { rateLimit } from 'express-rate-limit';
-import { randomBytes, timingSafeEqual } from 'node:crypto';
+import { timingSafeEqual } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { createAuthService } from './auth-service.js';
 import { createRepository, publicUser } from './repository.js';
@@ -12,12 +12,13 @@ import { createOrderService } from './orders.js';
 import { createRequestService } from './requests.js';
 import { createRecommendationService } from './recommendations.js';
 import { registerOrderRoutes } from './routes/orders.js';
-import { withTransaction } from './db.js';
+import { registerAuthRoutes } from './routes/auth.js';
+import { registerPartnerRoutes } from './routes/partners.js';
+import { registerPrinterRoutes } from './routes/printers.js';
 import { generateCode } from './code-service.js';
 import { UFS } from './geo.js';
 import { MATERIALS } from './material-catalog.js';
 const frontendRoot = fileURLToPath(new URL('../../frontend/', import.meta.url));
-const token = () => randomBytes(32).toString('hex');
 export function createApp({ pool, config, geo, printers, sessionStore }) {
   const app = express(),
     repo = createRepository(pool),
@@ -80,10 +81,6 @@ export function createApp({ pool, config, geo, printers, sessionStore }) {
   app.get('/api/catalogos', (req, res) =>
     res.json({ ufs: UFS, unidades: config.units, materiais: MATERIALS })
   );
-  app.get('/api/auth/csrf', (req, res) => {
-    req.session.csrf ||= token();
-    res.json({ csrfToken: req.session.csrf });
-  });
   app.use('/api', (req, res, next) => {
     if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) return next();
     const candidate = req.get('x-csrf-token'),
@@ -106,50 +103,11 @@ export function createApp({ pool, config, geo, printers, sessionStore }) {
       );
     next();
   });
-  const authLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    limit: 40,
-    standardHeaders: 'draft-7',
-    legacyHeaders: false,
-    message: {
-      error: {
-        code: 'RATE_LIMIT',
-        message: 'Muitas tentativas. Aguarde antes de tentar novamente.'
-      }
-    }
-  });
   const geoLimiter = rateLimit({
     windowMs: 60_000,
     limit: 12,
     standardHeaders: 'draft-7',
     legacyHeaders: false
-  });
-  const regenerate = (req) =>
-    new Promise((resolve, reject) =>
-      req.session.regenerate((error) => (error ? reject(error) : resolve()))
-    );
-  const saveSession = (req) =>
-    new Promise((resolve, reject) =>
-      req.session.save((error) => (error ? reject(error) : resolve()))
-    );
-  app.post('/api/auth/cadastros/:role', authLimiter, async (req, res) => {
-    const role =
-      req.params.role === 'parceiros'
-        ? 'parceiro'
-        : req.params.role === 'aacd'
-          ? 'aacd'
-          : null;
-    check(role, 'Cadastro não encontrado.', 404);
-    const user = await auth.register(role, req.body || {});
-    res.status(201).json({ user });
-  });
-  app.post('/api/auth/login', authLimiter, async (req, res) => {
-    const user = await auth.login(req.body || {});
-    await regenerate(req);
-    req.session.identity = { id: user.id, perfil: user.perfil };
-    req.session.csrf = token();
-    await saveSession(req);
-    res.json({ user, csrfToken: req.session.csrf });
   });
   async function signed(req, res, next) {
     const row = await repo.byIdentity(req.session.identity);
@@ -176,95 +134,15 @@ export function createApp({ pool, config, geo, printers, sessionStore }) {
     );
     next();
   };
-  app.get('/api/auth/me', signed, (req, res) => res.json({ user: req.user }));
-  app.post('/api/auth/logout', (req, res, next) => {
-    req.session.destroy((error) => {
-      if (error) return next(error);
-      res.clearCookie('conexo.sid', {
-        httpOnly: true,
-        sameSite: 'lax',
-        secure: config.production
-      });
-      res.sendStatus(204);
-    });
-  });
+  registerAuthRoutes(app, { auth, signed, config });
+  registerPartnerRoutes(app, { pool, printers, signed, approvedAACD });
+  registerPrinterRoutes(app, { pool, printers, signed, partner });
+
   app.post('/api/localizacoes/geocodificar', geoLimiter, async (req, res) =>
     res.json(await geo.geocode(req.body || {}))
   );
-  app.get('/api/aacd/pendentes', signed, approvedAACD, async (req, res) => {
-    const [rows] = await pool.execute(
-      'SELECT id,email,unidade,telefone,nome_titular FROM aacd WHERE homologado=FALSE ORDER BY criado_em,id'
-    );
-    res.json({
-      items: rows.map((row) => ({
-        id: String(row.id),
-        email: row.email,
-        unidade: row.unidade,
-        nome: row.nome_titular || row.email
-      }))
-    });
-  });
-  app.post(
-    '/api/aacd/:id/homologacao',
-    signed,
-    approvedAACD,
-    async (req, res) => {
-      check(/^[1-9][0-9]*$/.test(req.params.id), 'Conta inválida.', 404);
-      const [result] = await pool.execute(
-        'UPDATE aacd SET homologado=TRUE WHERE id=? AND homologado=FALSE',
-        [req.params.id]
-      );
-      check(
-        result.affectedRows === 1,
-        'Conta não encontrada ou já homologada.',
-        409
-      );
-      res.json({ homologado: true });
-    }
-  );
   app.patch('/api/me', signed, async (req, res) =>
     res.json({ user: await profiles.update(req.user, req.body || {}) })
-  );
-  app.get('/api/parceiros', signed, approvedAACD, async (req, res) => {
-    check(
-      ['true', 'false', undefined].includes(req.query.homologado),
-      'Filtro inválido.'
-    );
-    const [rows] = await pool.execute(
-      'SELECT id,nome_instituicao,responsavel,email,telefone,rua,cidade,uf,homologado FROM parceiro' +
-        (req.query.homologado === undefined ? '' : ' WHERE homologado=?') +
-        ' ORDER BY criado_em,id',
-      req.query.homologado === undefined
-        ? []
-        : [req.query.homologado === 'true']
-    );
-    res.json({
-      items: await Promise.all(
-        rows.map(async (row) => ({
-          ...row,
-          id: String(row.id),
-          impressoras: await printers.list({ id: String(row.id) })
-        }))
-      )
-    });
-  });
-  app.post(
-    '/api/parceiros/:id/homologacao',
-    signed,
-    approvedAACD,
-    async (req, res) => {
-      check(/^[1-9][0-9]*$/.test(req.params.id), 'Parceiro inválido.', 404);
-      const [result] = await pool.execute(
-        'UPDATE parceiro SET homologado=TRUE WHERE id=? AND homologado=FALSE',
-        [req.params.id]
-      );
-      check(
-        result.affectedRows === 1,
-        'Parceiro não encontrado ou já homologado.',
-        409
-      );
-      res.json({ homologado: true });
-    }
   );
   app.post(
     '/api/solicitacoes/codigos',
@@ -282,44 +160,6 @@ export function createApp({ pool, config, geo, printers, sessionStore }) {
     recommendations,
     orders
   });
-  async function writePrinter(user, action) {
-    return withTransaction(pool, async (db) => {
-      // Usa o mesmo bloqueio de parceiro da criação do pedido.
-      await db.execute('SELECT id FROM parceiro WHERE id=? FOR UPDATE', [
-        user.id
-      ]);
-      return action();
-    });
-  }
-  app.get('/api/impressoras', signed, partner, async (req, res) =>
-    res.json({ items: await printers.list(req.user) })
-  );
-  app.post('/api/impressoras', signed, partner, async (req, res) =>
-    res
-      .status(201)
-      .json(
-        await writePrinter(req.user, () =>
-          printers.save(req.user, req.body || {})
-        )
-      )
-  );
-  app.get('/api/impressoras/:id', signed, partner, async (req, res) =>
-    res.json(await printers.get(req.user, req.params.id))
-  );
-  app.patch('/api/impressoras/:id', signed, partner, async (req, res) =>
-    res.json(
-      await writePrinter(req.user, () =>
-        printers.save(req.user, req.body || {}, req.params.id)
-      )
-    )
-  );
-  app.delete('/api/impressoras/:id', signed, partner, async (req, res) =>
-    res.json(
-      await writePrinter(req.user, () =>
-        printers.remove(req.user, req.params.id)
-      )
-    )
-  );
   app.use('/api', (req, res) =>
     res.status(404).json({
       error: { code: 'NOT_FOUND', message: 'Recurso não disponível.' }
