@@ -83,7 +83,9 @@ with sync_playwright() as p:
     a.locator("#aacd-order-step-3 button[type=submit]").click()
     expect(a.locator("#aacd-conectar")).to_be_visible()
     card = a.locator(".aacd-match-card").filter(has_text=f["partner"]["nome"]).first
-    expect(card).to_contain_text("km")
+    expect(card.locator(".match-score > span")).to_have_text("Distância em linha reta")
+    expect(card.locator("[data-match-distance]")).to_contain_text("km")
+    expect(card.locator(".match-score img")).to_have_count(0)
     expect(card.locator("[data-match-printer]")).to_have_text(f["printer"]["modelo"])
     expect(card.locator("[data-match-material]")).to_have_text("PLA • bico 0.4 mm")
     expect(card.locator("[data-match-supply]")).to_have_text("Material disponível")

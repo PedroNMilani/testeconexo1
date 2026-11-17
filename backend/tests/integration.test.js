@@ -448,14 +448,18 @@ test('segredos e arquivos do backend não são publicados como estáticos', asyn
     '/css/styles.css',
     '/js/app.js',
     '/assets/logo.png',
-    '/assets/jakarta.woff2',
-    '/vendor/bootstrap.min.css',
-    '/vendor/bootstrap.bundle.min.js',
-    '/vendor/leaflet/leaflet.js',
-    '/vendor/leaflet/images/marker-icon.png'
+    '/assets/jakarta.woff2'
   ]) {
     assert.equal((await client.request('GET', file)).status, 200, file);
   }
+  const index = await client.request('GET', '/index.html');
+  for (const url of [
+    'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css',
+    'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js',
+    'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css',
+    'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js'
+  ])
+    assert.ok(index.value.includes(url), url);
   for (const file of [
     'aacd-orders.js',
     'aacd-partners.js',

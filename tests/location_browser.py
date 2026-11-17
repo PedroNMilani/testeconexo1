@@ -13,8 +13,8 @@ with sync_playwright() as p:
     page = browser.new_page()
     page.route('https://tile.openstreetmap.org/**', lambda route: route.abort())
     page.set_content('''<section data-page><input id="street" value="Paulista"><input id="city" value="São Paulo"><input id="state" value="SP"><div id="location"><button data-geocode>Localizar</button><div data-map style="height:400px;width:600px"></div><input type="checkbox" data-confirm-location><p data-location-feedback></p></div></section>''')
-    page.add_style_tag(path=str(root / 'frontend/vendor/leaflet/leaflet.css'))
-    page.add_script_tag(path=str(root / 'frontend/vendor/leaflet/leaflet.js'))
+    page.add_style_tag(url='https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css')
+    page.add_script_tag(url='https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js')
     source = (root / 'frontend/js/location-ui.js').read_text().replace("import { api } from './auth-client.js';", '''const api = async () => {
       if (window.failure) throw Object.assign(new Error('Falha'), {code: window.failure});
       return {latitude:-23.55,longitude:-46.63,nivel:window.level || 'rua'};
