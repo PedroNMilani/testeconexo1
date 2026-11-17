@@ -4,9 +4,10 @@ import { activeSection, navigate } from '../router.js';
 import { renderMatches } from './aacd-matches.js';
 
 export function initAacdRequests({ onOrdersChanged, resetOrderFilters }) {
-  const forms = [1, 2, 3].map((step) =>
-    document.getElementById(`aacd-order-step-${step}`)
-  );
+  const informationForm = document.getElementById('aacd-order-step-1');
+  const specificationsForm = document.getElementById('aacd-order-step-2');
+  const fileForm = document.getElementById('aacd-order-step-3');
+  const forms = [informationForm, specificationsForm, fileForm];
   const matchList = document.getElementById('aacd-match-list');
   const openPanel = document.getElementById('aacd-open-requests');
   const openList = openPanel.querySelector('[data-open-requests]');
@@ -18,13 +19,13 @@ export function initAacdRequests({ onOrdersChanged, resetOrderFilters }) {
   function readDraft() {
     return {
       code: document.getElementById('aacd-order-code').value.trim(),
-      priority: forms[0].querySelector('[name=priority]:checked').value,
-      materials: [...forms[1].querySelectorAll('[name=materials]:checked')].map(
-        (input) => input.value
-      ),
-      nozzles: [...forms[1].querySelectorAll('[name=nozzles]:checked')].map(
-        (input) => input.value
-      ),
+      priority: informationForm.querySelector('[name=priority]:checked').value,
+      materials: [
+        ...specificationsForm.querySelectorAll('[name=materials]:checked')
+      ].map((input) => input.value),
+      nozzles: [
+        ...specificationsForm.querySelectorAll('[name=nozzles]:checked')
+      ].map((input) => input.value),
       volumes: {
         X: Number(document.getElementById('aacd-volumeX').value),
         Y: Number(document.getElementById('aacd-volumeY').value),
@@ -37,18 +38,18 @@ export function initAacdRequests({ onOrdersChanged, resetOrderFilters }) {
   function populateRequestForm(request) {
     document.getElementById('aacd-order-code').value = request.codigo;
     const priority = data.PRIORITY_LABELS[request.prioridade];
-    forms[0]
+    informationForm
       .querySelectorAll('[name=priority]')
       .forEach((input) => (input.checked = input.value === priority));
     for (const axis of ['X', 'Y', 'Z'])
       document.getElementById('aacd-volume' + axis).value =
         request['capacidade_' + axis.toLowerCase()];
-    forms[1]
+    specificationsForm
       .querySelectorAll('[name=materials]')
       .forEach(
         (input) => (input.checked = request.materials.includes(input.value))
       );
-    forms[1]
+    specificationsForm
       .querySelectorAll('[name=nozzles]')
       .forEach(
         (input) =>
@@ -69,43 +70,60 @@ export function initAacdRequests({ onOrdersChanged, resetOrderFilters }) {
     document.querySelector('[data-demand-priority]').textContent =
       draft.priority;
   }
-  function validateStep(step) {
-    const form = forms[step - 1];
-    if (step === 1) {
-      const input = document.getElementById('aacd-order-code');
-      input.setCustomValidity(
-        input.value.trim() ? '' : 'Informe o nome ou código do pedido.'
-      );
-    }
-    if (step === 3) {
-      const input = document.getElementById('aacd-order-url');
-      let valid = false;
-      try {
-        valid = ['http:', 'https:'].includes(new URL(input.value).protocol);
-      } catch {
-        /* campo inválido */
-      }
-      input.setCustomValidity(
-        valid ? '' : 'Informe um link HTTP ou HTTPS válido para o arquivo.'
-      );
-    }
-    if (!form.checkValidity()) {
-      navigate(`aacd-pedido-${step}`);
-      form.reportValidity();
+
+  function validateOrderInformation() {
+    const input = document.getElementById('aacd-order-code');
+    input.setCustomValidity(
+      input.value.trim() ? '' : 'Informe o nome ou código do pedido.'
+    );
+    if (!informationForm.checkValidity()) {
+      navigate('aacd-pedido-1');
+      informationForm.reportValidity();
       return false;
     }
-    if (
-      step === 2 &&
-      (!form.querySelector('[name=materials]:checked') ||
-        !form.querySelector('[name=nozzles]:checked'))
-    ) {
+    return true;
+  }
+
+  function validateOrderSpecifications() {
+    if (!specificationsForm.checkValidity()) {
       navigate('aacd-pedido-2');
-      form.querySelector('.form-error').textContent =
+      specificationsForm.reportValidity();
+      return false;
+    }
+    const hasMaterials = specificationsForm.querySelector(
+      '[name=materials]:checked'
+    );
+    const hasNozzles = specificationsForm.querySelector(
+      '[name=nozzles]:checked'
+    );
+    if (!hasMaterials || !hasNozzles) {
+      navigate('aacd-pedido-2');
+      specificationsForm.querySelector('.form-error').textContent =
         'Selecione pelo menos um material e um bico disponível.';
       return false;
     }
     return true;
   }
+
+  function validateOrderFile() {
+    const input = document.getElementById('aacd-order-url');
+    let valid = false;
+    try {
+      valid = ['http:', 'https:'].includes(new URL(input.value).protocol);
+    } catch {
+      /* campo inválido */
+    }
+    input.setCustomValidity(
+      valid ? '' : 'Informe um link HTTP ou HTTPS válido para o arquivo.'
+    );
+    if (!fileForm.checkValidity()) {
+      navigate('aacd-pedido-3');
+      fileForm.reportValidity();
+      return false;
+    }
+    return true;
+  }
+
   async function showRecommendations(draft, requestId) {
     const actor = sessionKey(),
       requestedRevision = revision;
@@ -164,25 +182,38 @@ export function initAacdRequests({ onOrdersChanged, resetOrderFilters }) {
     openPanel.hidden = !open.length;
     openList.replaceChildren(...open.map(renderOpenRequest));
   }
-  async function submitStep(event, step) {
+
+  function submitOrderInformation(event) {
     event.preventDefault();
-    if (activeSection !== `aacd-pedido-${step}` || !validateStep(step)) return;
-    if (step < 3) {
-      navigate(`aacd-pedido-${step + 1}`);
-      return;
-    }
-    if (!validateStep(1) || !validateStep(2)) return;
-    const form = forms[step - 1],
-      button = form.querySelector('[type=submit]');
+    if (activeSection !== 'aacd-pedido-1') return;
+    if (!validateOrderInformation()) return;
+    navigate('aacd-pedido-2');
+  }
+
+  function submitOrderSpecifications(event) {
+    event.preventDefault();
+    if (activeSection !== 'aacd-pedido-2') return;
+    if (!validateOrderSpecifications()) return;
+    navigate('aacd-pedido-3');
+  }
+
+  async function submitOrderFile(event) {
+    event.preventDefault();
+    if (activeSection !== 'aacd-pedido-3') return;
+    if (!validateOrderFile()) return;
+    if (!validateOrderInformation()) return;
+    if (!validateOrderSpecifications()) return;
+    const button = fileForm.querySelector('[type=submit]');
     button.disabled = true;
     try {
       await showRecommendations(readDraft());
     } catch (error) {
-      form.querySelector('.form-error').textContent = error.message;
+      fileForm.querySelector('.form-error').textContent = error.message;
     } finally {
       button.disabled = false;
     }
   }
+
   function toggleMatchDetails(button) {
     const detail = document.getElementById(
       button.getAttribute('aria-controls')
@@ -194,7 +225,9 @@ export function initAacdRequests({ onOrdersChanged, resetOrderFilters }) {
       : 'Ocultar Ficha Técnica';
   }
   async function connectOrder(button) {
-    if (![1, 2, 3].every(validateStep)) return;
+    if (!validateOrderInformation()) return;
+    if (!validateOrderSpecifications()) return;
+    if (!validateOrderFile()) return;
     const draft = readDraft();
     const match = matches.find(
       (record) => record.id === button.dataset.connectOrder
@@ -234,10 +267,12 @@ export function initAacdRequests({ onOrdersChanged, resetOrderFilters }) {
     const error = event.currentTarget.querySelector('.form-error');
     if (error) error.textContent = '';
   }
-  forms.forEach((form, index) => {
+  forms.forEach((form) => {
     form.addEventListener('input', onDraftInput);
-    form.addEventListener('submit', (event) => submitStep(event, index + 1));
   });
+  informationForm.addEventListener('submit', submitOrderInformation);
+  specificationsForm.addEventListener('submit', submitOrderSpecifications);
+  fileForm.addEventListener('submit', submitOrderFile);
   openList.addEventListener('click', (event) => {
     const button = event.target.closest('[data-resume-request]');
     if (button) resumeRequest(button);
