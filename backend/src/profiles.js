@@ -1,4 +1,4 @@
-import { email, phone, string } from './auth-service.js';
+import { email, phone, string } from './validations.js';
 import { publicUser } from './repository.js';
 import { check } from './errors.js';
 

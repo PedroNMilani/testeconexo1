@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb';
 import { MATERIALS, needsMaterialSupply } from './material-catalog.js';
 import { check } from './errors.js';
-import { string } from './auth-service.js';
+import { string } from './validations.js';
 export function createPrinterService(collection) {
   function payload(body) {
     const capacity = body.capacidade;
