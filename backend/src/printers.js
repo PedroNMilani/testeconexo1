@@ -1,141 +1,98 @@
 import { ObjectId } from 'mongodb';
-import { MATERIALS, needsMaterialSupply } from './material-catalog.js';
+import { needsMaterialSupply } from './material-catalog.js';
 import { check } from './errors.js';
-import { string } from './validations.js';
+import { validatePrinter } from './printer-validation.js';
+
+function printerId(value) {
+  check(
+    typeof value === 'string' && /^[0-9a-f]{24}$/.test(value),
+    'Impressora inválida.',
+    404
+  );
+  return new ObjectId(value);
+}
+
+// Converte o ID do MongoDB e informa quais materiais precisam ser fornecidos.
+function serializePrinter(record) {
+  if (!record) return null;
+
+  const materialNeeds = {};
+  for (const material of record.materiais_compativeis) {
+    materialNeeds[material] = needsMaterialSupply(
+      record.materiais_compativeis,
+      record.materiais_disponiveis,
+      material
+    );
+  }
+  return {
+    ...record,
+    _id: record._id.toHexString(),
+    necessidade_por_material: materialNeeds
+  };
+}
+
 export function createPrinterService(collection) {
-  function payload(body) {
-    const capacity = body.capacidade;
-    check(
-      capacity &&
-        ['x', 'y', 'z'].every(
-          (axis) =>
-            typeof capacity[axis] === 'number' &&
-            Number.isFinite(capacity[axis]) &&
-            capacity[axis] > 0
-        ),
-      'Informe um volume positivo em X/Y/Z.'
-    );
-    check(
-      Array.isArray(body.bicos) &&
-        body.bicos.length > 0 &&
-        body.bicos.every(
-          (value) =>
-            typeof value === 'number' && Number.isFinite(value) && value > 0
-        ),
-      'Selecione ao menos um bico válido.'
-    );
-    check(
-      Array.isArray(body.materiais_compativeis) &&
-        body.materiais_compativeis.length > 0 &&
-        body.materiais_compativeis.every((value) => MATERIALS.includes(value)),
-      'Selecione materiais compatíveis válidos.'
-    );
-    check(
-      Array.isArray(body.materiais_disponiveis) &&
-        body.materiais_disponiveis.every((value) =>
-          body.materiais_compativeis.includes(value)
-        ),
-      'Materiais disponíveis devem ser compatíveis com a impressora.'
-    );
-    const compatible = [...new Set(body.materiais_compativeis)],
-      available = [...new Set(body.materiais_disponiveis)];
-    return {
-      modelo: string(body.modelo, 'o modelo da impressora'),
-      capacidade: { x: capacity.x, y: capacity.y, z: capacity.z },
-      bicos: [...new Set(body.bicos)],
-      materiais_compativeis: compatible,
-      materiais_disponiveis: available,
-      // Compatibilidade com o campo do banco enviado: indicação geral, nunca prevalece sobre a opção escolhida.
-      precisa_material: compatible.some(
-        (material) => !available.includes(material)
-      )
-    };
+  async function compatible(request) {
+    const records = await collection
+      .find({
+        ativa: true,
+        'capacidade.x': { $gte: Number(request.capacidade_x) },
+        'capacidade.y': { $gte: Number(request.capacidade_y) },
+        'capacidade.z': { $gte: Number(request.capacidade_z) },
+        materiais_compativeis: { $in: request.materials },
+        bicos: { $in: request.nozzles }
+      })
+      .toArray();
+    return records.map(serializePrinter);
   }
-  function id(value) {
-    check(
-      typeof value === 'string' && /^[0-9a-f]{24}$/.test(value),
-      'Impressora inválida.',
-      404
-    );
-    return new ObjectId(value);
+
+  async function list(user) {
+    const records = await collection
+      .find({ id_parceiro: Number(user.id), ativa: true })
+      .sort({ criada_em: 1 })
+      .toArray();
+    return records.map(serializePrinter);
   }
-  const serialize = (record) =>
-    record
-      ? {
-          ...record,
-          _id: record._id.toHexString(),
-          necessidade_por_material: Object.fromEntries(
-            record.materiais_compativeis.map((material) => [
-              material,
-              needsMaterialSupply(
-                record.materiais_compativeis,
-                record.materiais_disponiveis,
-                material
-              )
-            ])
-          )
-        }
-      : null;
+
   async function get(user, key) {
     const record = await collection.findOne({
-      _id: id(key),
+      _id: printerId(key),
       id_parceiro: Number(user.id),
       ativa: true
     });
     check(record, 'Impressora não encontrada.', 404);
-    return serialize(record);
+    return serializePrinter(record);
   }
-  return {
-    async compatible(request) {
-      return (
-        await collection
-          .find({
-            ativa: true,
-            'capacidade.x': { $gte: Number(request.capacidade_x) },
-            'capacidade.y': { $gte: Number(request.capacidade_y) },
-            'capacidade.z': { $gte: Number(request.capacidade_z) },
-            materiais_compativeis: { $in: request.materials },
-            bicos: { $in: request.nozzles }
-          })
-          .toArray()
-      ).map(serialize);
-    },
-    async list(user) {
-      return (
-        await collection
-          .find({ id_parceiro: Number(user.id), ativa: true })
-          .sort({ criada_em: 1 })
-          .toArray()
-      ).map(serialize);
-    },
-    get,
-    async save(user, body, key = null) {
-      const values = payload(body);
-      if (key) {
-        const record = await collection.findOneAndUpdate(
-          { _id: id(key), id_parceiro: Number(user.id), ativa: true },
-          { $set: values },
-          { returnDocument: 'after' }
-        );
-        check(record, 'Impressora não encontrada.', 404);
-        return serialize(record);
-      }
-      const record = {
-        ...values,
-        id_parceiro: Number(user.id),
-        ativa: true,
-        criada_em: new Date()
-      };
-      const result = await collection.insertOne(record);
-      return serialize({ ...record, _id: result.insertedId });
-    },
-    async remove(user, key) {
-      const record = await get(user, key);
-      await collection.updateOne(
-        { _id: id(key), id_parceiro: Number(user.id) },
-        { $set: { ativa: false } }
+
+  async function save(user, body, key = null) {
+    const values = validatePrinter(body);
+    if (key) {
+      const record = await collection.findOneAndUpdate(
+        { _id: printerId(key), id_parceiro: Number(user.id), ativa: true },
+        { $set: values },
+        { returnDocument: 'after' }
       );
-      return record;
+      check(record, 'Impressora não encontrada.', 404);
+      return serializePrinter(record);
     }
-  };
+    const record = {
+      ...values,
+      id_parceiro: Number(user.id),
+      ativa: true,
+      criada_em: new Date()
+    };
+    const result = await collection.insertOne(record);
+    return serializePrinter({ ...record, _id: result.insertedId });
+  }
+
+  async function remove(user, key) {
+    const record = await get(user, key);
+    await collection.updateOne(
+      { _id: printerId(key), id_parceiro: Number(user.id) },
+      { $set: { ativa: false } }
+    );
+    return record;
+  }
+
+  return { compatible, list, get, save, remove };
 }
