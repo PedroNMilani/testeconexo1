@@ -118,54 +118,56 @@ export function initPartnerPrinters() {
   document
     .getElementById('add-printer')
     .addEventListener('click', () => openPrinter(null));
-  printerForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    if (!printerForm.reportValidity()) return;
-    const materials = [
-      ...printerForm.querySelectorAll('[name="materials"]:checked')
-    ].map((input) => input.value);
-    const nozzles = [
-      ...printerForm.querySelectorAll('[name="nozzles"]:checked')
-    ].map((input) => input.value);
-    if (!materials.length || !nozzles.length) {
+  function readPrinterForm() {
+    const fields = new FormData(printerForm);
+    return {
+      id: selectedPrinter?.id,
+      name: selectedPrinter
+        ? selectedPrinter.name
+        : String(fields.get('new-printer-name')).trim(),
+      materials: fields.getAll('materials'),
+      nozzles: fields.getAll('nozzles'),
+      materialsAvailable: fields.getAll('materialsAvailable'),
+      volumes: {
+        X: Number(fields.get('edit-volumeX')),
+        Y: Number(fields.get('edit-volumeY')),
+        Z: Number(fields.get('edit-volumeZ'))
+      }
+    };
+  }
+  function validatePrinterForm(record) {
+    if (!printerForm.reportValidity()) return false;
+    if (!record.materials.length || !record.nozzles.length) {
       printerForm.querySelector('.form-error').textContent =
         'Selecione pelo menos um material e um bico disponível.';
-      return;
+      return false;
     }
+    return true;
+  }
+  async function submitPrinterForm(event) {
+    event.preventDefault();
+    const record = readPrinterForm();
+    if (!validatePrinterForm(record)) return;
     const saveButton = document.getElementById('save-printer');
     const actor = sessionKey();
     saveButton.disabled = true;
     try {
       const creating = selectedPrinter === null;
-      const record = await data.savePrinter({
-        id: selectedPrinter?.id,
-        name: creating
-          ? document.getElementById('new-printer-name').value.trim()
-          : selectedPrinter.name,
-        materials,
-        nozzles,
-        materialsAvailable: [
-          ...printerForm.querySelectorAll('[name="materialsAvailable"]:checked')
-        ].map((input) => input.value),
-        volumes: {
-          X: Number(printerForm.elements.namedItem('edit-volumeX').value),
-          Y: Number(printerForm.elements.namedItem('edit-volumeY').value),
-          Z: Number(printerForm.elements.namedItem('edit-volumeZ').value)
-        }
-      });
+      const saved = await data.savePrinter(record);
       if (actor !== sessionKey()) return;
-      selectedPrinter = record;
+      selectedPrinter = saved;
       await renderPrinters();
       if (actor !== sessionKey()) return;
       document.getElementById('printer-feedback').textContent =
-        `${record.name}: ${creating ? 'adicionada' : 'atualizada'}.`;
+        `${saved.name}: ${creating ? 'adicionada' : 'atualizada'}.`;
       navigate('parceiro-inicio');
     } catch (error) {
       printerForm.querySelector('.form-error').textContent = error.message;
     } finally {
       saveButton.disabled = false;
     }
-  });
+  }
+  printerForm.addEventListener('submit', submitPrinterForm);
   document
     .getElementById('remove-printer')
     .addEventListener('click', async () => {
