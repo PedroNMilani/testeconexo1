@@ -430,3 +430,271 @@ test('fila do parceiro prioriza urgente e combina peso com idade da solicitaçã
     [urgentId, standardId, mediumId]
   );
 });
+
+test('capacidade igual inclui; exceder qualquer eixo ou girar a peça exclui', async () => {
+  const p = await printers.save(users.partner, {
+    ...printerBody,
+    capacidade: { x: 80, y: 120, z: 50 }
+  });
+  for (const [volumes, expected] of [
+    [{ X: 80, Y: 120, Z: 50 }, true],
+    [{ X: 81, Y: 120, Z: 50 }, false],
+    [{ X: 80, Y: 121, Z: 50 }, false],
+    [{ X: 80, Y: 120, Z: 51 }, false],
+    [{ X: 120, Y: 80, Z: 50 }, false]
+  ]) {
+    const s = await create({ ...body(), volumes });
+    const r = await aacd.send('GET', `/api/solicitacoes/${s.id}/recomendacoes`);
+    assert.equal(r.status, 200);
+    assert.equal(
+      r.value.items.some((item) => item.printerId === p._id),
+      expected
+    );
+  }
+});
+
+test('consulta Mongo exclui material incompatível, bico ausente e impressora inativa', async () => {
+  const p = await printers.save(users.partner, {
+    ...printerBody,
+    materiais_compativeis: ['PLA']
+  });
+  const baseline = await create({ ...body(), materials: ['PLA'] });
+  for (const [s, expected] of [
+    [baseline, true],
+    [await create({ ...body(), materials: ['ABS'] }), false],
+    [await create({ ...body(), nozzles: [0.6] }), false]
+  ]) {
+    const r = await aacd.send('GET', `/api/solicitacoes/${s.id}/recomendacoes`);
+    assert.equal(r.status, 200);
+    assert.equal(
+      r.value.items.some((item) => item.printerId === p._id),
+      expected
+    );
+  }
+  assert.equal(
+    (await partner.send('DELETE', `/api/impressoras/${p._id}`)).status,
+    200
+  );
+  const r = await aacd.send(
+    'GET',
+    `/api/solicitacoes/${baseline.id}/recomendacoes`
+  );
+  assert.equal(r.status, 200);
+  assert.ok(r.value.items.every((item) => item.printerId !== p._id));
+});
+
+test('origem salva permanece no match e no pedido; prévia usa a configuração atual', async () => {
+  const draft = body(),
+    s = await create(draft);
+  const unit = users.aacd.unidade,
+    original = config.unitLocations[unit];
+  const destination = { latitude: -23.55, longitude: -46.63 };
+  const distance = (origin) =>
+    Number(haversine(origin, destination).toFixed(2));
+  try {
+    config.unitLocations[unit] = { latitude: -23.65, longitude: -46.63 };
+    const saved = await aacd.send(
+      'GET',
+      `/api/solicitacoes/${s.id}/recomendacoes`
+    );
+    const preview = await aacd.send('POST', '/api/recomendacoes', draft);
+    assert.equal(saved.status, 200);
+    assert.equal(preview.status, 200);
+    assert.equal(
+      saved.value.items.find((item) => item.printerId === printer._id)
+        .distanceKm,
+      distance(original)
+    );
+    assert.equal(
+      preview.value.items.find((item) => item.printerId === printer._id)
+        .distanceKm,
+      distance(config.unitLocations[unit])
+    );
+    const id = await connect(s);
+    const order = await aacd.send('GET', `/api/pedidos/${id}`);
+    assert.equal(order.value.distancia_km, distance(original));
+    delete config.unitLocations[unit];
+    for (const path of ['/api/recomendacoes', '/api/solicitacoes']) {
+      const r = await aacd.send('POST', path, body());
+      assert.equal(r.status, 409);
+      assert.equal(r.value.error.code, 'UNIT_LOCATION_REQUIRED');
+    }
+  } finally {
+    config.unitLocations[unit] = original;
+  }
+});
+
+test('recomendação rejeita pedido pendente, em produção e solicitação encerrada', async () => {
+  const s = await create(),
+    id = await connect(s);
+  for (const action of [null, 'aceitar', 'finalizar']) {
+    if (action)
+      assert.equal(
+        (await partner.send('POST', `/api/pedidos/${id}/acoes/${action}`, {}))
+          .status,
+        200
+      );
+    assert.equal(
+      (await aacd.send('GET', `/api/solicitacoes/${s.id}/recomendacoes`))
+        .status,
+      409
+    );
+  }
+  const request = await aacd.send('GET', `/api/solicitacoes/${s.id}`);
+  assert.equal(request.value.motivo_encerramento, 'finalizado');
+  assert.ok(request.value.encerrada_em);
+});
+
+test('encaminhamento revalida material, bico, homologação e proprietário sem criar tentativa inválida', async () => {
+  const p = await printers.save(users.partner, printerBody);
+  const s = await create({ ...body(), materials: ['PLA'] });
+  const recommended = await aacd.send(
+    'GET',
+    `/api/solicitacoes/${s.id}/recomendacoes`
+  );
+  assert.ok(recommended.value.items.some((item) => item.printerId === p._id));
+  for (const change of [
+    { materiais_compativeis: ['PETG'], materiais_disponiveis: [] },
+    { bicos: [0.6] }
+  ]) {
+    assert.equal(
+      (
+        await partner.send('PATCH', `/api/impressoras/${p._id}`, {
+          ...printerBody,
+          ...change
+        })
+      ).status,
+      200
+    );
+    assert.equal(
+      (
+        await aacd.send(
+          'POST',
+          `/api/solicitacoes/${s.id}/pedidos`,
+          selection(p)
+        )
+      ).status,
+      409
+    );
+    assert.equal(
+      (await partner.send('PATCH', `/api/impressoras/${p._id}`, printerBody))
+        .status,
+      200
+    );
+  }
+  await pool.execute('UPDATE parceiro SET homologado=FALSE WHERE id=?', [
+    users.partner.id
+  ]);
+  try {
+    assert.equal(
+      (
+        await aacd.send(
+          'POST',
+          `/api/solicitacoes/${s.id}/pedidos`,
+          selection(p)
+        )
+      ).status,
+      409
+    );
+  } finally {
+    await pool.execute('UPDATE parceiro SET homologado=TRUE WHERE id=?', [
+      users.partner.id
+    ]);
+  }
+  assert.equal(
+    (
+      await aacd.send(
+        'POST',
+        `/api/solicitacoes/${s.id}/pedidos`,
+        selection(otherPrinter)
+      )
+    ).status,
+    404
+  );
+  const [[count]] = await pool.execute(
+    'SELECT COUNT(*) AS n FROM pedido WHERE id_solicitacao=?',
+    [s.id]
+  );
+  assert.equal(Number(count.n), 0);
+  const request = await aacd.send('GET', `/api/solicitacoes/${s.id}`);
+  assert.equal(request.value.encerrada_em, null);
+});
+
+test('cancelar em produção encerra solicitação e registra a conta AACD autora', async () => {
+  const s = await create(),
+    id = await connect(s);
+  assert.equal(
+    (await partner.send('POST', `/api/pedidos/${id}/acoes/aceitar`, {})).status,
+    200
+  );
+  const cancelled = await aacd.send(
+    'POST',
+    `/api/pedidos/${id}/acoes/cancelar`,
+    {}
+  );
+  assert.equal(cancelled.status, 200);
+  assert.equal(cancelled.value.status, 'cancelado');
+  const request = await aacd.send('GET', `/api/solicitacoes/${s.id}`);
+  assert.equal(request.value.motivo_encerramento, 'cancelado');
+  assert.ok(request.value.encerrada_em);
+  const events = await aacd.send('GET', `/api/pedidos/${id}/eventos`);
+  assert.deepEqual(
+    events.value.items.map((item) => item.acao),
+    ['criado', 'aceito', 'cancelado']
+  );
+  const last = events.value.items.at(-1);
+  assert.equal(last.perfil, 'aacd');
+  assert.equal(String(last.id_autor), users.aacd.id);
+  assert.ok(last.criado_em);
+});
+
+test('todas as transições proibidas retornam conflito sem alterar estado ou auditoria', async () => {
+  const actions = {
+    aceitar: partner,
+    recusar: partner,
+    finalizar: partner,
+    cancelar: aacd
+  };
+  for (const [status, setup, allowed] of [
+    ['pendente', [], ['aceitar', 'recusar', 'cancelar']],
+    ['em_producao', ['aceitar'], ['finalizar', 'cancelar']],
+    ['recusado', ['recusar'], []],
+    ['cancelado', ['cancelar'], []],
+    ['finalizado', ['aceitar', 'finalizar'], []]
+  ]) {
+    const s = await create(),
+      id = await connect(s);
+    for (const action of setup)
+      assert.equal(
+        (
+          await actions[action].send(
+            'POST',
+            `/api/pedidos/${id}/acoes/${action}`,
+            {}
+          )
+        ).status,
+        200
+      );
+    const beforeEvents = await aacd.send('GET', `/api/pedidos/${id}/eventos`);
+    const beforeRequest = await aacd.send('GET', `/api/solicitacoes/${s.id}`);
+    for (const [action, client] of Object.entries(actions)) {
+      if (!allowed.includes(action))
+        assert.equal(
+          (await client.send('POST', `/api/pedidos/${id}/acoes/${action}`, {}))
+            .status,
+          409,
+          `${status}: ${action}`
+        );
+    }
+    const order = await aacd.send('GET', `/api/pedidos/${id}`);
+    assert.equal(order.value.status, status);
+    assert.deepEqual(
+      (await aacd.send('GET', `/api/pedidos/${id}/eventos`)).value,
+      beforeEvents.value
+    );
+    assert.deepEqual(
+      (await aacd.send('GET', `/api/solicitacoes/${s.id}`)).value,
+      beforeRequest.value
+    );
+  }
+});

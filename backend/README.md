@@ -84,6 +84,9 @@ Na execução conectada, Express serve apenas os estáticos permitidos, sem publ
 
 ## Pedidos, recomendações e fila
 
+As regras do match, a cobertura dos testes e os pontos ainda em aberto estão
+documentados em [Match: regras e verificação](../docs/match.md).
+
 - As coordenadas das sete unidades fornecidas pela equipe estão em `src/units.js`. Elas definem a origem da distância; o destino é a localização confirmada do parceiro. `AACD_UNIT_LOCATIONS` pode substituir esse mapa por um objeto JSON, sem alterar o código. Coordenadas inválidas impedem a inicialização. Unidades sem coordenadas não podem criar solicitações nem calcular recomendações.
 - Mongo filtra impressoras ativas por dimensões X/Y/Z, sem rotação, e ao menos um material e bico aceitáveis. MySQL restringe os parceiros aos homologados. Haversine ordena as opções pela distância, sem percentual de compatibilidade fictício e sem usar prioridade na recomendação.
 - Cada opção identifica uma impressora, um material e um bico; o botão de conexão envia explicitamente essa seleção. Estoque não elimina opções: informa quando a AACD precisa fornecer o material.
@@ -121,7 +124,7 @@ npm test
 
 O teste de navegador conectado está em `../tests/backend_browser.py`; requer Playwright/Chromium, backend de teste rodando e `SEED_AACD_EMAIL`/`SEED_AACD_PASSWORD` do seed de teste no ambiente. Para iniciá-lo no CMD, carregue essas variáveis no terminal e execute `python ..\tests\backend_browser.py` com `NODE_ENV=test` e `CONEXO_BACKEND_URL=http://localhost:3000/`.
 
-Validação desta etapa: 31 testes automatizados com MySQL 8.4 e MongoDB 7.0 descartáveis, incluindo concorrência, permissões, revalidação de impressoras, transições e auditoria; contrato do cliente HTTP; Chromium conectado com criação, reload, recusa, reencaminhamento, aceite, finalização e histórico. A migração foi executada novamente para verificar repetição sem perda de dados. Nenhum banco de Pedro foi acessado.
+Na revisão do match de 19/11/2026, passaram os 44 testes automatizados do backend com MySQL 8.4 e MongoDB 7.0 descartáveis, incluindo filtros por eixo, material e bico, origem salva, ordenação de recomendações, concorrência, permissões, revalidação de impressoras, transições e auditoria. O contrato do cliente HTTP também foi verificado. Nenhum banco de Pedro foi acessado. Os scripts de navegador descritos abaixo permitem verificar os fluxos visuais separadamente.
 
 Para reproduzir o navegador, com o backend de teste ativo e Playwright/Chromium instalados:
 

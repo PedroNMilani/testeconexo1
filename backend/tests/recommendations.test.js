@@ -1,9 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  compatibleOptions,
   createRecommendationService,
   haversine
 } from '../src/recommendations.js';
+import { validateRequest } from '../src/request-validation.js';
+import { validatePrinter } from '../src/printer-validation.js';
+import { MATERIALS } from '../src/material-catalog.js';
 
 const origin = { latitude: -23.55, longitude: -46.63 };
 const user = { id: '1', perfil: 'aacd', homologado: true, unidade: 'Mooca' };
@@ -133,5 +137,86 @@ test('empates reais usam parceiro, impressora, material e bico, independentement
       expected
     );
     assert.ok(items.every((item) => item.distanceKm === 0));
+  }
+});
+
+test('gera as combinações permitidas e calcula fornecimento por material, independentemente do resumo legado', () => {
+  const machine = {
+    ...printer('1', '1'),
+    bicos: [0.2, 0.4, 0.6],
+    materiais_compativeis: ['PLA', 'PETG', 'ABS'],
+    precisa_material: false
+  };
+  const requirements = {
+    ...request,
+    materials: ['PETG', 'TPU', 'PLA'],
+    nozzles: [0.4, 0.6, 0.8]
+  };
+  assert.deepEqual(compatibleOptions(machine, requirements), [
+    { material: 'PETG', nozzle: 0.4, needsMaterial: true },
+    { material: 'PETG', nozzle: 0.6, needsMaterial: true },
+    { material: 'PLA', nozzle: 0.4, needsMaterial: false },
+    { material: 'PLA', nozzle: 0.6, needsMaterial: false }
+  ]);
+  const withoutStock = compatibleOptions(
+    { ...machine, materiais_disponiveis: [] },
+    requirements
+  );
+  assert.equal(withoutStock.length, 4);
+  assert.ok(withoutStock.every((option) => option.needsMaterial));
+  const withStock = compatibleOptions(
+    {
+      ...machine,
+      precisa_material: true,
+      materiais_disponiveis: ['PLA', 'PETG', 'ABS']
+    },
+    requirements
+  );
+  assert.equal(withStock.length, 4);
+  assert.ok(withStock.every((option) => !option.needsMaterial));
+});
+
+test('prioridade não altera as opções nem sua ordenação na recomendação', async () => {
+  const recommendations = service(
+    [partner('1', -23.5389), partner('2', -23.53893)],
+    [printer('1', '1'), printer('2', '2')]
+  );
+  const expected = await recommendations.preview(user, draft);
+  for (const priority of ['Médio', 'Urgente']) {
+    assert.deepEqual(
+      await recommendations.preview(user, { ...draft, priority }),
+      expected
+    );
+  }
+});
+
+test('solicitações e impressoras aceitam apenas os materiais do catálogo com os nomes exatos', () => {
+  for (const material of MATERIALS) {
+    assert.deepEqual(
+      validateRequest({ ...draft, materials: [material] }).materials,
+      [material]
+    );
+    assert.deepEqual(
+      validatePrinter({
+        ...printer('1', '1'),
+        materiais_compativeis: [material],
+        materiais_disponiveis: []
+      }).materiais_compativeis,
+      [material]
+    );
+  }
+  for (const material of ['pla', 'petg', 'ABS ', 'Resina']) {
+    assert.throws(() => validateRequest({ ...draft, materials: [material] }), {
+      status: 422
+    });
+    assert.throws(
+      () =>
+        validatePrinter({
+          ...printer('1', '1'),
+          materiais_compativeis: [material],
+          materiais_disponiveis: []
+        }),
+      { status: 422 }
+    );
   }
 });
