@@ -537,14 +537,11 @@ footer p {
   min-height: 20px;
 }
 /* A leitura rola dentro do cartão; as ações cabem na altura da tela. */
-#termos-uso .registration {
-  padding-top: 24px;
-}
 #termos-uso form {
   display: flex;
   flex-direction: column;
-  height: calc(100dvh - 165px);
-  min-height: 400px;
+  height: calc(100dvh - 261px);
+  min-height: 320px;
 }
 #termos-uso .form-card {
   display: flex;
@@ -568,14 +565,21 @@ footer p {
 }
 #termos-uso .form-actions {
   flex-shrink: 0;
-  margin-top: 16px;
+}
+@media (max-width: 900px) {
+  #termos-uso form {
+    height: calc(100dvh - 211px);
+  }
+}
+@media (max-width: 600px) {
+  #termos-uso form {
+    height: calc(100dvh - 185px);
+    min-height: 440px;
+  }
 }
 @media (max-height: 540px) {
-  #termos-uso .registration {
-    padding-top: 12px;
-  }
   #termos-uso form {
-    min-height: 320px;
+    min-height: 400px;
   }
   #termos-uso .form-card {
     padding-block: 12px;
