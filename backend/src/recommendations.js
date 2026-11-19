@@ -121,11 +121,12 @@ export function createRecommendationService({
           name: partner.nome_instituicao,
           location: partner.cidade + ' / ' + partner.uf,
           printerName: printer.modelo,
-          distanceKm: Number(distance.toFixed(2)),
+          distanceKm: distance,
           ...option
         });
     }
-    return items.sort(
+    // Compara a distância completa para evitar empates criados pelo arredondamento.
+    items.sort(
       (a, b) =>
         a.distanceKm - b.distanceKm ||
         a.partnerId.localeCompare(b.partnerId) ||
@@ -133,6 +134,10 @@ export function createRecommendationService({
         a.material.localeCompare(b.material) ||
         a.nozzle - b.nozzle
     );
+    return items.map((item) => ({
+      ...item,
+      distanceKm: Number(item.distanceKm.toFixed(2))
+    }));
   }
   return { matches, preview };
 }
