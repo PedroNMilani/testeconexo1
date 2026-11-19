@@ -540,14 +540,10 @@ footer p {
 #termos-uso .registration {
   padding-top: 24px;
 }
-#termos-uso .screen-heading {
-  font-size: clamp(24px, 3vw, 36px);
-  line-height: 1.25;
-}
 #termos-uso form {
   display: flex;
   flex-direction: column;
-  height: calc(100dvh - 120px);
+  height: calc(100dvh - 165px);
   min-height: 400px;
 }
 #termos-uso .form-card {
@@ -578,14 +574,18 @@ footer p {
   #termos-uso .registration {
     padding-top: 12px;
   }
-  #termos-uso .screen-heading {
-    font-size: 26px;
-  }
   #termos-uso form {
     min-height: 320px;
   }
   #termos-uso .form-card {
     padding-block: 12px;
+  }
+  #termos-uso .form-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    padding-block: 8px;
+    background: var(--mint);
   }
 }
 .choice-head {
